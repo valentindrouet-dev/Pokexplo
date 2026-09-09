@@ -4,6 +4,36 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 Trois versions sont suivies séparément (§112) : `APP_VERSION`, `CONTENT_VERSION`,
 `SAVE_SCHEMA_VERSION`.
 
+## [1.2.0] — Mode édition
+
+`APP_VERSION 1.2.0` · `CONTENT_VERSION bundled-3` · `SAVE_SCHEMA_VERSION 3`
+
+### Ajouté
+
+- **Mode édition** (`docs/SYNC.md` §3) : l'aventure se modifie **là où on la
+  voit**, sur l'écran même de l'enfant. Un crayon sur chaque lieu de la carte,
+  un titre de région, le titre du chapitre, la bulle du Professeur, la consigne
+  d'un exercice, une créature rencontrée — un geste ouvre le tiroir qui les
+  modifie. On y entre depuis `/parents → Modifier l'aventure` ou
+  `/admin → Prévisualiser → Éditer sur place`.
+- Le mode édition et les menus écrivent dans **le même brouillon** : ce qui
+  change d'un côté apparaît aussitôt de l'autre. Pendant l'édition, les écrans
+  affichent ce brouillon (§118) ; rien n'est publié pour autant (§99).
+- Icône crayon dans le design system.
+
+### Modifié
+
+- **Les textes destinés à l'enfant se saisissent dans `VoiceTextEditor`, et
+  nulle part ailleurs** (CLAUDE.md §3). Les champs en double de la section
+  « Exercices » disparaissent.
+
+### Corrigé
+
+- Le texte affiché d'un exercice et le texte lu pouvaient diverger : les menus
+  écrivaient la consigne de la matrice sans mettre à jour la `VoiceMessage`
+  correspondante. L'enfant pouvait lire une phrase et en entendre une autre.
+  Les deux sont désormais écrits ensemble (`applyTemplateVoice`).
+
 ## [1.1.0] — Mise à jour automatique de l'iPad
 
 `APP_VERSION 1.1.0` · `CONTENT_VERSION bundled-3` · `SAVE_SCHEMA_VERSION 3`

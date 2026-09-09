@@ -5,6 +5,7 @@ import { ContentProvider } from './ContentProvider';
 import { GameProvider, useGame } from './GameProvider';
 import { AudioProvider } from './AudioProvider';
 import { AuthProvider } from './AuthProvider';
+import { EditModeProvider } from './EditModeProvider';
 
 /**
  * Les reglages audio vivent dans la sauvegarde du profil (§101) : ce pont les
@@ -31,11 +32,13 @@ function AudioSettingsBridge({ children }: { children: ReactNode }) {
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <AuthProvider>
-      <ContentProvider>
-        <GameProvider>
-          <AudioSettingsBridge>{children}</AudioSettingsBridge>
-        </GameProvider>
-      </ContentProvider>
+      <EditModeProvider>
+        <ContentProvider>
+          <GameProvider>
+            <AudioSettingsBridge>{children}</AudioSettingsBridge>
+          </GameProvider>
+        </ContentProvider>
+      </EditModeProvider>
     </AuthProvider>
   );
 }

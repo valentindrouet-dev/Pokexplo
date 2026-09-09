@@ -171,6 +171,52 @@ test('aucun panneau de l’Admin n’est écrasé par la colonne qui défile', a
   expect(squashed, 'des panneaux de l’Admin sont écrasés').toEqual([]);
 });
 
+test('le mode édition se pose sur l’écran de l’enfant sans le masquer', async ({ page }) => {
+  await boot(page);
+
+  // Seul un adulte identifié peut éditer (§93).
+  await page.goto('./#/admin');
+  await page.getByLabel('Code d’accès').fill('parent');
+  await page.getByRole('button', { name: 'Entrer' }).click();
+  await expect(page.getByText('Pokexplo — Admin')).toBeVisible({ timeout: 20_000 });
+
+  await page.goto('./#/parents');
+  await page.getByRole('button', { name: /modifier l’aventure/i }).click();
+  await expect(page.getByText('Mode édition')).toBeVisible({ timeout: 20_000 });
+
+  // Le bandeau ne recouvre pas le contenu du jeu.
+  await expectNoOverlap(page, '.edit-bar, .play__content');
+
+  await page.goto('./#/play/map');
+  const badge = page.getByRole('button', { name: /modifier le lieu centre/i });
+  await expect(badge).toBeVisible({ timeout: 20_000 });
+
+  // La cible tactile de la pastille reste confortable sur un écran d'iPad.
+  const box = await badge.boundingBox();
+  expect(box?.width ?? 0).toBeGreaterThanOrEqual(44);
+  expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+
+  await badge.click();
+  const drawer = page.getByRole('dialog');
+  await expect(drawer).toBeVisible();
+  await expect(page.getByLabel(/^Nom du lieu/)).toBeVisible();
+
+  // Le tiroir tient dans l'écran : ni débordement, ni défilement horizontal.
+  const viewport = page.viewportSize()!;
+  const panel = await drawer.boundingBox();
+  expect(panel!.height).toBeLessThanOrEqual(viewport.height + 1);
+  const scrollsX = await page.evaluate(
+    () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+  );
+  expect(scrollsX).toBe(false);
+
+  // En quittant, l'écran redevient exactement celui de l'enfant.
+  await page.getByRole('button', { name: 'Terminé' }).click();
+  await page.getByRole('button', { name: /quitter l’édition/i }).click();
+  await expect(page.getByText('Mode édition')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /^Modifier le lieu/ })).toHaveCount(0);
+});
+
 test('l’espace parents tient sur un écran d’iPad', async ({ page }) => {
   await boot(page);
   await page.goto('./#/parents');

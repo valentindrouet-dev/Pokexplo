@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { PrimaryButton, SecondaryButton, SoftPanel } from '../../../ui';
 import { useContent } from '../../../app/providers/ContentProvider';
 import { useNavigation } from '../../../app/router';
+import { useEditMode } from '../../../app/providers/EditModeProvider';
 import { useAdminDraft } from '../AdminDraftContext';
 
 /**
@@ -15,6 +16,7 @@ export function PreviewSection() {
   const { draft, validation } = useAdminDraft();
   const { preview, previewing, meta } = useContent();
   const { navigate } = useNavigation();
+  const { setEditing } = useEditMode();
   const [note, setNote] = useState<string | null>(null);
 
   if (!draft) return null;
@@ -40,6 +42,24 @@ export function PreviewSection() {
         {draft.creatures.length} créatures, {draft.exerciseTemplates.length} matrices,{' '}
         {validation?.missingVoices ?? 0} voix manquantes
       </p>
+
+      <p>
+        <strong>Mode édition</strong> : au lieu de naviguer dans ces menus, ouvrez l’aventure et
+        touchez ce que vous voulez changer — le nom d’un lieu, une consigne, une réplique du
+        Professeur, le nom d’une créature. Les menus et le mode édition écrivent dans le même
+        brouillon : ce que vous modifiez d’un côté apparaît aussitôt de l’autre.
+      </p>
+
+      <div className="ds-row">
+        <PrimaryButton
+          onClick={() => {
+            setEditing(true);
+            navigate({ name: 'center' });
+          }}
+        >
+          Éditer sur place
+        </PrimaryButton>
+      </div>
 
       <div className="ds-row">
         {previewing ? (

@@ -7,6 +7,7 @@ import {
   IconDownload,
   IconHome,
   IconSettings,
+  IconSparkle,
   LoadingBall,
   PillButton,
   PrimaryButton,
@@ -19,6 +20,7 @@ import { useAudio } from '../../app/providers/AudioProvider';
 import { useContent } from '../../app/providers/ContentProvider';
 import { useGame } from '../../app/providers/GameProvider';
 import { useNavigation } from '../../app/router';
+import { useEditMode } from '../../app/providers/EditModeProvider';
 import './parent.css';
 
 /**
@@ -29,6 +31,7 @@ import './parent.css';
  */
 export function ParentDashboard() {
   const { navigate } = useNavigation();
+  const { available: canEdit, setEditing } = useEditMode();
   const { bundle } = useContent();
   const { save, dispatch } = useGame();
   const { settings, setSettings } = useAudio();
@@ -115,6 +118,21 @@ export function ParentDashboard() {
           <SecondaryButton icon={<IconHome size={26} />} onClick={() => navigate({ name: 'start' })}>
             Accueil
           </SecondaryButton>
+          {/*
+            Éditer l'aventure LÀ OÙ ON LA VOIT : on rejoint l'écran de l'enfant,
+            et chaque texte, lieu ou créature devient modifiable sur place.
+          */}
+          {canEdit ? (
+            <PrimaryButton
+              icon={<IconSparkle size={26} />}
+              onClick={() => {
+                setEditing(true);
+                navigate({ name: 'center' });
+              }}
+            >
+              Modifier l’aventure
+            </PrimaryButton>
+          ) : null}
           <SecondaryButton
             icon={<IconSettings size={26} />}
             onClick={() => navigate({ name: 'admin', section: 'dashboard' })}

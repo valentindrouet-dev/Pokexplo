@@ -1,0 +1,155 @@
+/*
+ * MODE ÉDITION.
+ *
+ * Interface ADULTE posée par-dessus l'écran de l'enfant : elle n'apparaît que
+ * lorsque l'administrateur l'a demandée, et disparaît entièrement sinon. Elle
+ * n'utilise que les tokens du design system (docs/UI_DESIGN.md §181).
+ */
+
+/* Zone entièrement éditable : un titre, une consigne, une réplique. */
+.edit-zone {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  outline: var(--space-0) dashed var(--color-lavender);
+  outline-offset: var(--space-1);
+}
+
+.edit-zone:focus-visible {
+  outline: var(--space-1) solid var(--color-lavender);
+}
+
+.edit-zone__pencil,
+.edit-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  border-radius: var(--radius-pill);
+  background: var(--color-lavender);
+  color: var(--color-text-invert);
+  box-shadow: var(--shadow-soft);
+}
+
+/* Pastille posée en coin d'un élément qui garde son action de jeu. */
+.edit-zone__pencil {
+  position: absolute;
+  top: calc(-1 * var(--space-3));
+  right: calc(-1 * var(--space-3));
+  pointer-events: none;
+}
+
+.edit-badge {
+  position: absolute;
+  top: calc(-1 * var(--space-2));
+  right: calc(-1 * var(--space-2));
+  border: none;
+  cursor: pointer;
+  z-index: var(--z-panel);
+}
+
+/* ------------------------------ barre ------------------------------ */
+
+/*
+ * Bandeau d'édition. Il occupe une vraie place dans la colonne plutôt que de
+ * flotter au-dessus : l'écran du jeu commence alors sous lui, quelle que soit
+ * la hauteur du bandeau — y compris s'il passe sur deux lignes. Il reste hors
+ * de la zone de l'action principale (§177) et respecte l'encoche.
+ */
+.edit-bar {
+  position: relative;
+  z-index: var(--z-bar);
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-2) var(--space-4);
+  padding-top: calc(var(--space-2) + var(--safe-top));
+  background: var(--color-lavender-soft);
+  border-bottom: var(--border-hairline);
+}
+
+.edit-bar__title {
+  font-weight: var(--weight-heavy);
+  font-size: var(--text-small);
+  margin-right: auto;
+}
+
+.edit-bar__status {
+  font-size: var(--text-small);
+  color: var(--color-text-soft);
+}
+
+/* Le bandeau porte déjà l'encoche : le contenu n'a plus à la reprendre. */
+.play[data-editing='true'] .play__content {
+  padding-top: var(--space-5);
+}
+
+/* ------------------------------ tiroir ------------------------------ */
+
+.edit-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  justify-content: flex-end;
+  background: var(--scrim-dark);
+}
+
+.edit-drawer__panel {
+  display: flex;
+  flex-direction: column;
+  width: min(520px, 100%);
+  height: 100%;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-float);
+  padding: var(--space-4);
+  padding-top: calc(var(--space-4) + var(--safe-top));
+  padding-bottom: calc(var(--space-4) + var(--safe-bottom));
+  gap: var(--space-3);
+  min-height: 0;
+}
+
+.edit-drawer__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex: 0 0 auto;
+}
+
+.edit-drawer__title {
+  font-size: var(--text-large);
+  font-weight: var(--weight-heavy);
+  line-height: var(--line-tight);
+}
+
+.edit-drawer__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.edit-drawer__body > * {
+  flex-shrink: 0;
+}
+
+.edit-drawer__foot {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  flex: 0 0 auto;
+  padding-top: var(--space-3);
+  border-top: var(--border-hairline);
+}

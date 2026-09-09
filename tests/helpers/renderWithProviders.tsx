@@ -3,14 +3,20 @@ import { render, type RenderResult } from '@testing-library/react';
 import { DEFAULT_AUDIO_SETTINGS } from '../../src/types/audio';
 import { ContentProvider } from '../../src/app/providers/ContentProvider';
 import { AudioProvider } from '../../src/app/providers/AudioProvider';
+import { AuthProvider } from '../../src/app/providers/AuthProvider';
+import { EditModeProvider } from '../../src/app/providers/EditModeProvider';
 
 function Providers({ children }: { children: ReactNode }) {
   return (
-    <ContentProvider>
-      <AudioProvider settings={{ ...DEFAULT_AUDIO_SETTINGS }} onSettingsChange={() => undefined}>
-        {children}
-      </AudioProvider>
-    </ContentProvider>
+    <AuthProvider>
+      <EditModeProvider>
+        <ContentProvider>
+          <AudioProvider settings={{ ...DEFAULT_AUDIO_SETTINGS }} onSettingsChange={() => undefined}>
+            {children}
+          </AudioProvider>
+        </ContentProvider>
+      </EditModeProvider>
+    </AuthProvider>
   );
 }
 

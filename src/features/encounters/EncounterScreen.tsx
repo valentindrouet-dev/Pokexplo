@@ -11,6 +11,7 @@ import { useGame } from '../../app/providers/GameProvider';
 import { useNavigation } from '../../app/router';
 import { ExerciseView } from '../learning/ExerciseView';
 import { PlayScreen } from '../play/PlayScreen';
+import { Editable } from '../edit-mode/Editable';
 import { CaptureScene } from '../capture/CaptureScene';
 
 type Phase = 'intro' | 'exercise' | 'capture';
@@ -158,7 +159,13 @@ export function EncounterScreen({ nodeId }: { nodeId: string }) {
       {phase === 'intro' ? (
         <SoftPanel padding="roomy" animated>
           <div className="encounter__creature">
-            <CreatureSprite creature={creature} size={220} animated />
+            {/* La créature rencontrée se modifie ici même : nom, description, voix. */}
+            <Editable
+              target={{ kind: 'creature', id: creature.id }}
+              label={`la créature ${creature.name}`}
+            >
+              <CreatureSprite creature={creature} size={220} animated />
+            </Editable>
             <p className="encounter__name">
               {special ? <span className="encounter__rare">Une créature rare ! </span> : null}
               Une créature apparaît !
@@ -176,7 +183,12 @@ export function EncounterScreen({ nodeId }: { nodeId: string }) {
             instance={instance}
             header={
               <div className="encounter__creature">
-                <CreatureSprite creature={creature} size={88} animated />
+                <Editable
+                  target={{ kind: 'creature', id: creature.id }}
+                  label={`la créature ${creature.name}`}
+                >
+                  <CreatureSprite creature={creature} size={88} animated />
+                </Editable>
               </div>
             }
             onAttempt={(_correct, attempts) => {

@@ -9,6 +9,7 @@ import {
   IconFlower,
   IconLeaf,
   IconLock,
+  IconPencil,
   IconRock,
   IconSnow,
   IconSparkle,
@@ -22,6 +23,7 @@ import { useAudio } from '../../app/providers/AudioProvider';
 import { useContent } from '../../app/providers/ContentProvider';
 import { useGame } from '../../app/providers/GameProvider';
 import { useNavigation } from '../../app/router';
+import { useEditMode } from '../../app/providers/EditModeProvider';
 import { PlayScreen } from '../play/PlayScreen';
 
 /**
@@ -84,6 +86,51 @@ function PlaceIcon({ node, biome }: { node: MapNode; biome: Biome | null }) {
     default:
       return <IconFlower size={size} />;
   }
+}
+
+/**
+ * Pastille d'édition, en SVG.
+ *
+ * La carte est un dessin : une pastille HTML ne peut pas s'y poser. On la
+ * dessine donc dans le même repère, avec sa propre zone tactile — et le lieu
+ * garde son action de jeu, pour que l'adulte puisse continuer à parcourir
+ * l'aventure tout en la modifiant.
+ */
+function MapEditBadge({
+  x,
+  y,
+  label,
+  onOpen,
+}: {
+  x: number;
+  y: number;
+  label: string;
+  onOpen: () => void;
+}) {
+  return (
+    <g
+      className="map__edit"
+      role="button"
+      tabIndex={0}
+      aria-label={`Modifier ${label}`}
+      onClick={(event) => {
+        event.stopPropagation();
+        onOpen();
+      }}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.stopPropagation();
+          onOpen();
+        }
+      }}
+    >
+      <circle cx={x} cy={y} r={6} fill="transparent" />
+      <circle className="map__edit-dot" cx={x} cy={y} r={3.4} />
+      <g transform={`translate(${x - 2.2} ${y - 2.2}) scale(0.183)`} pointerEvents="none">
+        <IconPencil size={24} />
+      </g>
+    </g>
+  );
 }
 
 interface Point {
@@ -150,6 +197,7 @@ function toView(node: MapNode): Point {
  */
 export function MapScreen() {
   const { navigate } = useNavigation();
+  const { editing, open: openEditor } = useEditMode();
   const { bundle, biome } = useContent();
   const { save, dispatch } = useGame();
   const { speak, buttonState } = useAudio();
@@ -335,14 +383,46 @@ export function MapScreen() {
           {zones
             .filter((zone) => zone.showLabel)
             .map((zone) => (
-              <text
-                key={`${zone.biome.id}-label`}
-                className="map__zone-label"
-                x={zone.label.x}
-                y={zone.label.y}
-              >
-                {zone.biome.shortName ?? zone.biome.name}
-              </text>
+              <g key={`${zone.biome.id}-label`}>
+                {/*
+                  Le titre d'une region ne fait rien pour l'enfant : en mode
+                  edition, il devient donc lui-meme le bouton. Une pastille
+                  posee a cote viendrait barrer le texte.
+                */}
+                {editing ? (
+                  <g
+                    className="map__zone-edit"
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Modifier la région ${zone.biome.name}`}
+                    onClick={() => openEditor({ kind: 'biome', id: zone.biome.id })}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        openEditor({ kind: 'biome', id: zone.biome.id });
+                      }
+                    }}
+                  >
+                    <rect
+                      x={zone.label.x - 24}
+                      y={zone.label.y - 4.6}
+                      width={48}
+                      height={6.4}
+                      fill="transparent"
+                    />
+                    <text
+                      className="map__zone-label map__zone-label--editable"
+                      x={zone.label.x}
+                      y={zone.label.y}
+                    >
+                      {zone.biome.shortName ?? zone.biome.name}
+                    </text>
+                  </g>
+                ) : (
+                  <text className="map__zone-label" x={zone.label.x} y={zone.label.y}>
+                    {zone.biome.shortName ?? zone.biome.name}
+                  </text>
+                )}
+              </g>
             ))}
 
           {/* --- Lieux ------------------------------------------------------ */}
@@ -410,6 +490,14 @@ export function MapScreen() {
                 <text className="map__node-label" x={point.x} y={point.y + radius + 5.2}>
                   {node.label}
                 </text>
+                {editing ? (
+                  <MapEditBadge
+                    x={point.x - radius * 0.95}
+                    y={point.y - radius * 0.95}
+                    label={`le lieu ${node.label}`}
+                    onOpen={() => openEditor({ kind: 'node', id: node.id })}
+                  />
+                ) : null}
               </g>
             );
           })}

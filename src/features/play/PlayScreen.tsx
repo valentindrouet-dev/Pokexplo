@@ -3,6 +3,8 @@ import type { Biome } from '../../types';
 import { SceneBackground } from '../../components/SceneBackground';
 import { BottomActionBar, IconButton, IconBack } from '../../ui';
 import { useNavigation } from '../../app/router';
+import { useEditMode } from '../../app/providers/EditModeProvider';
+import { EditModeBar } from '../edit-mode/EditModeBar';
 import type { Route } from '../../app/routes';
 import { cn } from '../../utils/cn';
 import './play.css';
@@ -33,10 +35,13 @@ export function PlayScreen({
   className,
 }: PlayScreenProps) {
   const { navigate } = useNavigation();
+  const { editing } = useEditMode();
 
   return (
-    <div className={cn('play', className)}>
+    <div className={cn('play', className)} data-editing={editing}>
       <SceneBackground biome={biome} scrim={scrim} />
+      {/* Bandeau adulte : il n'existe QUE si l'administrateur l'a demandé. */}
+      <EditModeBar />
       <div className="play__content">{children}</div>
       <BottomActionBar
         className="play__bar"

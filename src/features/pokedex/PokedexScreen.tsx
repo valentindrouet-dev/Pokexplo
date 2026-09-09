@@ -14,6 +14,7 @@ import { useAudio } from '../../app/providers/AudioProvider';
 import { useContent } from '../../app/providers/ContentProvider';
 import { useGame } from '../../app/providers/GameProvider';
 import { PlayScreen } from '../play/PlayScreen';
+import { Editable } from '../edit-mode/Editable';
 
 const FILTERS: Array<{ id: 'ALL' | CreatureType; label: string }> = [
   { id: 'ALL', label: 'Tous' },
@@ -101,9 +102,14 @@ export function PokedexScreen() {
                   silhouette={selectedState === 'UNKNOWN'}
                   animated={selectedState === 'CAPTURED'}
                 />
-                <p className="pokedex__name">
-                  {selectedState === 'UNKNOWN' ? '???' : selected.name}
-                </p>
+                <Editable
+                  target={{ kind: 'creature', id: selected.id }}
+                  label={`la créature ${selected.name}`}
+                >
+                  <p className="pokedex__name">
+                    {selectedState === 'UNKNOWN' ? '???' : selected.name}
+                  </p>
+                </Editable>
 
                 {selectedState === 'UNKNOWN' ? (
                   <p className="start__subtitle">Tu ne l’as pas encore rencontrée.</p>

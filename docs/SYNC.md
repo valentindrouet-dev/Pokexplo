@@ -4,11 +4,12 @@
 > ordinateur ; l'iPad de votre enfant se met à jour **tout seul**, sans que
 > personne n'ait à recharger la page.
 
-Ce document répond à trois questions :
+Ce document répond à quatre questions :
 
 1. [Quelle est la limite de stockage ?](#1-limite-de-stockage)
 2. [Comment l'iPad se met-il à jour tout seul ?](#2-comment-lipad-se-met-à-jour-tout-seul)
-3. [La procédure, pas à pas](#3-la-procédure-pas-à-pas)
+3. [Comment modifier l'aventure sans se perdre dans les menus ?](#3-modifier-laventure--le-mode-édition)
+4. [Quelle est la procédure, pas à pas ?](#4-la-procédure-pas-à-pas)
 
 ---
 
@@ -97,7 +98,71 @@ Trois garanties :
 
 ---
 
-## 3. La procédure, pas à pas
+## 3. Modifier l'aventure : le mode édition
+
+Naviguer dans treize menus pour changer une phrase, c'est long. Le **mode
+édition** permet de modifier l'aventure **là où on la voit** : on ouvre l'écran
+de l'enfant, et chaque texte, lieu ou créature devient modifiable d'un geste.
+
+### Y entrer
+
+- `/parents` → **« Modifier l'aventure »**, ou
+- `/admin` → **Prévisualiser** → **« Éditer sur place »**.
+
+Un bandeau mauve apparaît en haut : c'est le seul signe que le mode est actif.
+Il indique aussi si le brouillon est enregistré. **« Quitter l'édition »** rend
+l'écran à l'enfant, à l'identique.
+
+> Un enfant ne peut jamais y entrer : le bouton n'existe que pour un
+> administrateur connecté (§93), et le mode n'est pas mémorisé d'une session à
+> l'autre.
+
+### Ce qui se modifie, et où l'on touche
+
+| Sur l'écran | On touche | On modifie |
+| --- | --- | --- |
+| Carte | le crayon sur un lieu | son nom, sa région, ses exercices, sa phrase d'arrivée |
+| Carte | le titre d'une région (en mauve) | le nom de la région, son nom court sur la carte |
+| Centre | le titre du chapitre | le titre, les voix d'ouverture et de fin |
+| Centre | la bulle du Professeur | la quête proposée : titre et répliques |
+| Rencontre | la créature | son nom, son habitat, ses syllabes, sa description, sa voix |
+| Exercice | la consigne | consigne, deux indices, félicitations — et leurs voix |
+| Pokédex | le nom d'une créature | idem créature |
+
+Les textes se saisissent **dans l'enregistreur de voix**, jamais ailleurs :
+c'est le seul point d'entrée pour associer une voix à un texte, et c'est lui qui
+signale une voix devenue obsolète quand le texte change.
+
+### Ce qui reste dans les menus
+
+Le mode édition modifie ce qui existe. **Créer, supprimer, relier** reste dans
+`/admin` : ajouter une créature ou un lieu, composer une Arène, dessiner la
+carte, changer le type ou la difficulté d'un exercice, enregistrer une série de
+voix à la chaîne. Chaque tiroir propose **« Ouvrir dans les menus »** pour y
+aller d'un geste, sur l'élément qu'on regardait.
+
+### Deux vues, un seul brouillon
+
+Le mode édition et les menus écrivent dans **le même brouillon** : ce que vous
+changez d'un côté apparaît immédiatement de l'autre, sans rien à synchroniser.
+Pendant l'édition, les écrans affichent ce brouillon plutôt que la version
+publiée — c'est le mécanisme de « Prévisualiser » (§118).
+
+**Rien n'est publié pour autant.** Tant que vous n'avez pas fait
+`Admin → Releases → Publier` (puis, pour l'iPad, `Envoyer sur le site`),
+l'enfant continue de jouer la version en service.
+
+> **Utilisez un profil de test.** Le mode édition se pose sur une vraie partie :
+> ouvrir une rencontre depuis la carte démarre réellement cette rencontre dans
+> la sauvegarde ouverte. Créez un profil « Test » depuis l'accueil pour explorer
+> l'aventure sans toucher à la progression de votre enfant.
+
+---
+
+## 4. La procédure, pas à pas
+
+Une fois l'aventure modifiée — en mode édition, dans les menus, ou les deux —
+il reste à l'envoyer sur l'iPad.
 
 ### Option A — un bouton (recommandé)
 

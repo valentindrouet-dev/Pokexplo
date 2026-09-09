@@ -55,6 +55,14 @@ export const IconQuest = (p: IconProps) => (
   </IconBase>
 );
 
+/** Crayon : « modifier ». Utilise par le mode edition (§115). */
+export const IconPencil = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M4 20h4l10-10a2.4 2.4 0 0 0-3.4-3.4L4.6 16.6Z" />
+    <path d="m14.2 7.2 2.6 2.6" />
+  </IconBase>
+);
+
 /** Reglages. */
 export const IconSettings = (p: IconProps) => (
   <IconBase {...p}>

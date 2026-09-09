@@ -22,7 +22,7 @@ import {
 } from '../../ui';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { useNavigation } from '../../app/router';
-import { AdminDraftProvider, useAdminDraft } from './AdminDraftContext';
+import { useAdminDraft } from './AdminDraftContext';
 import { DashboardSection } from './sections/DashboardSection';
 import { CreaturesSection } from './sections/CreaturesSection';
 import { ExercisesSection } from './sections/ExercisesSection';
@@ -61,11 +61,9 @@ const NAV: Array<{ id: AdminSection; label: string; icon: React.ReactNode }> = [
 export function AdminApp({ section }: { section: AdminSection }) {
   const { isAdmin } = useAuth();
   if (!isAdmin) return <AdminGate />;
-  return (
-    <AdminDraftProvider>
-      <AdminShell section={section} />
-    </AdminDraftProvider>
-  );
+  // Le brouillon est fourni par `EditModeHost` : menus et mode édition
+  // travaillent ainsi sur le MÊME brouillon, sans rien à synchroniser.
+  return <AdminShell section={section} />;
 }
 
 /** Barriere d'acces : un enfant ne doit pas ouvrir l'Admin par hasard (§93). */

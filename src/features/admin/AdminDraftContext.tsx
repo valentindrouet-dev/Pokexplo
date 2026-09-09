@@ -109,3 +109,11 @@ export function useAdminDraft(): AdminDraftValue {
   if (!context) throw new Error('useAdminDraft doit être utilisé dans <AdminDraftProvider>');
   return context;
 }
+
+/**
+ * Meme brouillon, mais sans exiger le fournisseur : les ecrans de l'enfant
+ * s'affichent normalement hors mode edition, ou aucun brouillon n'est charge.
+ */
+export function useAdminDraftOptional(): AdminDraftValue | null {
+  return use(AdminDraftContext);
+}

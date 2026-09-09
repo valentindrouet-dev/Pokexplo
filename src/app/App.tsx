@@ -15,6 +15,7 @@ import { BadgesScreen } from '../features/play/BadgesScreen';
 import { QuestsScreen } from '../features/quests/QuestsScreen';
 import { GymScreen } from '../features/gyms/GymScreen';
 import { ParentDashboard } from '../features/parent-dashboard/ParentDashboard';
+import { EditModeHost } from '../features/edit-mode/EditModeHost';
 
 // L'Admin et le kit UI ne sont jamais charges par l'enfant : ils sont
 // decoupes en chunks separes pour garder le demarrage rapide sur iPad.
@@ -83,9 +84,12 @@ function Routes() {
 
   return (
     <NavigationProvider value={router}>
-      <div className="app-root" data-surface={isPlayRoute(route) ? 'play' : 'admin'}>
-        <Suspense fallback={<LoadingBall />}>{screen}</Suspense>
-      </div>
+      {/* Le brouillon et le tiroir d'édition n'existent que pour un adulte. */}
+      <EditModeHost>
+        <div className="app-root" data-surface={isPlayRoute(route) ? 'play' : 'admin'}>
+          <Suspense fallback={<LoadingBall />}>{screen}</Suspense>
+        </div>
+      </EditModeHost>
     </NavigationProvider>
   );
 }

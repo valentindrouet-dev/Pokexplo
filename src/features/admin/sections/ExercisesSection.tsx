@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { ExerciseTemplate, HintType, PedagogyCategory, VoiceMessage } from '../../../types';
+import type { TemplateTextField } from '../exerciseText';
 import { generateExercise } from '../../../exercise-engine';
 import { randomSeed } from '../../../utils/rng';
 import { createVoiceMessage } from '../../../utils/voice';
@@ -7,7 +8,8 @@ import { IconRefresh, SecondaryButton, SoftPanel } from '../../../ui';
 import { ExerciseView } from '../../learning/ExerciseView';
 import { useAdminDraft } from '../AdminDraftContext';
 import { EntityPane } from '../EntityPane';
-import { NumberField, SelectField, TextAreaField, TextField } from '../fields';
+import { NumberField, SelectField, TextField } from '../fields';
+import { applyTemplateVoice, templateTextBlocks } from '../exerciseText';
 import { VoiceTextEditor } from '../VoiceTextEditor';
 
 const HINT_TYPES: HintType[] = [
@@ -59,11 +61,13 @@ export function ExercisesSection() {
     }));
   };
 
-  const patchVoice = (next: VoiceMessage): void => {
-    update((current) => ({
-      ...current,
-      voiceMessages: current.voiceMessages.map((voice) => (voice.id === next.id ? next : voice)),
-    }));
+  /**
+   * Le texte affiché et le texte lu sont écrits ENSEMBLE : sans cela, l'enfant
+   * pouvait lire une consigne et en entendre une autre.
+   */
+  const patchTemplateVoice = (field: TemplateTextField, next: VoiceMessage): void => {
+    if (!template) return;
+    update((current) => applyTemplateVoice(current, template.id, field, next));
   };
 
   /** Cree la VoiceMessage manquante d'une matrice (question, indices, reussite). */
@@ -131,43 +135,21 @@ export function ExercisesSection() {
 
           <TypeSpecificFields template={template} patch={patch} />
 
-          <TextAreaField
-            label="Consigne (générique)"
-            value={template.prompt}
-            onChange={(prompt) => patch({ prompt })}
-            hint="Formulez-la sans nommer la créature : une seule voix suffira pour toutes les instances (§57)."
-          />
-          <div className="field__row">
-            <TextField label="Indice 1" value={template.hint1Text} onChange={(hint1Text) => patch({ hint1Text })} />
-            <TextField label="Indice 2" value={template.hint2Text} onChange={(hint2Text) => patch({ hint2Text })} />
-            <TextField
-              label="Réussite"
-              value={template.successText}
-              onChange={(successText) => patch({ successText })}
-            />
-          </div>
-
-          <SoftPanel title="Voix de l’exercice" tone="soft" padding="tight" className="ds-stack">
-            <VoiceTextEditor
-              title="Question"
-              voice={ensureVoice(`voice.ex.${template.id}.q`, template.prompt)}
-              onChange={patchVoice}
-            />
-            <VoiceTextEditor
-              title="Indice 1"
-              voice={ensureVoice(`voice.ex.${template.id}.h1`, template.hint1Text)}
-              onChange={patchVoice}
-            />
-            <VoiceTextEditor
-              title="Indice 2"
-              voice={ensureVoice(`voice.ex.${template.id}.h2`, template.hint2Text)}
-              onChange={patchVoice}
-            />
-            <VoiceTextEditor
-              title="Réussite"
-              voice={ensureVoice(`voice.ex.${template.id}.ok`, template.successText)}
-              onChange={patchVoice}
-            />
+          {/*
+            Les textes destinés à l'enfant se saisissent DANS le VoiceTextEditor,
+            et nulle part ailleurs : c'est le seul point d'entrée pour associer
+            une voix à un texte (CLAUDE.md §3). Formulez la consigne sans nommer
+            la créature — une seule voix couvre alors toutes les instances (§57).
+          */}
+          <SoftPanel title="Textes et voix de l’exercice" tone="soft" padding="tight" className="ds-stack">
+            {templateTextBlocks(template).map((block) => (
+              <VoiceTextEditor
+                key={block.field}
+                title={block.title}
+                voice={ensureVoice(block.voiceId, block.text)}
+                onChange={(next) => patchTemplateVoice(block.field, next)}
+              />
+            ))}
           </SoftPanel>
 
           <SoftPanel title="Aperçu" tone="soft" padding="tight" className="ds-stack">

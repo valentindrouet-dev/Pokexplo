@@ -216,6 +216,34 @@
   color: var(--color-lavender);
 }
 
+/*
+ * Pastille d'édition posée sur un lieu ou une région (mode adulte).
+ * Elle n'apparaît qu'en mode édition : l'enfant ne la voit jamais.
+ */
+.map__edit,
+.map__zone-edit {
+  color: var(--color-text-invert);
+  cursor: pointer;
+  outline: none;
+}
+
+/* Un titre de region modifiable se reconnait a sa couleur d'edition. */
+.map__zone-label--editable {
+  fill: var(--color-lavender);
+}
+
+.map__edit:focus-visible .map__edit-dot,
+.map__zone-edit:focus-visible .map__zone-label--editable {
+  stroke: var(--color-lavender);
+  stroke-width: 1.2;
+}
+
+.map__edit-dot {
+  fill: var(--color-lavender);
+  stroke: var(--color-surface);
+  stroke-width: 0.5;
+}
+
 .map__avatar {
   transition: transform var(--duration-slow) var(--ease-soft);
 }

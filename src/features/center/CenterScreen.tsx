@@ -24,6 +24,7 @@ import { useContent } from '../../app/providers/ContentProvider';
 import { useGame } from '../../app/providers/GameProvider';
 import { useNavigation } from '../../app/router';
 import { PlayScreen } from '../play/PlayScreen';
+import { Editable } from '../edit-mode/Editable';
 
 /**
  * CENTRE POKEMON (CONCEPTION §8).
@@ -106,7 +107,16 @@ export function CenterScreen() {
     >
       <SoftPanel padding="tight" tone="soft">
         <div className="center-chapter">
-          <p className="center-chapter__title">{chapter?.title ?? 'Ton aventure'}</p>
+          {chapter ? (
+            <Editable
+              target={{ kind: 'chapter', id: chapter.id }}
+              label={`le chapitre « ${chapter.title} »`}
+            >
+              <p className="center-chapter__title">{chapter.title}</p>
+            </Editable>
+          ) : (
+            <p className="center-chapter__title">Ton aventure</p>
+          )}
           <ProgressBar value={progress} label="Progression du chapitre" />
           <div className="ds-row">
             <BadgeChip icon={<IconPokedex size={22} />}>{captured} créatures</BadgeChip>
@@ -160,6 +170,10 @@ export function CenterScreen() {
       </div>
 
       {professorOpen ? (
+        <Editable
+          target={objective ? { kind: 'quest', id: objective.id } : { kind: 'chapter', id: chapter?.id ?? '' }}
+          label="ce que dit le Professeur"
+        >
         <DialogCard
           speaker="Professeur"
           portrait={<IconProfessor size={72} />}
@@ -181,6 +195,7 @@ export function CenterScreen() {
             </PrimaryButton>
           }
         />
+        </Editable>
       ) : null}
     </PlayScreen>
   );

@@ -6,6 +6,7 @@ import { CreatureSprite } from '../../components/CreatureSprite';
 import { useAudio } from '../../app/providers/AudioProvider';
 import { useContent } from '../../app/providers/ContentProvider';
 import { cn } from '../../utils/cn';
+import { Editable } from '../edit-mode/Editable';
 import { ExercisePresentationView } from './presentations';
 import './exercise.css';
 
@@ -144,7 +145,13 @@ export function ExerciseView({ instance, onSolved, header, onAttempt }: Exercise
           onPlay={() => speak(instance.promptVoice?.voiceId)}
           label="Écouter la consigne"
         />
-        <p className="exercise__question">{instance.promptText}</p>
+        <Editable
+          target={{ kind: 'template', id: instance.templateId }}
+          label="cet exercice"
+          className="exercise__question-zone"
+        >
+          <p className="exercise__question">{instance.promptText}</p>
+        </Editable>
       </div>
 
       <div className="exercise__stage">
