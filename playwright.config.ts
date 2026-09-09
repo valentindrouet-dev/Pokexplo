@@ -37,6 +37,15 @@ export default defineConfig({
       },
     },
     {
+      // Un iPad se tient aussi debout : meme exigence de lisibilite (§159).
+      name: 'ipad-portrait',
+      use: {
+        ...devices['iPad (gen 7)'],
+        browserName: 'chromium',
+        launchOptions,
+      },
+    },
+    {
       // Resolution plancher imposee par docs/UI_DESIGN.md §159.
       name: 'ipad-1024x768',
       use: {

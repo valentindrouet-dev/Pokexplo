@@ -139,20 +139,49 @@ class ContentServiceImpl {
     };
   }
 
-  /** CONCEPTION §99 — le Master travaille toujours sur un brouillon. */
+  /**
+   * CONCEPTION §99 — le Master travaille toujours sur un brouillon.
+   *
+   * Le brouillon est copie de la version publiee, puis vit sa vie. Quand le
+   * contenu de reference du site avance (nouvelle carte, nouveaux lieux), un
+   * brouillon INTACT est remplace sans bruit : l'administrateur retrouve la
+   * version a jour. Un brouillon MODIFIE n'est jamais ecrase — on signale
+   * seulement qu'il est en retard (`draftStatus`), et c'est a l'adulte de
+   * decider de repartir de la version publiee.
+   */
   async getDraft(): Promise<ContentBundle> {
     const backend = await getBackend();
     const draft = await backend.content.getDraft();
-    if (draft) return draft;
     const published = await this.load();
+
+    if (draft) {
+      let meta = await backend.content.getDraftMeta();
+      if (meta === null) {
+        // Brouillon anterieur a ce suivi : on ignore s'il a ete touche. On le
+        // garde, et on le considere MODIFIE — ainsi, s'il est en retard, c'est
+        // signale a l'adulte plutot qu'ecrase ou passe sous silence.
+        meta = { basedOn: draft.contentVersion, dirty: true };
+        await backend.content.setDraftMeta(meta);
+      }
+      const stale = !meta.dirty && meta.basedOn !== published.bundle.contentVersion;
+      if (!stale) return draft;
+    }
+
     const copy: ContentBundle = deepClone(published.bundle);
     await backend.content.putDraft(copy);
+    await backend.content.setDraftMeta({ basedOn: published.bundle.contentVersion, dirty: false });
     return copy;
   }
 
+  /** Toute ecriture venant de l'Admin marque le brouillon comme travail en cours. */
   async saveDraft(bundle: ContentBundle): Promise<void> {
     const backend = await getBackend();
     await backend.content.putDraft(bundle);
+    const meta = await backend.content.getDraftMeta();
+    await backend.content.setDraftMeta({
+      basedOn: meta?.basedOn ?? bundle.contentVersion,
+      dirty: true,
+    });
   }
 
   async resetDraftFromPublished(): Promise<ContentBundle> {
@@ -160,7 +189,26 @@ class ContentServiceImpl {
     const published = await this.load(true);
     const copy: ContentBundle = deepClone(published.bundle);
     await backend.content.putDraft(copy);
+    await backend.content.setDraftMeta({ basedOn: published.bundle.contentVersion, dirty: false });
     return copy;
+  }
+
+  /**
+   * Le brouillon est-il en retard sur la version publiee ?
+   *
+   * Vrai quand il a ete copie d'un contenu de reference plus ancien que celui
+   * servi aujourd'hui : publier ce brouillon ferait REVENIR l'ancienne carte,
+   * les anciens noms — c'est exactement ce qu'un adulte doit savoir avant.
+   */
+  async draftStatus(): Promise<{ outdated: boolean; basedOn: string | null; published: string }> {
+    const backend = await getBackend();
+    const [meta, published] = await Promise.all([backend.content.getDraftMeta(), this.load()]);
+    const current = published.bundle.contentVersion;
+    return {
+      outdated: meta !== null && meta.basedOn !== current,
+      basedOn: meta?.basedOn ?? null,
+      published: current,
+    };
   }
 
   invalidate(): void {

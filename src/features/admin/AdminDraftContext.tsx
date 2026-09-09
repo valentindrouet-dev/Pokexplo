@@ -23,6 +23,11 @@ export interface AdminDraftValue {
   resetFromPublished: () => Promise<void>;
   /** Remplace entierement le brouillon (import d'un contenu exporte). */
   replaceDraft: (bundle: ContentBundle) => Promise<void>;
+  /**
+   * Le brouillon a ete copie d'un contenu plus ancien que celui publie.
+   * Le publier tel quel ferait revenir l'ancienne version : on previent.
+   */
+  outdated: { basedOn: string | null; published: string } | null;
 }
 
 const AdminDraftContext = createContext<AdminDraftValue | null>(null);
@@ -38,13 +43,20 @@ export function AdminDraftProvider({ children }: { children: ReactNode }) {
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [validation, setValidation] = useState<ValidationReport | null>(null);
+  const [outdated, setOutdated] = useState<AdminDraftValue['outdated']>(null);
   const timer = useRef<number | null>(null);
+
+  const refreshStatus = useCallback(async () => {
+    const status = await ContentService.draftStatus();
+    setOutdated(status.outdated ? { basedOn: status.basedOn, published: status.published } : null);
+  }, []);
 
   const reload = useCallback(async () => {
     const loaded = await ContentService.getDraft();
     setDraft(loaded);
     setValidation(ContentService.validate(loaded));
-  }, []);
+    await refreshStatus();
+  }, [refreshStatus]);
 
   useEffect(() => {
     void reload();
@@ -84,7 +96,8 @@ export function AdminDraftProvider({ children }: { children: ReactNode }) {
     const restored = await ContentService.resetDraftFromPublished();
     setDraft(restored);
     setValidation(ContentService.validate(restored));
-  }, []);
+    await refreshStatus();
+  }, [refreshStatus]);
 
   const value = useMemo<AdminDraftValue>(
     () => ({
@@ -97,8 +110,9 @@ export function AdminDraftProvider({ children }: { children: ReactNode }) {
       reload,
       resetFromPublished,
       replaceDraft,
+      outdated,
     }),
-    [draft, update, saving, savedAt, validation, reload, resetFromPublished, replaceDraft],
+    [draft, update, saving, savedAt, validation, reload, resetFromPublished, replaceDraft, outdated],
   );
 
   return <AdminDraftContext value={value}>{children}</AdminDraftContext>;

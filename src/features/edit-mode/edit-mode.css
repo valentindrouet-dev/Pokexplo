@@ -90,6 +90,10 @@
   color: var(--color-text-soft);
 }
 
+.edit-bar > .draft-outdated {
+  flex: 1 1 100%;
+}
+
 /* Le bandeau porte déjà l'encoche : le contenu n'a plus à la reprendre. */
 .play[data-editing='true'] .play__content {
   padding-top: var(--space-5);

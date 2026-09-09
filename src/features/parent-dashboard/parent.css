@@ -33,9 +33,10 @@
   line-height: var(--line-tight);
 }
 
+/* 3 colonnes en paysage, 2 en portrait : jamais de carte trop etroite. */
 .parent__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   align-content: start;
   gap: var(--space-4);
   flex: 1 1 auto;

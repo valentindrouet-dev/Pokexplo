@@ -140,13 +140,13 @@
   opacity: 0.5;
 }
 
+/* L'ancrage du texte est porte par l'attribut : il depend de l'orientation. */
 .map__zone-label {
   font-family: var(--font-rounded);
   font-size: 3.4px;
   font-weight: var(--weight-heavy);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  text-anchor: middle;
   fill: var(--color-text-soft);
   stroke: var(--color-surface);
   stroke-width: 1;
@@ -266,6 +266,16 @@
   min-height: 0;
 }
 
+/* L'apparition d'une creature se centre dans l'espace libre, quel qu'il soit. */
+.encounter-intro {
+  margin-block: auto;
+}
+
+.encounter-intro .creature-sprite {
+  width: clamp(160px, 26vmin, 240px);
+  height: clamp(160px, 26vmin, 240px);
+}
+
 .encounter__creature {
   display: flex;
   flex-direction: column;
@@ -332,6 +342,45 @@
   align-items: center;
   gap: var(--space-4);
   text-align: center;
+  /* Jamais comprime par le compteur qui suit : il passait par-dessus. */
+  flex: 0 0 auto;
+}
+
+.pokedex__count {
+  flex: 0 0 auto;
+  margin-top: auto;
+  padding-top: var(--space-3);
+}
+
+/*
+ * PORTRAIT : la grille prend le haut, le detail devient une fiche en ligne
+ * (dessin a gauche, texte a droite) pour ne pas voler la place de la grille.
+ */
+@media (orientation: portrait) {
+  .pokedex {
+    grid-template-rows: minmax(0, 3fr) minmax(0, 2fr);
+  }
+
+  .pokedex__detail {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    text-align: left;
+    gap: var(--space-4) var(--space-5);
+  }
+
+  .pokedex__detail > .creature-sprite {
+    width: clamp(120px, 22vmin, 180px);
+    height: clamp(120px, 22vmin, 180px);
+  }
+
+  .pokedex__detail-text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    flex: 1 1 240px;
+    min-width: 0;
+  }
 }
 
 .pokedex__name {

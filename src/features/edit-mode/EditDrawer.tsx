@@ -18,6 +18,7 @@ import { useAdminDraftOptional } from '../admin/AdminDraftContext';
 import { SelectField, TextAreaField, TextField } from '../admin/fields';
 import { applyTemplateVoice, templateTextBlocks } from '../admin/exerciseText';
 import { VoiceTextEditor } from '../admin/VoiceTextEditor';
+import '../admin/forms.css';
 import './edit-mode.css';
 
 /**
@@ -35,7 +36,7 @@ import './edit-mode.css';
  * pour associer une voix à un texte (CLAUDE.md §3), et c'est lui qui marque une
  * voix obsolète quand le texte change.
  */
-export function EditDrawer() {
+export default function EditDrawer() {
   const { target, close } = useEditMode();
   const drafting = useAdminDraftOptional();
   const { navigate } = useNavigation();

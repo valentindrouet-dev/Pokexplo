@@ -21,8 +21,9 @@
   flex: 0 0 auto;
 }
 
+/* La consigne est LA chose a lire sur l'ecran (§144) : taille de titre. */
 .exercise__question {
-  font-size: var(--text-large);
+  font-size: var(--title);
   font-weight: var(--weight-heavy);
   line-height: var(--line-tight);
   max-width: 22ch;
@@ -41,6 +42,15 @@
   flex: 1 1 auto;
   min-height: var(--stage-min);
   overflow: hidden;
+}
+
+/*
+ * Une creature seule sur la scene grandit avec l'ecran, dans les deux sens :
+ * en portrait la scene est haute, et un dessin de 160 px y flottait perdu.
+ */
+.exercise__stage > .creature-sprite {
+  width: clamp(140px, 28vmin, 240px);
+  height: clamp(140px, 28vmin, 240px);
 }
 
 .exercise__answers {
@@ -86,6 +96,12 @@
   position: absolute;
   transform: translate(-50%, -50%);
   transition: transform var(--duration-fast) var(--ease-soft);
+}
+
+/* Les creatures a compter grandissent avec la scene, dans les deux sens. */
+.stage-group__item > .creature-sprite {
+  width: clamp(60px, 11vmin, 120px);
+  height: clamp(60px, 11vmin, 120px);
 }
 
 .stage-group__item[data-highlight='true'] {

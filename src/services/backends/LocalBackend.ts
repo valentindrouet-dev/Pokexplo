@@ -10,6 +10,7 @@ import type {
 import { db, STORES } from '../db';
 import type {
   AuthPort,
+  DraftMeta,
   Backend,
   ContentPort,
   MediaPort,
@@ -20,6 +21,7 @@ import type {
 
 const KEY_META = 'meta';
 const KEY_DRAFT = 'draft';
+const KEY_DRAFT_META = 'draftMeta';
 const KEY_ROLE = 'pokexplo.role';
 
 /**
@@ -91,6 +93,8 @@ const content: ContentPort = {
   putRelease: (release: ContentRelease) => db().put(STORES.releases, release.id, release),
   getDraft: () => db().get<ContentBundle>(STORES.kv, KEY_DRAFT).then((value) => value ?? null),
   putDraft: (bundle: ContentBundle) => db().put(STORES.kv, KEY_DRAFT, bundle),
+  getDraftMeta: () => db().get<DraftMeta>(STORES.kv, KEY_DRAFT_META).then((value) => value ?? null),
+  setDraftMeta: (meta: DraftMeta) => db().put(STORES.kv, KEY_DRAFT_META, meta),
 };
 
 const saves: SavePort = {

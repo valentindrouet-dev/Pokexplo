@@ -58,6 +58,7 @@ export function PokedexScreen() {
   return (
     <PlayScreen scrim="soft">
       <TwoPaneLayout
+        className="pokedex"
         leftLabel="Créatures"
         rightLabel="Détail"
         left={
@@ -102,6 +103,7 @@ export function PokedexScreen() {
                   silhouette={selectedState === 'UNKNOWN'}
                   animated={selectedState === 'CAPTURED'}
                 />
+                <div className="pokedex__detail-text">
                 <Editable
                   target={{ kind: 'creature', id: selected.id }}
                   label={`la créature ${selected.name}`}
@@ -134,9 +136,10 @@ export function PokedexScreen() {
                     )}
                   </>
                 )}
+                </div>
               </div>
             ) : null}
-            <p className="start__subtitle">
+            <p className="start__subtitle pokedex__count">
               {captured} / {bundle.creatures.length} créatures attrapées
             </p>
           </SoftPanel>

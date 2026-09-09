@@ -23,6 +23,7 @@ import {
 import { useAuth } from '../../app/providers/AuthProvider';
 import { useNavigation } from '../../app/router';
 import { useAdminDraft } from './AdminDraftContext';
+import { DraftOutdatedNotice } from './DraftOutdatedNotice';
 import { DashboardSection } from './sections/DashboardSection';
 import { CreaturesSection } from './sections/CreaturesSection';
 import { ExercisesSection } from './sections/ExercisesSection';
@@ -36,6 +37,7 @@ import { ReleasesSection } from './sections/ReleasesSection';
 import { ProfilesSection } from './sections/ProfilesSection';
 import { ProgressSection } from './sections/ProgressSection';
 import { PreviewSection } from './sections/PreviewSection';
+import './forms.css';
 import './admin.css';
 
 /** Version installee : elle doit etre lisible sans ouvrir les reglages. */
@@ -179,6 +181,8 @@ function AdminShell({ section }: { section: AdminSection }) {
               : ''}
           </span>
         </div>
+
+        <DraftOutdatedNotice />
 
         {!draft ? <LoadingBall message="Chargement du contenu…" /> : <AdminSectionView section={section} />}
       </main>

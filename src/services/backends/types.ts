@@ -36,6 +36,19 @@ export interface AuthPort {
   signOutAdmin(): Promise<SessionUser>;
 }
 
+/**
+ * Ce que l'on sait du brouillon en plus de son contenu.
+ *
+ * `basedOn` est la version du contenu dont il a ete copie ; `dirty` dit si
+ * l'administrateur l'a modifie depuis. C'est ce qui permet de remplacer un
+ * brouillon intact par un contenu de reference plus recent, sans jamais
+ * ecraser un travail en cours.
+ */
+export interface DraftMeta {
+  basedOn: string;
+  dirty: boolean;
+}
+
 export interface ContentPort {
   getMeta(): Promise<AppMeta | null>;
   setMeta(meta: AppMeta): Promise<void>;
@@ -44,6 +57,8 @@ export interface ContentPort {
   putRelease(release: ContentRelease): Promise<void>;
   getDraft(): Promise<ContentBundle | null>;
   putDraft(bundle: ContentBundle): Promise<void>;
+  getDraftMeta(): Promise<DraftMeta | null>;
+  setDraftMeta(meta: DraftMeta): Promise<void>;
 }
 
 export interface SavePort {

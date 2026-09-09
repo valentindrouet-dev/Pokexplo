@@ -16,25 +16,6 @@
   min-height: 0;
 }
 
-@media (max-width: 900px) {
-  .admin {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
-  }
-}
-
-.admin__nav {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-3);
-  padding-top: calc(var(--space-3) + var(--safe-top));
-  padding-bottom: calc(var(--space-3) + var(--safe-bottom));
-  background: var(--color-surface-soft);
-  border-right: var(--border-hairline);
-  min-height: 0;
-  overflow: hidden;
-}
 
 .admin__nav-list {
   display: flex;
@@ -157,10 +138,6 @@
   flex-wrap: wrap;
 }
 
-.admin__status {
-  font-size: var(--text-small);
-  color: var(--color-text-soft);
-}
 
 .admin__cards {
   display: grid;
@@ -215,191 +192,91 @@
   flex-shrink: 0;
 }
 
-.admin__issue {
-  flex: 0 0 auto;
-  display: flex;
-  gap: var(--space-3);
-  align-items: flex-start;
-  padding: var(--space-3);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-soft);
-  font-size: var(--text-small);
-}
-
-.admin__issue--error {
-  background: var(--color-coral-soft);
-}
-
-/* ----------------------------- champs ----------------------------- */
-
-.field {
+.admin__nav {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  margin-bottom: var(--space-4);
-}
-
-.field__label {
-  font-size: var(--text-small);
-  font-weight: var(--weight-bold);
-  color: var(--color-text-soft);
-}
-
-.field__input,
-.field__select,
-.field__textarea {
-  width: 100%;
-  min-height: var(--touch-min);
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-md);
-  border: var(--border-hairline-strong);
-  background: var(--color-surface);
-  font-size: var(--text-normal);
-  font-family: var(--font-rounded);
-}
-
-.field__textarea {
-  min-height: calc(var(--touch-min) * 2);
-  resize: vertical;
-  line-height: var(--line-normal);
-}
-
-.field__row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: var(--space-4);
-}
-
-/* ------------------------ VoiceTextEditor ------------------------- */
-
-.vte {
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  padding-top: calc(var(--space-3) + var(--safe-top));
+  padding-bottom: calc(var(--space-3) + var(--safe-bottom));
   background: var(--color-surface-soft);
-  border: var(--border-hairline);
+  border-right: var(--border-hairline);
+  min-height: 0;
+  overflow: hidden;
 }
 
-.vte__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  flex-wrap: wrap;
-}
+/*
+ * PORTRAIT (ou ecran etroit) : la colonne devient un BANDEAU.
+ *
+ * Empilee au-dessus du contenu, la liste des treize sections occupait
+ * 700 px de hauteur et ne laissait qu'un tiers de l'ecran aux formulaires.
+ * Ici : une ligne identite + sorties, puis une rangee de sections qui defile
+ * horizontalement. Une centaine de pixels, et tout le reste au contenu.
+ */
+@media (max-width: 900px) {
+  .admin {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
 
-.vte__title {
-  font-size: var(--text-small);
-  font-weight: var(--weight-heavy);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--color-text-soft);
-}
+  .admin__nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-3);
+    padding-bottom: var(--space-2);
+    border-right: none;
+    border-bottom: var(--border-hairline);
+  }
 
-.vte__status {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-pill);
-  font-size: var(--text-small);
-  font-weight: var(--weight-bold);
-  background: var(--color-surface-muted);
-}
+  .admin__head {
+    flex-direction: row;
+    align-items: baseline;
+    gap: var(--space-2);
+    margin: 0 auto 0 0;
+  }
 
-.vte__status--ok {
-  background: var(--color-green-soft);
-}
+  /* Ligne 1 : identite + sorties (sur une seule ligne) ; ligne 2 : sections. */
+  .admin__nav-actions {
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+    padding-top: 0;
+    border-top: none;
+  }
 
-.vte__status--outdated {
-  background: var(--color-yellow-soft);
-}
+  .admin__nav-actions > button {
+    flex: 0 0 auto;
+    padding: 0 var(--space-3);
+  }
 
-.vte__status--missing {
-  background: var(--color-coral-soft);
-}
+  .admin__nav-list {
+    flex-direction: row;
+    /* `0 0 100%` et non `1 1` : un item qui peut retrecir se glisse sur la
+       ligne de l'identite au lieu de passer en dessous. */
+    flex: 0 0 100%;
+    /* Un item flex ne retrecit pas sous son contenu : sans `min-width: 0`
+       et `width: 100%`, la rangee s'etirait sur 1 500 px et se faisait rogner
+       au lieu de defiler — les dernieres sections devenaient inatteignables. */
+    width: 100%;
+    min-width: 0;
+    order: 2;
+    align-items: center;
+    gap: var(--space-2);
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: var(--space-1);
+    scroll-snap-type: x proximity;
+  }
 
-.vte__actions {
-  display: flex;
-  gap: var(--space-3);
-  flex-wrap: wrap;
-  align-items: center;
-}
+  .admin__nav-item {
+    width: auto;
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+  }
 
-.vte__warning {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3);
-  border-radius: var(--radius-md);
-  background: var(--color-yellow-soft);
-  font-size: var(--text-small);
-  font-weight: var(--weight-bold);
-}
-
-.vte__take {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  flex-wrap: wrap;
-  padding: var(--space-3);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-}
-
-.vte__hidden-input {
-  display: none;
-}
-
-/* Prompteur plein ecran pendant l'enregistrement (§41). */
-.prompter {
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-modal);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-6);
-  padding: var(--space-7);
-  padding-top: calc(var(--space-7) + var(--safe-top));
-  padding-bottom: calc(var(--space-7) + var(--safe-bottom));
-  background: var(--color-surface);
-  text-align: center;
-}
-
-.prompter__head {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  font-size: var(--text-large);
-  font-weight: var(--weight-heavy);
-  color: var(--color-coral);
-}
-
-.prompter__timer {
-  font-variant-numeric: tabular-nums;
-  color: var(--color-text);
-}
-
-.prompter__text {
-  font-size: clamp(32px, 5vw, 56px);
-  font-weight: var(--weight-heavy);
-  line-height: var(--line-tight);
-  max-width: 18ch;
-  text-transform: uppercase;
-}
-
-.dubbing {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.dubbing__counter {
-  font-size: var(--text-large);
-  font-weight: var(--weight-heavy);
+  /* Liste + formulaire empiles : la liste ne doit pas repousser le formulaire
+     au-dela de l'ecran. */
+  .admin__scroll-list {
+    max-height: 28vh;
+  }
 }

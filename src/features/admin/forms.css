@@ -1,0 +1,216 @@
+/*
+ * FORMULAIRES ADULTES — partagés par les menus de /admin ET le mode édition.
+ *
+ * Ces styles ne peuvent PAS vivre dans admin.css : ce fichier n'est chargé
+ * qu'avec le chunk /admin, et le tiroir d'édition s'ouvre sur les écrans de
+ * l'enfant sans jamais passer par là. Sans eux, le tiroir s'affichait brut —
+ * champs en ligne, police du jeu, sélecteur de fichier visible.
+ *
+ * Toutes les valeurs viennent de tokens.css (§181) ; l'échelle dense est
+ * fournie par `.surface-dense` sur le conteneur.
+ */
+
+.admin__status {
+  font-size: var(--text-small);
+  color: var(--color-text-soft);
+}
+
+.admin__issue {
+  flex: 0 0 auto;
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+  font-size: var(--text-small);
+}
+
+.admin__issue--error {
+  background: var(--color-coral-soft);
+}
+
+/* ----------------------------- champs ----------------------------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.field__label {
+  font-size: var(--text-small);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-soft);
+}
+
+.field__input,
+.field__select,
+.field__textarea {
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  border: var(--border-hairline-strong);
+  background: var(--color-surface);
+  font-size: var(--text-normal);
+  font-family: var(--font-rounded);
+}
+
+.field__textarea {
+  min-height: calc(var(--touch-min) * 2);
+  resize: vertical;
+  line-height: var(--line-normal);
+}
+
+.field__row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-4);
+}
+
+/* ------------------------ VoiceTextEditor ------------------------- */
+
+.vte {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-soft);
+  border: var(--border-hairline);
+}
+
+.vte__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.vte__title {
+  font-size: var(--text-small);
+  font-weight: var(--weight-heavy);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-soft);
+}
+
+.vte__status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-small);
+  font-weight: var(--weight-bold);
+  background: var(--color-surface-muted);
+}
+
+.vte__status--ok {
+  background: var(--color-green-soft);
+}
+
+.vte__status--outdated {
+  background: var(--color-yellow-soft);
+}
+
+.vte__status--missing {
+  background: var(--color-coral-soft);
+}
+
+.vte__actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.vte__warning {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-yellow-soft);
+  font-size: var(--text-small);
+  font-weight: var(--weight-bold);
+}
+
+.vte__take {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.vte__hidden-input {
+  display: none;
+}
+
+/* Prompteur plein ecran pendant l'enregistrement (§41). */
+.prompter {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  padding: var(--space-7);
+  padding-top: calc(var(--space-7) + var(--safe-top));
+  padding-bottom: calc(var(--space-7) + var(--safe-bottom));
+  background: var(--color-surface);
+  text-align: center;
+}
+
+.prompter__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  font-size: var(--text-large);
+  font-weight: var(--weight-heavy);
+  color: var(--color-coral);
+}
+
+.prompter__timer {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
+.prompter__text {
+  font-size: clamp(32px, 5vw, 56px);
+  font-weight: var(--weight-heavy);
+  line-height: var(--line-tight);
+  max-width: 18ch;
+  text-transform: uppercase;
+}
+
+.dubbing {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.dubbing__counter {
+  font-size: var(--text-large);
+  font-weight: var(--weight-heavy);
+}
+
+/* Avertissement « brouillon en retard » : texte souple, action a droite. */
+.draft-outdated {
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.draft-outdated__text {
+  flex: 1 1 240px;
+  min-width: 0;
+}

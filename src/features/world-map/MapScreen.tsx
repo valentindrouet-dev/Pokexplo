@@ -25,15 +25,75 @@ import { useGame } from '../../app/providers/GameProvider';
 import { useNavigation } from '../../app/router';
 import { useEditMode } from '../../app/providers/EditModeProvider';
 import { PlayScreen } from '../play/PlayScreen';
+import { useOrientation, type Orientation } from '../../utils/useOrientation';
 
 /**
- * La carte est dessinee dans un repere 160 x 100 (paysage), alors que les
- * positions du contenu sont en pourcentage (§159). `SCALE_X` fait le pont :
- * l'administrateur continue de raisonner en pourcentages.
+ * PROJECTION DE LA CARTE.
+ *
+ * Les positions du contenu sont en pourcentage (§159) ; l'administrateur
+ * raisonne toujours ainsi. L'ecran, lui, change de forme :
+ *
+ *  - PAYSAGE  : repere 160 x 100, le chemin Centre → Arene va vers la droite ;
+ *  - PORTRAIT : repere 100 x 150, la carte est TRANSPOSEE — le meme chemin
+ *    descend. Sans cela, la carte paysage flottait, minuscule, au milieu d'un
+ *    panneau vide, et les lieux devenaient trop petits pour un enfant.
+ *
+ * Toutes les tailles (rayons, textes, traits) sont en unites du repere : elles
+ * grandissent donc avec le panneau, dans les deux sens.
  */
-const VIEW_W = 160;
-const VIEW_H = 100;
-const SCALE_X = VIEW_W / 100;
+interface Point {
+  x: number;
+  y: number;
+}
+
+interface ZoneLabel extends Point {
+  anchor: 'start' | 'middle' | 'end';
+}
+
+interface Projection {
+  w: number;
+  h: number;
+  toView: (node: { x: number; y: number }) => Point;
+  /**
+   * Position du titre d'une region. `points` sont ses lieux, `all` tous les
+   * lieux de la carte : on s'en sert pour poser le titre du cote libre.
+   */
+  labelFor: (points: Point[], all: Point[]) => ZoneLabel;
+}
+
+const PROJECTIONS: Record<Orientation, Projection> = {
+  landscape: {
+    w: 160,
+    h: 100,
+    toView: (node) => ({ x: node.x * 1.6, y: node.y }),
+    // Au-dessus du lieu le plus a gauche : le milieu d'une bulle est souvent
+    // traverse par un chemin, qui couperait le titre.
+    labelFor: (points) => {
+      const left = points.reduce((best, point) => (point.x < best.x ? point : best), points[0]!);
+      return { x: left.x, y: Math.max(4, left.y - ZONE_R - 3), anchor: 'middle' };
+    },
+  },
+  portrait: {
+    w: 100,
+    h: 150,
+    // Marges : le personnage se tient AU-DESSUS du lieu courant (§11), et les
+    // bulles de region ne doivent pas affleurer les bords du cadre.
+    toView: (node) => ({ x: 6 + node.y * 0.88, y: 12 + node.x * 1.34 }),
+    // Les regions s'empilent : un titre « au-dessus » tomberait sur la region
+    // precedente. On le pose A COTE du lieu le plus haut, du cote ou la carte
+    // est vide — a l'oppose de l'axe des lieux.
+    labelFor: (points, all) => {
+      const top = points.reduce((best, point) => (point.y < best.y ? point : best), points[0]!);
+      const axis = all.reduce((sum, point) => sum + point.x, 0) / Math.max(1, all.length);
+      const right = top.x >= axis;
+      return {
+        x: right ? Math.min(96, top.x + NODE_R + 4) : Math.max(4, top.x - NODE_R - 4),
+        y: top.y - 1.5,
+        anchor: right ? 'start' : 'end',
+      };
+    },
+  },
+};
 
 const NODE_R = 5.6;
 const NODE_R_GYM = 6.6;
@@ -133,11 +193,6 @@ function MapEditBadge({
   );
 }
 
-interface Point {
-  x: number;
-  y: number;
-}
-
 interface Zone {
   points: Point[];
   inner: Array<{ a: Point; b: Point }>;
@@ -180,10 +235,6 @@ function ZoneShape({
   );
 }
 
-function toView(node: MapNode): Point {
-  return { x: node.x * SCALE_X, y: node.y };
-}
-
 /**
  * CARTE DU MONDE (CONCEPTION §10-11).
  *
@@ -203,6 +254,8 @@ export function MapScreen() {
   const { speak, buttonState } = useAudio();
   const [walking, setWalking] = useState<string[] | null>(null);
   const [step, setStep] = useState(0);
+  const orientation = useOrientation();
+  const { w: VIEW_W, h: VIEW_H, toView, labelFor } = PROJECTIONS[orientation];
 
   const states = useMemo(() => {
     if (!bundle || !save) return new Map<string, NodeState>();
@@ -239,9 +292,6 @@ export function MapScreen() {
         const inner = links
           .filter((link) => link.from.biomeId === item.id && link.to.biomeId === item.id)
           .map((link) => ({ a: toView(link.from), b: toView(link.to) }));
-        // On ancre l'etiquette sur le lieu le plus a gauche : le milieu d'une
-        // bulle est souvent traverse par un chemin, qui couperait le titre.
-        const anchor = points.reduce((left, point) => (point.x < left.x ? point : left), points[0]!);
         return {
           biome: item,
           points,
@@ -249,11 +299,11 @@ export function MapScreen() {
           // Une region d'un seul lieu n'a pas besoin d'etiquette : le nom du
           // lieu, juste en dessous, suffit et evite un chevauchement.
           showLabel: nodes.length > 1,
-          label: { x: anchor.x, y: Math.max(4, anchor.y - ZONE_R - 3) },
+          label: labelFor(points, bundle.nodes.map(toView)),
         };
       })
       .filter((zone): zone is NonNullable<typeof zone> => zone !== null);
-  }, [bundle, links]);
+  }, [bundle, links, toView, labelFor]);
 
   const currentNode = bundle?.nodes.find((node) => node.id === save?.state.currentNode) ?? null;
   const currentBiome = biome(currentNode?.biomeId);
@@ -403,7 +453,13 @@ export function MapScreen() {
                     }}
                   >
                     <rect
-                      x={zone.label.x - 24}
+                      x={
+                        zone.label.anchor === 'start'
+                          ? zone.label.x
+                          : zone.label.anchor === 'end'
+                            ? zone.label.x - 48
+                            : zone.label.x - 24
+                      }
                       y={zone.label.y - 4.6}
                       width={48}
                       height={6.4}
@@ -413,12 +469,18 @@ export function MapScreen() {
                       className="map__zone-label map__zone-label--editable"
                       x={zone.label.x}
                       y={zone.label.y}
+                      textAnchor={zone.label.anchor}
                     >
                       {zone.biome.shortName ?? zone.biome.name}
                     </text>
                   </g>
                 ) : (
-                  <text className="map__zone-label" x={zone.label.x} y={zone.label.y}>
+                  <text
+                    className="map__zone-label"
+                    x={zone.label.x}
+                    y={zone.label.y}
+                    textAnchor={zone.label.anchor}
+                  >
                     {zone.biome.shortName ?? zone.biome.name}
                   </text>
                 )}

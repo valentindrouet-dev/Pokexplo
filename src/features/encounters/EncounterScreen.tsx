@@ -157,7 +157,7 @@ export function EncounterScreen({ nodeId }: { nodeId: string }) {
       }
     >
       {phase === 'intro' ? (
-        <SoftPanel padding="roomy" animated>
+        <SoftPanel padding="roomy" animated className="encounter-intro">
           <div className="encounter__creature">
             {/* La créature rencontrée se modifie ici même : nom, description, voix. */}
             <Editable

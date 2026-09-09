@@ -80,7 +80,7 @@ exercices, les Arènes, les quêtes et l'histoire.
 - Ne pas surcharger l'écran de texte (1 à 3 lignes maximum côté enfant).
 - Toute sélection doit être identifiable **autrement que par la couleur**
   (pointeur `SelectionPointer` + variation de taille).
-- Tester à **1024 × 768** et en **paysage iPad**. Respecter les `safe-area`.
+- Tester à **1024 × 768**, en **paysage** et en **portrait** iPad. Respecter les `safe-area`.
 - **Ne pas copier l'interface ou les assets de Pokopia** : uniquement son langage visuel.
 
 ---
@@ -113,7 +113,7 @@ npm run dev         # développement (http://localhost:5173)
 npm run typecheck   # TypeScript strict
 npm run lint        # ESLint (0 warning toléré)
 npm run test        # Vitest (unitaires + RTL)
-npm run e2e         # Playwright (iPad paysage + 1024x768)
+npm run e2e         # Playwright (iPad paysage, iPad portrait, 1024x768)
 npm run build       # build de production (dist/)
 npm run verify      # tout ce qui précède, dans l'ordre de la CI
 ```

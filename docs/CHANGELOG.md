@@ -4,6 +4,47 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 Trois versions sont suivies séparément (§112) : `APP_VERSION`, `CONTENT_VERSION`,
 `SAVE_SCHEMA_VERSION`.
 
+## [1.3.0] — iPad en portrait, et le tiroir d'édition partout
+
+`APP_VERSION 1.3.0` · `CONTENT_VERSION bundled-3` · `SAVE_SCHEMA_VERSION 3`
+
+### Corrigé
+
+- **Le tiroir d'édition s'affichait brut** (champs en ligne, police du jeu,
+  sélecteur de fichier visible) dès qu'on entrait en mode édition sans être
+  passé par `/admin` : ses styles ne vivaient que dans le chunk de l'Admin.
+  Les formulaires adultes sont désormais dans `forms.css`, chargé par les
+  deux surfaces ; le tiroir est chargé à la demande.
+- **Les menus déroulants ne s'ouvraient pas sur iPad** hors de `/admin` :
+  `user-select: none` posé sur `body` pour l'enfant bloquait les `<select>`
+  et les champs. Les contrôles de formulaire gardent la sélection partout.
+- **Un brouillon périmé ne suivait jamais le contenu du site** : après une
+  mise à jour de l'application, l'Admin montrait l'ancienne carte et publier
+  l'aurait fait revenir. Un brouillon intact est remplacé sans bruit ; un
+  brouillon modifié est conservé et **signalé**, avec un bouton pour repartir
+  de la version publiée — dans les menus comme en mode édition.
+- Dans la colonne qui défile de l'Admin, un panneau plus haut que l'écran
+  était comprimé et son texte passait sous le suivant.
+
+### Modifié — l'iPad se tient dans les deux sens
+
+- **Typographie indexée sur le grand côté de l'écran** (`vmax`) : en portrait,
+  les textes tombaient à leur minimum alors que l'écran offre plus de place.
+  Les deux orientations donnent maintenant les mêmes tailles.
+- **Carte transposée en portrait** : le chemin Centre → Arène descend au lieu
+  d'aller à droite ; les lieux sont plus gros, le cadre est rempli, les titres
+  de région se posent du côté libre.
+- **Admin en portrait** : la navigation devient un bandeau compact (une rangée
+  de sections qui défile) au lieu d'une colonne de 700 px.
+- **Pokédex en portrait** : la grille prend le haut, la fiche devient une
+  ligne (dessin à gauche, texte à droite), le compteur ne chevauche plus rien.
+- **Exercices** : la consigne passe à la taille de titre ; les créatures de la
+  scène grandissent avec l'écran, dans les deux sens.
+- Espace parents : deux colonnes en portrait, trois en paysage.
+- Les tests e2e s'exécutent aussi en **portrait** (`ipad-portrait`), avec
+  des garde-fous dédiés : remplissage de la carte, taille de la consigne,
+  compacité de l'Admin, non-chevauchement du Pokédex.
+
 ## [1.2.0] — Mode édition
 
 `APP_VERSION 1.2.0` · `CONTENT_VERSION bundled-3` · `SAVE_SCHEMA_VERSION 3`

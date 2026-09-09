@@ -2,6 +2,8 @@ import { SecondaryButton } from '../../ui';
 import { useEditMode } from '../../app/providers/EditModeProvider';
 import { useNavigation } from '../../app/router';
 import { useAdminDraftOptional } from '../admin/AdminDraftContext';
+import { DraftOutdatedNotice } from '../admin/DraftOutdatedNotice';
+import '../admin/forms.css';
 import './edit-mode.css';
 
 /**
@@ -36,6 +38,7 @@ export function EditModeBar() {
         Menus
       </SecondaryButton>
       <SecondaryButton onClick={() => setEditing(false)}>Quitter l’édition</SecondaryButton>
+      <DraftOutdatedNotice />
     </div>
   );
 }

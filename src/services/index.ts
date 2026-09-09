@@ -19,4 +19,4 @@ export type { GitHubTarget, SitePublishResult } from './SitePublishService';
 export { ReleaseService } from './ReleaseService';
 export type { PublishResult } from './ReleaseService';
 export { getBackend, setBackend, localBackend, LOCAL_ADMIN_CODE } from './backends';
-export type { Backend, AdminCredentials, SessionUser, UserRole, MediaRecordMeta } from './backends';
+export type { Backend, AdminCredentials, DraftMeta, SessionUser, UserRole, MediaRecordMeta } from './backends';

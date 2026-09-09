@@ -97,15 +97,22 @@ export function spokenUtterances(): FakeUtterance[] {
   return spoken;
 }
 
+/*
+ * `matchMedia` : une vraie fonction, pas un `vi.fn()` — `restoreMocks` le
+ * remettrait a zero entre deux tests et il renverrait alors `undefined`.
+ */
 if (!window.matchMedia) {
-  window.matchMedia = vi.fn().mockImplementation((query: string) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  }));
+  window.matchMedia = (query: string): MediaQueryList =>
+    ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+      addListener: () => undefined,
+      removeListener: () => undefined,
+      dispatchEvent: () => false,
+    }) as unknown as MediaQueryList;
 }
 
 afterEach(() => {

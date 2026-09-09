@@ -13,6 +13,7 @@ import type {
   AuthPort,
   Backend,
   ContentPort,
+  DraftMeta,
   MediaPort,
   MediaRecordMeta,
   SavePort,
@@ -237,7 +238,21 @@ const contentPort: ContentPort = {
   },
   async putDraft(bundle) {
     const { firestore, db } = await fb();
-    await firestore.setDoc(firestore.doc(db, 'meta', 'draft'), { bundle, updatedAt: Date.now() });
+    await firestore.setDoc(
+      firestore.doc(db, 'meta', 'draft'),
+      { bundle, updatedAt: Date.now() },
+      { merge: true },
+    );
+  },
+  async getDraftMeta() {
+    const { firestore, db } = await fb();
+    const snapshot = await firestore.getDoc(firestore.doc(db, 'meta', 'draft'));
+    const data = snapshot.data() as { draftMeta?: DraftMeta } | undefined;
+    return data?.draftMeta ?? null;
+  },
+  async setDraftMeta(meta) {
+    const { firestore, db } = await fb();
+    await firestore.setDoc(firestore.doc(db, 'meta', 'draft'), { draftMeta: meta }, { merge: true });
   },
 };
 

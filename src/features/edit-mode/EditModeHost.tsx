@@ -1,10 +1,16 @@
-import { useEffect, type ReactNode } from 'react';
+import { Suspense, lazy, useEffect, type ReactNode } from 'react';
 import { useAuth } from '../../app/providers/AuthProvider';
 import { useContent } from '../../app/providers/ContentProvider';
 import { useEditMode } from '../../app/providers/EditModeProvider';
 import { useNavigation } from '../../app/router';
 import { AdminDraftProvider, useAdminDraft } from '../admin/AdminDraftContext';
-import { EditDrawer } from './EditDrawer';
+
+/*
+ * Le tiroir embarque les formulaires adultes (VoiceTextEditor, champs) : on
+ * ne les fait entrer dans le bundle de l'enfant que si un administrateur
+ * ouvre effectivement quelque chose.
+ */
+const EditDrawer = lazy(() => import('./EditDrawer'));
 
 /**
  * Rend le BROUILLON disponible partout où l'on peut éditer.
@@ -51,7 +57,9 @@ function DraftPreviewBridge({ children }: { children: ReactNode }) {
   return (
     <>
       {children}
-      <EditDrawer />
+      <Suspense fallback={null}>
+        <EditDrawer />
+      </Suspense>
     </>
   );
 }

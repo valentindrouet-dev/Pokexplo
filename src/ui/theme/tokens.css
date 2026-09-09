@@ -98,11 +98,17 @@
   /* ---------------- TYPOGRAPHIE (§143-145) ---------------- */
   --font-rounded: ui-rounded, 'SF Pro Rounded', 'Arial Rounded MT Bold', 'Nunito',
     system-ui, -apple-system, sans-serif;
-  --text-small: clamp(16px, 1.7vw, 18px);
-  --text-normal: clamp(19px, 2.1vw, 22px);
-  --text-large: clamp(24px, 2.7vw, 28px);
-  --title: clamp(28px, 3.3vw, 34px);
-  --hero-title: clamp(34px, 4.2vw, 42px);
+  /*
+   * `vmax` et non `vw` : un iPad se tient dans les deux sens. Indexee sur la
+   * largeur, la typographie tombait a son minimum en portrait alors que
+   * l'ecran y offre PLUS de place. Avec le grand cote, les deux orientations
+   * donnent les memes tailles.
+   */
+  --text-small: clamp(16px, 1.7vmax, 18px);
+  --text-normal: clamp(19px, 2.1vmax, 22px);
+  --text-large: clamp(24px, 2.7vmax, 28px);
+  --title: clamp(28px, 3.3vmax, 34px);
+  --hero-title: clamp(34px, 4.2vmax, 42px);
   --weight-regular: 500;
   --weight-bold: 700;
   --weight-heavy: 800;

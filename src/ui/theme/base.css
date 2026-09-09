@@ -32,8 +32,19 @@ body {
   touch-action: manipulation;
 }
 
-/* L'admin est une interface adulte : la selection de texte y est utile. */
-body[data-surface='admin'] {
+/*
+ * Les surfaces adultes gardent la selection de texte : l'admin, mais aussi le
+ * tiroir d'edition pose sur l'ecran de l'enfant.
+ *
+ * Les controles de formulaire la gardent PARTOUT : sur iPadOS, un <select> ou
+ * un champ herite d'un `user-select: none` n'ouvre pas son selecteur et
+ * n'affiche pas de curseur — « les menus deroulants ne deroulent pas ».
+ */
+body[data-surface='admin'],
+.surface-dense,
+input,
+textarea,
+select {
   -webkit-user-select: auto;
   user-select: auto;
 }

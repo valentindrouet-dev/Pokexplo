@@ -217,6 +217,92 @@ test('le mode édition se pose sur l’écran de l’enfant sans le masquer', as
   await expect(page.getByRole('button', { name: /^Modifier le lieu/ })).toHaveCount(0);
 });
 
+/*
+ * ORIENTATION (docs/UI_DESIGN.md §159, retours iPad).
+ *
+ * Un iPad se tient dans les deux sens. Ces garde-fous s'executent dans les
+ * projets paysage ET portrait : ce qui suit doit tenir quel que soit le sens.
+ */
+
+test('la carte remplit son cadre dans les deux orientations', async ({ page }) => {
+  await boot(page);
+  await page.getByRole('button', { name: 'Partir !' }).click();
+  await expect(page.getByRole('button', { name: /Prairie — à explorer/ })).toBeVisible();
+
+  // Regression : en portrait, la carte paysage flottait, minuscule, au milieu
+  // d'un panneau vide. On mesure la part du cadre reellement occupee.
+  const fill = await page.evaluate(() => {
+    const panel = document.querySelector('.map')!.getBoundingClientRect();
+    const nodes = Array.from(document.querySelectorAll<SVGGElement>('.map__node')).map((node) =>
+      node.getBoundingClientRect(),
+    );
+    const left = Math.min(...nodes.map((r) => r.left));
+    const right = Math.max(...nodes.map((r) => r.right));
+    const top = Math.min(...nodes.map((r) => r.top));
+    const bottom = Math.max(...nodes.map((r) => r.bottom));
+    return {
+      width: (right - left) / panel.width,
+      height: (bottom - top) / panel.height,
+      // Taille reelle d'un lieu sous le doigt.
+      node: Math.min(...nodes.map((r) => r.width)),
+    };
+  });
+
+  expect(fill.width, 'la carte n’occupe pas la largeur du cadre').toBeGreaterThan(0.6);
+  expect(fill.height, 'la carte n’occupe pas la hauteur du cadre').toBeGreaterThan(0.5);
+  // Zone tactile d'un lieu : jamais sous le minimum enfant (§4).
+  expect(fill.node).toBeGreaterThanOrEqual(56);
+});
+
+test('la consigne d’un exercice reste grande, dans les deux orientations', async ({ page }) => {
+  await boot(page);
+  await page.goto('./#/play/map');
+  await page.locator('.map__node[aria-label*="Prairie"]').first().click();
+  await page.getByRole('button', { name: /relever le défi/i }).click({ timeout: 20_000 });
+
+  const question = page.locator('.exercise__question');
+  await expect(question).toBeVisible();
+  // Regression : indexee sur la largeur, la typographie tombait a 19 px en portrait.
+  const size = await question.evaluate((el) => Number.parseFloat(getComputedStyle(el).fontSize));
+  expect(size).toBeGreaterThanOrEqual(28);
+
+  // Les reponses restent des cibles enfant (§4).
+  const answers = page.locator('.exercise__answers .ds-choice');
+  const boxes = await answers.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().height));
+  for (const height of boxes) expect(height).toBeGreaterThanOrEqual(56);
+});
+
+test('le Pokédex ne superpose jamais fiche et compteur', async ({ page }) => {
+  await boot(page);
+  await page.goto('./#/play/pokedex');
+  await expect(page.getByRole('button', { name: 'Tous' })).toBeVisible();
+
+  // Regression portrait : « 0 / 20 créatures attrapées » passait sur la fiche.
+  await expectNoOverlap(page, '.pokedex__detail-text > *, .pokedex__count', 2);
+  await expect(page.locator('.pokedex__count')).toBeInViewport();
+});
+
+test('la navigation de l’Admin reste compacte quand l’écran est étroit', async ({ page }) => {
+  const viewport = page.viewportSize()!;
+  test.skip(viewport.width >= 900, 'colonne laterale : non concerne');
+
+  await page.goto('./#/admin');
+  await page.getByLabel('Code d’accès').fill('parent');
+  await page.getByRole('button', { name: 'Entrer' }).click();
+  await expect(page.getByText('Pokexplo — Admin')).toBeVisible({ timeout: 20_000 });
+
+  // Regression : la liste des treize sections empilee prenait 700 px de hauteur.
+  const nav = await page.locator('.admin__nav').boundingBox();
+  expect(nav!.height).toBeLessThanOrEqual(200);
+  const main = await page.locator('.admin__main').boundingBox();
+  expect(main!.height / viewport.height).toBeGreaterThan(0.6);
+
+  // Toutes les sections restent atteignables par defilement horizontal.
+  const last = page.getByRole('button', { name: 'Prévisualiser' });
+  await last.scrollIntoViewIfNeeded();
+  await expect(last).toBeInViewport();
+});
+
 test('l’espace parents tient sur un écran d’iPad', async ({ page }) => {
   await boot(page);
   await page.goto('./#/parents');

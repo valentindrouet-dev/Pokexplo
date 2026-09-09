@@ -277,3 +277,85 @@ describe('Mise à jour du contenu de référence', () => {
     expect(loaded.fromDefaults).toBe(false);
   });
 });
+
+describe('Brouillon en retard sur le contenu publié', () => {
+  function siteServing(version: string): void {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ ...defaultContentBundle(), contentVersion: version }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        }),
+      ),
+    );
+  }
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('remplace sans bruit un brouillon intact quand le contenu du site avance', async () => {
+    siteServing('site-1');
+    const first = await ContentService.getDraft();
+    expect(first.contentVersion).toBe('site-1');
+
+    // Nouvelle version du site : l'application se met a jour.
+    siteServing('site-2');
+    ContentService.invalidate();
+    const next = await ContentService.getDraft();
+    expect(next.contentVersion).toBe('site-2');
+    expect((await ContentService.draftStatus()).outdated).toBe(false);
+  });
+
+  it('n’écrase JAMAIS un brouillon modifié, mais le signale', async () => {
+    siteServing('site-1');
+    const draft = await ContentService.getDraft();
+    await ContentService.saveDraft({
+      ...draft,
+      nodes: draft.nodes.map((node) =>
+        node.id === 'prairie-1' ? { ...node, label: 'Mon pré' } : node,
+      ),
+    });
+
+    siteServing('site-2');
+    ContentService.invalidate();
+    const kept = await ContentService.getDraft();
+    expect(kept.nodes.find((node) => node.id === 'prairie-1')?.label).toBe('Mon pré');
+
+    const status = await ContentService.draftStatus();
+    expect(status.outdated).toBe(true);
+    expect(status.basedOn).toBe('site-1');
+    expect(status.published).toBe('site-2');
+  });
+
+  it('signale un brouillon d’avant ce suivi s’il est en retard, sans l’écraser', async () => {
+    // Un appareil mis a jour : son brouillon existe deja, sans meta-donnees.
+    siteServing('site-1');
+    await ContentService.load(true);
+    const legacy = { ...defaultContentBundle(), contentVersion: 'bundled-2' };
+    await localBackend.content.putDraft(legacy);
+
+    siteServing('site-2');
+    ContentService.invalidate();
+    const kept = await ContentService.getDraft();
+    expect(kept.contentVersion).toBe('bundled-2');
+
+    const status = await ContentService.draftStatus();
+    expect(status.outdated).toBe(true);
+    expect(status.basedOn).toBe('bundled-2');
+  });
+
+  it('repartir de la version publiée remet le brouillon à jour', async () => {
+    siteServing('site-1');
+    const draft = await ContentService.getDraft();
+    await ContentService.saveDraft({ ...draft, creatures: [] });
+
+    siteServing('site-2');
+    ContentService.invalidate();
+    const restored = await ContentService.resetDraftFromPublished();
+    expect(restored.contentVersion).toBe('site-2');
+    expect(restored.creatures.length).toBeGreaterThan(0);
+    expect((await ContentService.draftStatus()).outdated).toBe(false);
+  });
+});

@@ -266,3 +266,4 @@ de release et bascule, sans reconstruction du site.
 | « GitHub refuse le jeton » | Permission manquante ou jeton expiré | Régénérez un jeton avec **Contents : Read and write** sur ce dépôt |
 | Des images manquent | Elles avaient été importées depuis un appareil | Déposez-les dans `public/media/creatures/`, ou passez par Firebase |
 | Le bouton « Envoyer » est grisé | Le contenu comporte des erreurs | Admin → **Tableau de bord** : corrigez les lignes rouges |
+| Un bandeau rouge dit que le brouillon vient d'une version plus ancienne | L'application s'est mise à jour, votre brouillon date d'avant | **Repartir de la version publiée** (bouton du bandeau) — vos modifications non publiées seront perdues, la nouvelle carte revient |
