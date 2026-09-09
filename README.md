@@ -68,6 +68,10 @@ Tout se fait depuis `#/admin` : créatures, biomes, nœuds, rencontres, matrices
 quêtes, packs pédagogiques, **et surtout les voix** (écrire un texte → 🎙 enregistrer → préécouter →
 valider). Puis *Publier* : une nouvelle release de contenu est créée, sans nouveau build.
 
+Pour que ce contenu et ses images apparaissent **sur tous les appareils**, deux voies :
+déposer l'export dans `public/content/bundle.json` et les images dans `public/media/`, ou activer
+Firebase. Tout est expliqué dans [`docs/MEDIA.md`](docs/MEDIA.md).
+
 ## Documentation
 
 | Document | Contenu |
@@ -77,6 +81,7 @@ valider). Puis *Publier* : une nouvelle release de contenu est créée, sans nou
 | [`docs/UI_DESIGN.md`](docs/UI_DESIGN.md) | Direction artistique et design system |
 | [`docs/TECHNICAL_SPEC.md`](docs/TECHNICAL_SPEC.md) | Architecture technique |
 | [`docs/DATA_MODEL.md`](docs/DATA_MODEL.md) | Données, releases, sauvegardes, migrations |
+| [`docs/MEDIA.md`](docs/MEDIA.md) | **Ajouter des images et des sons**, et les faire apparaître partout |
 | [`docs/CHANGELOG.md`](docs/CHANGELOG.md) | Historique des versions |
 
 ## Marques et assets

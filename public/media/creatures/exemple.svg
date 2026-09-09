@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!--
+    Exemple : déposez vos images de créatures dans ce dossier, puis indiquez
+    « media/creatures/mon-image.png » dans /admin → Images.
+    Elles suivront le site sur tous les appareils. Voir docs/MEDIA.md.
+  -->
+  <circle cx="50" cy="54" r="30" fill="#FFD45C" />
+  <circle cx="41" cy="48" r="4" fill="#514A4B" />
+  <circle cx="59" cy="48" r="4" fill="#514A4B" />
+  <path d="M42 62c4 5 12 5 16 0" fill="none" stroke="#514A4B" stroke-width="3" stroke-linecap="round" />
+</svg>

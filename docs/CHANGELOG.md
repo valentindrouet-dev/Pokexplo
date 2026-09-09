@@ -4,6 +4,31 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 Trois versions sont suivies séparément (§112) : `APP_VERSION`, `CONTENT_VERSION`,
 `SAVE_SCHEMA_VERSION`.
 
+## [1.0.4] — Images et portabilité du contenu
+
+`APP_VERSION 1.0.4` · `CONTENT_VERSION bundled-3` · `SAVE_SCHEMA_VERSION 3`
+
+### Ajouté
+
+- **Trois origines d'image, toutes prises en charge** (`docs/MEDIA.md`) :
+  un fichier du dépôt (`public/media/…`, visible partout et hors connexion),
+  une adresse `https://`, ou un import depuis l'appareil. Seule la troisième
+  existait, et elle ne quittait jamais l'appareil.
+- **`public/content/bundle.json`** : s'il est présent, il devient le contenu de
+  référence du site. Exporté depuis l'Admin puis déposé dans le dépôt, il fait
+  apparaître créatures, textes, carte et images sur **tous** les appareils, sans
+  Firebase ni serveur. Une release publiée depuis l'Admin n'est jamais écrasée
+  par cette voie (§97), et rien n'est remplacé hors connexion.
+- **Export / import du contenu** dans `Admin → Releases`, avec avertissement
+  explicite si des images n'existent que sur l'appareil courant.
+- `Admin → Images` refait : les trois voies sont expliquées, la provenance de
+  chaque image est affichée, et le chemin ou l'adresse se saisit directement.
+
+### Corrigé
+
+- Une image introuvable ou une adresse cassée ramène désormais au dessin généré
+  au lieu d'afficher une image brisée (§174).
+
 ## [1.0.3] — Carte du monde
 
 `APP_VERSION 1.0.3` · `CONTENT_VERSION bundled-3` · `SAVE_SCHEMA_VERSION 3`

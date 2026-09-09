@@ -20,6 +20,7 @@ exercices, les Arènes, les quêtes et l'histoire.
 | `docs/UI_DESIGN.md` | Direction artistique et design system. **L'interface enfant doit le suivre.** |
 | `docs/TECHNICAL_SPEC.md` | Architecture technique, services, PWA, déploiement. |
 | `docs/DATA_MODEL.md` | Schémas Firestore / Storage / sauvegardes / migrations. |
+| `docs/MEDIA.md` | Origines des médias (dépôt, adresse externe, appareil) et portabilité du contenu. |
 | `docs/CHANGELOG.md` | Historique des versions. |
 
 ---

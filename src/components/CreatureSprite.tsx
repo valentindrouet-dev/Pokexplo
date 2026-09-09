@@ -58,6 +58,9 @@ export function CreatureSprite({
         height={size}
         className={cn('creature-sprite', className)}
         style={{ objectFit: 'contain' }}
+        // Adresse cassee ou fichier absent : on revient au dessin genere,
+        // l'enfant ne voit jamais une image brisee (§174).
+        onError={() => setUrl(null)}
       />
     );
   }

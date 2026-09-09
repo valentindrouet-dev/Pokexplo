@@ -2,11 +2,30 @@ import type { ContentBundle, MediaPath, NodeId } from '../types';
 import { getBackend } from './backends';
 import type { MediaRecordMeta } from './backends';
 
+/** Une adresse deja utilisable telle quelle. */
+const EXTERNAL_URL = /^(https?:|data:|blob:)/iu;
+
+/**
+ * Fichier livre avec l'application : il se trouve dans `public/` et suit donc
+ * le site partout ou il est deploye.
+ */
+function publicUrl(path: MediaPath): string {
+  const base = import.meta.env.BASE_URL || '/';
+  return `${base}${path.replace(/^\/+/u, '')}`;
+}
+
 /**
  * ASSET SERVICE — resolution et mise en cache des medias.
  *
- * Il masque completement l'origine du fichier (Blob local ou Cloud Storage) :
- * les composants ne manipulent qu'un chemin logique `media/...`.
+ * Il masque completement l'origine du fichier : les composants ne manipulent
+ * qu'un chemin. Trois origines sont acceptees (docs/MEDIA.md) :
+ *
+ *  1. `https://…` (ou `data:`) — adresse externe, renvoyee telle quelle ;
+ *  2. un fichier du magasin de medias — importe depuis l'Admin, stocke sur
+ *     l'appareil (IndexedDB) ou dans Cloud Storage selon le backend ;
+ *  3. un fichier livre avec l'application (`public/…`) — c'est le repli, et
+ *     c'est la seule origine qui suit le site sur TOUS les appareils sans
+ *     configuration serveur.
  */
 class AssetServiceImpl {
   private readonly urlCache = new Map<MediaPath, string | null>();
@@ -16,6 +35,8 @@ class AssetServiceImpl {
   /** URL utilisable dans un <img> ou un <audio>. `null` si le media est absent. */
   async getUrl(path: MediaPath | undefined): Promise<string | null> {
     if (!path) return null;
+    // Une adresse complete est utilisable directement.
+    if (EXTERNAL_URL.test(path)) return path;
     if (this.urlCache.has(path)) return this.urlCache.get(path) ?? null;
 
     const pending = this.inflight.get(path);
@@ -24,8 +45,12 @@ class AssetServiceImpl {
     const promise = getBackend()
       .then((backend) => backend.media.getUrl(path))
       .then((url) => {
-        this.urlCache.set(path, url);
-        return url;
+        // Rien dans le magasin de medias : le fichier est peut-etre livre
+        // avec l'application. C'est ce repli qui permet a une image d'exister
+        // sur tous les appareils sans Firebase.
+        const resolved = url ?? publicUrl(path);
+        this.urlCache.set(path, resolved);
+        return resolved;
       })
       .catch(() => {
         // Un media manquant ne casse jamais l'ecran (§174).
@@ -110,16 +135,25 @@ class AssetServiceImpl {
 
     for (const path of list) {
       const url = await this.getUrl(path);
-      if (url) {
-        loaded += 1;
-        // Un simple fetch suffit : le Service Worker intercepte et met en cache.
-        try {
-          await fetch(url, { mode: 'no-cors' });
-        } catch {
-          /* hors ligne : le fichier local est deja disponible */
-        }
-      } else {
+      if (!url) {
         missing += 1;
+        options.onProgress?.(loaded + missing, list.length);
+        continue;
+      }
+
+      if (url.startsWith('blob:')) {
+        // Deja sur l'appareil : rien a telecharger.
+        loaded += 1;
+      } else {
+        try {
+          // Un simple fetch suffit : le Service Worker intercepte et met en cache.
+          const response = await fetch(url);
+          if (response.ok || response.type === 'opaque') loaded += 1;
+          else missing += 1;
+        } catch {
+          // Hors ligne : si le fichier est deja en cache, il reste jouable.
+          loaded += 1;
+        }
       }
       options.onProgress?.(loaded + missing, list.length);
     }

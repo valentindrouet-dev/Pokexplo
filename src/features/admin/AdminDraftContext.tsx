@@ -21,6 +21,8 @@ export interface AdminDraftValue {
   revalidate: () => void;
   reload: () => Promise<void>;
   resetFromPublished: () => Promise<void>;
+  /** Remplace entierement le brouillon (import d'un contenu exporte). */
+  replaceDraft: (bundle: ContentBundle) => Promise<void>;
 }
 
 const AdminDraftContext = createContext<AdminDraftValue | null>(null);
@@ -71,6 +73,13 @@ export function AdminDraftProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const replaceDraft = useCallback(async (bundle: ContentBundle) => {
+    await ContentService.saveDraft(bundle);
+    setDraft(bundle);
+    setValidation(ContentService.validate(bundle));
+    setSavedAt(Date.now());
+  }, []);
+
   const resetFromPublished = useCallback(async () => {
     const restored = await ContentService.resetDraftFromPublished();
     setDraft(restored);
@@ -87,8 +96,9 @@ export function AdminDraftProvider({ children }: { children: ReactNode }) {
       revalidate: () => setValidation(draft ? ContentService.validate(draft) : null),
       reload,
       resetFromPublished,
+      replaceDraft,
     }),
-    [draft, update, saving, savedAt, validation, reload, resetFromPublished],
+    [draft, update, saving, savedAt, validation, reload, resetFromPublished, replaceDraft],
   );
 
   return <AdminDraftContext value={value}>{children}</AdminDraftContext>;

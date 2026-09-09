@@ -43,6 +43,8 @@ Le reste de l'application ne connaît que les *ports* : aucun composant n'import
 ├── firebase.json · firestore.rules · firestore.indexes.json · storage.rules
 ├── docs/     CONCEPTION.md · TECHNICAL_SPEC.md · DATA_MODEL.md · UI_DESIGN.md · CHANGELOG.md
 ├── public/   manifest.webmanifest · icons/ · .nojekyll
+│          media/   images et sons publiés avec le site (docs/MEDIA.md)
+│          content/ bundle.json optionnel : contenu de référence du site
 ├── src/
 │   ├── app/             App, router, providers
 │   ├── components/      composants transverses (CreatureSprite, VoiceText…)

@@ -7,10 +7,33 @@ import type {
   ValidationReport,
 } from '../types';
 import { SAVE_SCHEMA_VERSION } from '../types/save';
-import { BUNDLED_CONTENT_VERSION, defaultContentBundle } from '../content/defaultContent';
+import { defaultContentBundle } from '../content/defaultContent';
 import { voiceStatus } from '../utils/voice';
 import { deepClone } from '../utils/clone';
 import { getBackend } from './backends';
+import { failAfter } from '../utils/async';
+
+/**
+ * Contenu optionnel livre AVEC LE SITE.
+ *
+ * S'il existe, ce fichier remplace le contenu par defaut compile dans
+ * l'application. C'est la voie qui permet a un contenu prepare depuis l'Admin
+ * (creatures, images, textes) d'apparaitre sur TOUS les appareils sans serveur :
+ * on l'exporte, on le depose dans `public/content/bundle.json`, on publie.
+ * Voir docs/MEDIA.md.
+ */
+const BUNDLE_OVERRIDE_PATH = 'content/bundle.json';
+const BUNDLE_FETCH_TIMEOUT_MS = 4000;
+
+interface BundledSource {
+  bundle: ContentBundle;
+  /**
+   * Vrai si l'on a pu VERIFIER ce que le site propose. Hors ligne, on ne
+   * remplace jamais le contenu installe : on risquerait d'ecraser une version
+   * plus recente par le contenu compile.
+   */
+  reachable: boolean;
+}
 
 const APP_VERSION = typeof __APP_VERSION__ === 'string' ? __APP_VERSION__ : '0.0.0';
 
@@ -31,6 +54,30 @@ export interface LoadedContent {
 class ContentServiceImpl {
   private cache: LoadedContent | null = null;
 
+  /**
+   * Contenu de reference : celui livre avec le site s'il existe, sinon celui
+   * compile dans l'application.
+   */
+  private async bundledContent(): Promise<BundledSource> {
+    const url = `${import.meta.env.BASE_URL || '/'}${BUNDLE_OVERRIDE_PATH}`;
+    try {
+      const response = await failAfter(fetch(url), BUNDLE_FETCH_TIMEOUT_MS, 'Le contenu du site');
+      // 404 : aucun contenu n'a ete depose, on utilise celui de l'application.
+      if (response.status === 404) return { bundle: defaultContentBundle(), reachable: true };
+      if (!response.ok) return { bundle: defaultContentBundle(), reachable: false };
+
+      const parsed = (await response.json()) as Partial<ContentBundle>;
+      if (!Array.isArray(parsed.creatures) || !Array.isArray(parsed.nodes)) {
+        console.warn('[pokexplo] content/bundle.json ignoré : format inattendu');
+        return { bundle: defaultContentBundle(), reachable: true };
+      }
+      return { bundle: parsed as ContentBundle, reachable: true };
+    } catch {
+      // Hors ligne, ou fichier injoignable : on ne touche a rien.
+      return { bundle: defaultContentBundle(), reachable: false };
+    }
+  }
+
   async load(force = false): Promise<LoadedContent> {
     if (this.cache && !force) return this.cache;
     const backend = await getBackend();
@@ -41,15 +88,18 @@ class ContentServiceImpl {
       : null;
 
     /*
-     * Le contenu livre avec l'application a evolue : on le remplace.
+     * Le contenu de reference a evolue : on le remplace.
      * On ne touche JAMAIS a une release publiee depuis l'Admin (§97) — seule
-     * la release `bundled` suit les mises a jour de l'application.
+     * la release `bundled` suit les mises a jour de l'application ou du site.
      */
+    const bundled = await this.bundledContent();
     const bundledOutdated =
-      release?.source === 'bundled' && release.bundle.contentVersion !== BUNDLED_CONTENT_VERSION;
+      release?.source === 'bundled' &&
+      bundled.reachable &&
+      release.bundle.contentVersion !== bundled.bundle.contentVersion;
 
     if (!release || bundledOutdated) {
-      const seeded = this.seedRelease();
+      const seeded = this.seedRelease(bundled.bundle);
       await backend.content.putRelease(seeded);
       meta = {
         currentReleaseId: seeded.id,
@@ -68,8 +118,7 @@ class ContentServiceImpl {
     return this.cache;
   }
 
-  private seedRelease(): ContentRelease {
-    const bundle = defaultContentBundle();
+  private seedRelease(bundle: ContentBundle): ContentRelease {
     return {
       id: 'release_0001' as ReleaseId,
       label: 'Contenu livré avec l’application',

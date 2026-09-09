@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ContentService, localBackend, ReleaseService, setBackend } from '../../src/services';
 import { resetDb } from '../../src/services/db';
 import { BUNDLED_CONTENT_VERSION, defaultContentBundle } from '../../src/content/defaultContent';
@@ -178,8 +178,34 @@ describe('Jouabilité de la V1 (CONCEPTION §130)', () => {
   });
 });
 
-describe('Mise à jour du contenu livré avec l’application', () => {
+describe('Mise à jour du contenu de référence', () => {
+  /** Le site ne propose aucun `content/bundle.json` : réponse 404. */
+  function siteWithoutBundle(): void {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response('', { status: 404 })),
+    );
+  }
+
+  /** Le site propose un contenu déposé dans `public/content/bundle.json`. */
+  function siteWithBundle(bundle: unknown): void {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify(bundle), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        }),
+      ),
+    );
+  }
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it('remplace le contenu livré quand sa version change', async () => {
+    siteWithoutBundle();
     const backend = localBackend;
     const first = await ContentService.load(true);
     expect(first.fromDefaults).toBe(true);
@@ -196,6 +222,47 @@ describe('Mise à jour du contenu livré avec l’application', () => {
     expect(refreshed.bundle.contentVersion).toBe(BUNDLED_CONTENT_VERSION);
     // La carte redessinée est bien celle qui est servie.
     expect(refreshed.bundle.nodes.find((node) => node.id === 'prairie-3')?.label).toBe('Sentier');
+  });
+
+  it('utilise le contenu déposé sur le site s’il existe (§91)', async () => {
+    const custom = {
+      ...defaultContentBundle(),
+      contentVersion: 'site-1',
+      creatures: defaultContentBundle().creatures.map((creature) =>
+        creature.id === 'piloupi'
+          ? { ...creature, name: 'Ronflou', imagePath: 'media/creatures/ronflou.png' }
+          : creature,
+      ),
+    };
+    siteWithBundle(custom);
+
+    const loaded = await ContentService.load(true);
+    expect(loaded.bundle.contentVersion).toBe('site-1');
+    const creature = loaded.bundle.creatures.find((item) => item.id === 'piloupi');
+    expect(creature?.name).toBe('Ronflou');
+    expect(creature?.imagePath).toBe('media/creatures/ronflou.png');
+  });
+
+  it('ignore un fichier de contenu illisible plutôt que de casser le jeu', async () => {
+    siteWithBundle({ nimporte: 'quoi' });
+    const loaded = await ContentService.load(true);
+    expect(loaded.bundle.creatures.length).toBeGreaterThan(0);
+  });
+
+  it('ne remplace rien quand le site est injoignable (hors ligne)', async () => {
+    siteWithoutBundle();
+    const first = await ContentService.load(true);
+    const stored = await localBackend.content.getRelease(first.meta.currentReleaseId);
+    await localBackend.content.putRelease({
+      ...stored!,
+      bundle: { ...stored!.bundle, contentVersion: 'site-42' },
+    });
+    ContentService.invalidate();
+
+    // Hors ligne : la requête échoue, on garde ce qui est installé.
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
+    const offline = await ContentService.load(true);
+    expect(offline.bundle.contentVersion).toBe('site-42');
   });
 
   it('ne remplace JAMAIS une release publiée depuis l’Admin (§97)', async () => {

@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useState } from 'react';
-import type { ContentRelease } from '../../../types';
-import { ReleaseService } from '../../../services';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { ContentBundle, ContentRelease } from '../../../types';
+import { AssetService, ReleaseService } from '../../../services';
 import { voiceDashboard } from '../../../utils/voice';
 import {
+  IconDownload,
   IconRelease,
+  IconUpload,
   IconWarning,
   ModalPanel,
   PrimaryButton,
@@ -23,13 +25,16 @@ import { TextField } from '../fields';
  * sauvegardes des enfants.
  */
 export function ReleasesSection() {
-  const { draft, validation, resetFromPublished } = useAdminDraft();
+  const { draft, validation, resetFromPublished, replaceDraft } = useAdminDraft();
   const { meta, reload } = useContent();
   const [releases, setReleases] = useState<ContentRelease[]>([]);
   const [label, setLabel] = useState('');
   const [message, setMessage] = useState<string | null>(null);
   const [confirmForce, setConfirmForce] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [transfer, setTransfer] = useState<string | null>(null);
+  const [deviceOnly, setDeviceOnly] = useState<string[]>([]);
+  const importInput = useRef<HTMLInputElement | null>(null);
 
   const refresh = useCallback(async () => {
     setReleases(await ReleaseService.list());
@@ -58,6 +63,57 @@ export function ReleasesSection() {
       setMessage(text);
       // §53 : voix manquantes -> on propose de publier quand meme.
       if (text.includes('voix')) setConfirmForce(true);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  /**
+   * CONCEPTION §91 — « contenu » et « code » suivent deux chemins distincts.
+   *
+   * Sans Firebase, le contenu vit sur l'appareil qui l'a saisi. L'exporter puis
+   * le deposer dans `public/content/bundle.json` du depot le fait apparaitre
+   * sur TOUS les appareils au prochain deploiement (docs/MEDIA.md).
+   */
+  const exportBundle = async (): Promise<void> => {
+    if (!draft) return;
+    setBusy(true);
+    try {
+      // Une image importee sur cet appareil ne voyage PAS avec le fichier JSON :
+      // on previent explicitement plutot que de laisser des images manquantes.
+      const stored = await AssetService.list('media/');
+      const local = new Set(stored.map((item) => item.path));
+      const used = draft.creatures
+        .map((creature) => creature.imagePath)
+        .filter((path): path is string => path !== undefined && local.has(path));
+      setDeviceOnly([...new Set(used)]);
+
+      const blob = new Blob([JSON.stringify(draft, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'bundle.json';
+      link.click();
+      URL.revokeObjectURL(url);
+      setTransfer('Contenu exporté. Déposez « bundle.json » dans public/content/ du dépôt.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const importBundle = async (file: File): Promise<void> => {
+    setBusy(true);
+    setTransfer(null);
+    try {
+      const parsed = JSON.parse(await file.text()) as Partial<ContentBundle>;
+      if (!Array.isArray(parsed.creatures) || !Array.isArray(parsed.nodes)) {
+        setTransfer('Ce fichier ne ressemble pas à un contenu Pokexplo.');
+        return;
+      }
+      await replaceDraft(parsed as ContentBundle);
+      setTransfer('Contenu importé dans le brouillon. Vérifiez, puis publiez.');
+    } catch {
+      setTransfer('Ce fichier n’a pas pu être lu.');
     } finally {
       setBusy(false);
     }
@@ -109,6 +165,52 @@ export function ReleasesSection() {
         </div>
 
         {message ? <p className="admin__status">{message}</p> : null}
+      </SoftPanel>
+
+      <SoftPanel title="Emporter le contenu sur tous les appareils" className="ds-stack">
+        <p>
+          Sans Firebase, le contenu que vous saisissez reste sur cet appareil. Pour qu’il apparaisse
+          partout, exportez-le et déposez le fichier dans <code>public/content/bundle.json</code> du
+          dépôt : au prochain déploiement, il devient le contenu de référence du site.
+        </p>
+        <div className="ds-row">
+          <PrimaryButton
+            icon={<IconDownload size={24} />}
+            disabled={busy}
+            onClick={() => void exportBundle()}
+          >
+            Exporter le contenu
+          </PrimaryButton>
+          <SecondaryButton
+            icon={<IconUpload size={24} />}
+            disabled={busy}
+            onClick={() => importInput.current?.click()}
+          >
+            Importer un contenu
+          </SecondaryButton>
+          <input
+            ref={importInput}
+            type="file"
+            className="vte__hidden-input"
+            accept="application/json,.json"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) void importBundle(file);
+              event.target.value = '';
+            }}
+          />
+        </div>
+        {transfer ? <p className="admin__status">{transfer}</p> : null}
+        {deviceOnly.length > 0 ? (
+          <p className="admin__issue">
+            <IconWarning size={22} />
+            <span>
+              {deviceOnly.length} image(s) n’existent que sur cet appareil et ne voyageront pas avec
+              le fichier : {deviceOnly.join(', ')}. Déposez ces fichiers dans{' '}
+              <code>public/media/creatures/</code> et indiquez leur chemin dans « Images ».
+            </span>
+          </p>
+        ) : null}
       </SoftPanel>
 
       <SoftPanel title="Historique" className="ds-stack">
