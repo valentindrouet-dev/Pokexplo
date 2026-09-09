@@ -1,0 +1,66 @@
+rules_version = '2';
+
+// CONCEPTION §94 — DENY BY DEFAULT.
+// `allow write: if true` est INTERDIT en production (CLAUDE.md §2).
+// Le role ADMIN vit dans Firestore et ne s'obtient jamais depuis le client.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/playerAccounts/$(request.auth.uid))
+        && get(/databases/$(database)/documents/playerAccounts/$(request.auth.uid)).data.role == 'ADMIN';
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // --- Pointeur de release et versions (§96) -------------------------------
+    match /meta/{document} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // --- Contenu publie (§97 : une release publiee est IMMUABLE) -------------
+    match /contentReleases/{releaseId} {
+      allow read: if isSignedIn();
+      allow create: if isAdmin();
+      // On peut archiver une release, jamais reecrire son contenu publie.
+      allow update: if isAdmin() && resource.data.status != 'PUBLISHED';
+      allow delete: if false;
+
+      match /collections/{collectionName} {
+        allow read: if isSignedIn();
+        allow create: if isAdmin();
+        allow update, delete: if false;
+      }
+    }
+
+    // --- Comptes et sauvegardes (§101-103) -----------------------------------
+    match /playerAccounts/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      // Le role n'est jamais modifiable par le client.
+      allow create: if isOwner(uid) && !('role' in request.resource.data);
+      allow update: if (isOwner(uid) && request.resource.data.role == resource.data.role)
+                    || isAdmin();
+      allow delete: if false;
+
+      match /profiles/{profileId} {
+        allow read: if isOwner(uid) || isAdmin();
+        allow create, update: if isOwner(uid);
+        // CLAUDE.md : ne jamais supprimer une sauvegarde. On archive.
+        allow delete: if false;
+      }
+    }
+
+    // --- Tout le reste est refuse -------------------------------------------
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

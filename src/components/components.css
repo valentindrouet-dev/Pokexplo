@@ -1,0 +1,47 @@
+/* Composants transverses. Valeurs issues des tokens uniquement (§181). */
+
+.creature-sprite {
+  display: block;
+  filter: var(--drop-shadow-soft);
+}
+
+.creature-sprite--breathe {
+  animation: ds-walk 2.4s var(--ease-soft) infinite;
+}
+
+/* Decor procedural : le monde reste visible derriere les panneaux (§133). */
+.scene {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.voice-text {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.voice-text__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.voice-text__text {
+  font-size: var(--text-large);
+  font-weight: var(--weight-bold);
+  line-height: var(--line-normal);
+}
+
+.voice-text__text--small {
+  font-size: var(--text-normal);
+}
+
+.error-boundary {
+  display: grid;
+  place-items: center;
+  gap: var(--space-4);
+  padding: var(--space-7);
+  text-align: center;
+}

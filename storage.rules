@@ -1,0 +1,41 @@
+rules_version = '2';
+
+// CONCEPTION §114 — les medias (images, voix, musiques) vivent ici ;
+// Firestore ne stocke que leurs metadonnees (§72).
+// DENY BY DEFAULT : seul un ADMIN televerse du contenu.
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && firestore.exists(/databases/(default)/documents/playerAccounts/$(request.auth.uid))
+        && firestore.get(/databases/(default)/documents/playerAccounts/$(request.auth.uid)).data.role == 'ADMIN';
+    }
+
+    function isAudio() {
+      return request.resource.contentType.matches('audio/.*');
+    }
+
+    function isImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    match /media/{allPaths=**} {
+      // Tout joueur connecte peut LIRE le contenu (voix, images, musiques).
+      allow read: if isSignedIn();
+      // 25 Mo suffisent largement pour une voix ou une illustration.
+      allow write: if isAdmin()
+                   && request.resource.size < 25 * 1024 * 1024
+                   && (isAudio() || isImage());
+      allow delete: if isAdmin();
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

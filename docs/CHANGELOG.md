@@ -1,0 +1,37 @@
+# CHANGELOG
+
+Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
+Trois versions sont suivies séparément (§112) : `APP_VERSION`, `CONTENT_VERSION`,
+`SAVE_SCHEMA_VERSION`.
+
+## [1.0.0] — Version initiale
+
+`APP_VERSION 1.0.0` · `CONTENT_VERSION release_0001` · `SAVE_SCHEMA_VERSION 3`
+
+### Ajouté
+
+- **Aventure** : Centre, carte à nœuds (Prairie, Forêt, Rivière), Arène de Pierre, Badge Roche,
+  chapitre 1 avec vraie fin puis exploration libre.
+- **Moteur d'exercices** : 12 types génériques pilotés par matrices, génération déterministe par
+  seed, indices progressifs (3 tentatives), difficulté adaptative.
+- **Système audio complet** : `VoiceMessage`, `AudioService` (canaux voix/musique/bruitages,
+  ducking, une seule voix à la fois), TTS de secours, préchargement hors ligne.
+- **Admin** : `VoiceTextEditor` réutilisable (enregistrement micro, prompteur, prises multiples,
+  import de fichier), session de doublage, tableau de bord des voix, éditeurs de créatures,
+  exercices, biomes, nœuds, arènes, quêtes, packs, images, releases, profils, progression, preview.
+- **Design system** : tokens CSS, 17 composants, icônes SVG originales, page `#/dev/ui-kit`.
+- **PWA** : manifest, Service Worker (App Shell + runtime médias), `downloadCurrentAdventure()`,
+  mise à jour non brutale.
+- **Backends enfichables** : local (IndexedDB) par défaut, Firebase optionnel.
+- **CI/CD** : vérification (typecheck, lint, tests, build) puis publication sur `gh-pages`.
+
+### Tests iPad à effectuer à chaque version (§120)
+
+- [ ] PWA installée depuis l'écran d'accueil
+- [ ] Micro autorisé puis refusé dans `/admin`
+- [ ] Lecture audio après le bouton « Commencer »
+- [ ] Réécoute 🔊
+- [ ] Retour de veille
+- [ ] Mode avion (contenu et voix en cache)
+- [ ] Reconnexion et synchronisation
+- [ ] Casque / Bluetooth

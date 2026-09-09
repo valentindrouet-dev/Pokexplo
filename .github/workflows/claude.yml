@@ -1,0 +1,41 @@
+name: Claude
+
+# CONCEPTION §83 — Claude travaille via GitHub :
+#   Issue -> @claude -> feature branch -> code -> tests -> Pull Request
+#            -> validation -> merge main
+#
+# Claude ne doit JAMAIS travailler directement dans gh-pages (CLAUDE.md §2).
+# Ce workflow nécessite le secret ANTHROPIC_API_KEY dans les paramètres du dépôt.
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  issues:
+    types: [opened, assigned]
+
+jobs:
+  claude:
+    if: |
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'issues' && contains(github.event.issue.body, '@claude'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Les règles du projet sont dans CLAUDE.md et docs/.
+          prompt: |
+            Respecte impérativement CLAUDE.md, docs/CONCEPTION.md et docs/UI_DESIGN.md.
+            Ne modifie jamais la branche gh-pages. Lance `npm run verify` avant toute PR.

@@ -1,0 +1,130 @@
+/*
+ * DESIGN TOKENS — source unique de verite visuelle (docs/UI_DESIGN.md §180).
+ *
+ * INTERDICTION DU ONE-OFF CSS (§181) : aucun composant ne doit choisir une
+ * valeur au hasard. Toute couleur, tout rayon, tout espacement passe par une
+ * variable definie ici. Le test tests/ui/design-tokens.test.ts echoue si un
+ * fichier CSS introduit une valeur brute.
+ */
+
+:root {
+  /* ---------------- SURFACES ---------------- */
+  --color-surface: #fffdf8;
+  --color-surface-soft: #fff8ec;
+  --color-surface-muted: #f7f5f3;
+  --color-surface-sunken: #f1ede6;
+
+  /* ---------------- PALETTE (§138) ---------------- */
+  --ui-cream: #fff8ec;
+  --ui-white: #fffdf9;
+
+  --color-yellow: #ffd45c;
+  --color-yellow-soft: #ffe9a2;
+  --color-coral: #ff777f;
+  --color-coral-soft: #ffb0b5;
+  --color-aqua: #62d7d0;
+  --color-aqua-soft: #bdedea;
+  --color-lavender: #919aef;
+  --color-lavender-soft: #d7d9ff;
+  --color-lilac: #d7b5f5;
+  --color-green: #a8d86e;
+  --color-green-soft: #d6edb6;
+
+  /* ---------------- TEXTE (§144) ---------------- */
+  --color-text: #514a4b;
+  --color-text-soft: #837b7a;
+  --color-text-onbright: #4a3f2f;
+  --color-text-invert: #fffdf9;
+
+  /* ---------------- SEMANTIQUE (§139) ---------------- */
+  --color-action: var(--color-yellow);
+  --color-action-strong: #ffc02e;
+  --color-navigation: var(--color-aqua);
+  --color-challenge: var(--color-coral);
+  --color-collection: var(--color-lavender);
+  --color-nature: var(--color-green);
+  --color-locked: #cfc8c0;
+
+  /* ---------------- BORDURES ET OMBRES (§136-137) ---------------- */
+  --border-hairline: 1px solid rgba(70, 60, 55, 0.08);
+  --border-hairline-strong: 1px solid rgba(70, 60, 55, 0.16);
+  --shadow-soft: 0 6px 18px rgba(65, 53, 40, 0.12);
+  --shadow-float: 0 12px 32px rgba(50, 45, 40, 0.16);
+  --shadow-inset-soft: inset 0 -3px 0 rgba(70, 60, 55, 0.08);
+  /* Ombre portee des illustrations (SVG) : un `filter`, pas un `box-shadow`. */
+  --drop-shadow-soft: drop-shadow(0 4px 6px rgba(65, 53, 40, 0.12));
+  --drop-shadow-glow: drop-shadow(0 0 10px var(--color-yellow));
+
+  /* ---------------- ARRIERE-PLAN (§133) ---------------- */
+  --scrim-light: rgba(255, 255, 255, 0.1);
+  --scrim-soft: rgba(255, 253, 248, 0.55);
+  --scrim-dark: rgba(60, 52, 48, 0.22);
+  --blur-scene: 2px;
+
+  /* ---------------- RAYONS (§135) ---------------- */
+  --radius-xs: 6px;
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 28px;
+  --radius-xl: 34px;
+  --radius-panel: 32px;
+  --radius-pill: 999px;
+
+  /* ---------------- ESPACEMENTS (§157) ---------------- */
+  --space-0: 2px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* ---------------- TACTILE (§4) ---------------- */
+  --touch-min: 56px;
+  --touch-comfort: 64px;
+  --touch-large: 88px;
+  --list-row-min: 64px;
+  --answer-min-width: 120px;
+  --answer-min-height: 80px;
+
+  /* ---------------- TYPOGRAPHIE (§143-145) ---------------- */
+  --font-rounded: ui-rounded, 'SF Pro Rounded', 'Arial Rounded MT Bold', 'Nunito',
+    system-ui, -apple-system, sans-serif;
+  --text-small: clamp(16px, 1.7vw, 18px);
+  --text-normal: clamp(19px, 2.1vw, 22px);
+  --text-large: clamp(24px, 2.7vw, 28px);
+  --title: clamp(28px, 3.3vw, 34px);
+  --hero-title: clamp(34px, 4.2vw, 42px);
+  --weight-regular: 500;
+  --weight-bold: 700;
+  --weight-heavy: 800;
+  --line-tight: 1.15;
+  --line-normal: 1.35;
+
+  /* ---------------- ANIMATIONS (§161-162) ---------------- */
+  --duration-tap: 140ms;
+  --duration-fast: 160ms;
+  --duration-panel: 220ms;
+  --duration-slow: 420ms;
+  --ease-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.4, 0.64, 1);
+
+  /* ---------------- ETATS (§173) ---------------- */
+  --opacity-disabled: 0.45;
+  --saturate-disabled: 0.35;
+
+  /* ---------------- COUCHES ---------------- */
+  --z-scene: 0;
+  --z-panel: 10;
+  --z-bar: 20;
+  --z-modal: 40;
+  --z-toast: 60;
+
+  /* ---------------- SAFE AREA (§158) ---------------- */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}

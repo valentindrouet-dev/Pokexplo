@@ -1,0 +1,369 @@
+/*
+ * Ecrans enfant (/play).
+ * docs/UI_DESIGN.md : grands panneaux arrondis, gros pictogrammes,
+ * tres peu d'informations simultanees. Aucun style de type dashboard ici.
+ */
+
+.play {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.play__content {
+  position: relative;
+  z-index: var(--z-panel);
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  padding-top: calc(var(--space-5) + var(--safe-top));
+}
+
+.play__bar {
+  position: relative;
+  z-index: var(--z-bar);
+  padding-bottom: calc(var(--space-4) + var(--safe-bottom));
+}
+
+/* ----------------------------- DEMARRAGE ----------------------------- */
+
+.start {
+  display: grid;
+  place-items: center;
+  gap: var(--space-6);
+  height: 100%;
+  text-align: center;
+}
+
+.start__title {
+  font-size: var(--hero-title);
+  font-weight: var(--weight-heavy);
+  line-height: var(--line-tight);
+}
+
+.start__subtitle {
+  font-size: var(--text-normal);
+  color: var(--color-text-soft);
+}
+
+.start__panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+  width: min(560px, 100%);
+}
+
+.start__profiles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.start__field {
+  width: 100%;
+  min-height: var(--touch-comfort);
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-md);
+  border: var(--border-hairline-strong);
+  background: var(--color-surface-soft);
+  font-size: var(--text-normal);
+  text-align: center;
+}
+
+/* ------------------------------- CENTRE ------------------------------ */
+
+.center-hub {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-5);
+}
+
+.center-hub__tile {
+  min-height: clamp(140px, 18vh, 190px);
+}
+
+.center-chapter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.center-chapter__title {
+  font-size: var(--text-normal);
+  font-weight: var(--weight-bold);
+}
+
+/* -------------------------------- CARTE ------------------------------ */
+
+.map {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.map__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.map__link {
+  stroke: var(--color-surface);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  opacity: 0.9;
+}
+
+.map__link--locked {
+  opacity: 0.3;
+}
+
+.map__node {
+  cursor: pointer;
+}
+
+.map__node-label {
+  font-family: var(--font-rounded);
+  font-size: 3.2px;
+  font-weight: var(--weight-bold);
+  fill: var(--color-text);
+  text-anchor: middle;
+}
+
+.map__avatar {
+  transition: transform var(--duration-slow) var(--ease-soft);
+}
+
+.map__legend {
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+/* ----------------------------- RENCONTRE ----------------------------- */
+
+.encounter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.encounter__creature {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.encounter__name {
+  font-size: var(--text-large);
+  font-weight: var(--weight-heavy);
+}
+
+.encounter__rare {
+  color: var(--color-lavender);
+  font-weight: var(--weight-heavy);
+}
+
+.capture {
+  display: grid;
+  place-items: center;
+  gap: var(--space-5);
+  text-align: center;
+}
+
+.capture__ball {
+  color: var(--color-coral);
+}
+
+.capture__ball--throw {
+  animation: ds-ball-wobble 0.6s var(--ease-soft) 3;
+}
+
+.capture__reveal {
+  display: grid;
+  place-items: center;
+  gap: var(--space-3);
+  animation: ds-pop-in var(--duration-slow) var(--ease-bounce) both;
+}
+
+/* ------------------------------ POKEDEX ------------------------------ */
+
+.pokedex__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--space-4);
+  overflow: auto;
+  min-height: 0;
+  padding-right: var(--space-2);
+}
+
+.pokedex__detail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  text-align: center;
+}
+
+.pokedex__name {
+  font-size: var(--title);
+  font-weight: var(--weight-heavy);
+}
+
+.pokedex__meta {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.type-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--space-7);
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-pill);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-onbright);
+}
+
+/* ------------------------------- EQUIPE ------------------------------ */
+
+.team__slots {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+}
+
+.team__empty {
+  display: grid;
+  place-items: center;
+  min-height: var(--touch-large);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-muted);
+  color: var(--color-text-soft);
+}
+
+/* ------------------------------- BADGES ------------------------------ */
+
+.badges {
+  display: flex;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.badge-medal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.badge-medal--locked {
+  opacity: var(--opacity-disabled);
+  filter: saturate(var(--saturate-disabled));
+}
+
+/* ------------------------------- QUETES ------------------------------ */
+
+.quests {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  overflow: auto;
+  min-height: 0;
+}
+
+.quest-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  min-height: var(--list-row-min);
+}
+
+.quest-row__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.quest-row__count {
+  font-weight: var(--weight-heavy);
+  font-size: var(--text-large);
+}
+
+/* -------------------------------- ARENE ------------------------------ */
+
+.gym-check {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.gym-check__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: var(--list-row-min);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+  font-size: var(--text-large);
+  font-weight: var(--weight-bold);
+}
+
+.gym-check__score {
+  font-size: var(--title);
+  font-weight: var(--weight-heavy);
+  text-align: center;
+}
+
+.gym-battle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.gym-battle__opponent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.gym-battle__attack {
+  animation: ds-nudge var(--duration-slow) var(--ease-soft) both;
+}
+
+/* --------------------------- FIN DE CHAPITRE ------------------------- */
+
+.ending {
+  display: grid;
+  place-items: center;
+  gap: var(--space-5);
+  text-align: center;
+}
+
+.ending__title {
+  font-size: var(--hero-title);
+  font-weight: var(--weight-heavy);
+}

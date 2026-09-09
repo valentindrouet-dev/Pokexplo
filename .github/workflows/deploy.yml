@@ -1,0 +1,76 @@
+name: Deploy
+
+# CONCEPTION §90 :
+#   main -> npm ci -> typecheck -> lint -> tests -> build -> dist/ -> gh-pages
+#
+# Ce workflow est le SEUL à écrire sur `gh-pages` (CLAUDE.md §2).
+# Publication : Settings -> Pages -> Deploy from a branch -> gh-pages -> /root
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-gh-pages
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: TypeScript strict
+        run: npm run typecheck
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: Tests
+        run: npm run test
+
+      - name: Build de production
+        # BASE_PATH doit correspondre au nom du dépôt servi par GitHub Pages.
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}/
+        run: npm run build
+
+      - name: Vérifier le contenu publié
+        run: |
+          test -f dist/index.html
+          test -f dist/sw.js
+          test -f dist/manifest.webmanifest
+          test -f dist/.nojekyll || touch dist/.nojekyll
+
+      - name: Publier sur gh-pages
+        env:
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
+        run: |
+          set -euo pipefail
+          # gh-pages ne contient QUE le build publié : on repart d'un arbre vide.
+          cd dist
+          git init -q
+          git checkout -q -b gh-pages
+          git add -A
+          git commit -q -m "Déploiement de ${GITHUB_SHA::7}"
+          git push -q --force \
+            "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" \
+            gh-pages
+      - name: Rappel
+        run: |
+          echo "Pages : Settings > Pages > Deploy from a branch > gh-pages > / (root)"
+          echo "URL   : https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"

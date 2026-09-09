@@ -1,0 +1,302 @@
+import { IconBase, type IconProps } from './IconBase';
+
+export type { IconProps };
+
+/** Carte du monde (§147). */
+export const IconMap = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20Z" />
+    <path d="M9 4v13.5M15 6.5V20" />
+  </IconBase>
+);
+
+/** Pokedex. */
+export const IconPokedex = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H19v16H5.5A1.5 1.5 0 0 1 4 18.5Z" />
+    <path d="M8 4v16" />
+    <circle cx="14.5" cy="9" r="2.2" />
+    <path d="M12 14.5h5" />
+  </IconBase>
+);
+
+/** Equipe / sac. */
+export const IconTeam = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M4 9.5A2.5 2.5 0 0 1 6.5 7h11A2.5 2.5 0 0 1 20 9.5V18a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" />
+    <path d="M9 7V5.5A2.5 2.5 0 0 1 11.5 3h1A2.5 2.5 0 0 1 15 5.5V7" />
+    <path d="M4 12.5h16" />
+  </IconBase>
+);
+
+/** Badge d'Arene. */
+export const IconBadge = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="m12 3 2.6 1.6 3-.2 1 2.9 2.2 2-1.4 2.7.4 3-2.9 1-2 2.3-2.9-.9-2.9.9-2-2.3-2.9-1 .4-3L3.2 9.3l2.2-2 1-2.9 3 .2Z" />
+    <path d="m9.6 12 1.7 1.8 3.2-3.5" />
+  </IconBase>
+);
+
+/** Professeur. */
+export const IconProfessor = (p: IconProps) => (
+  <IconBase {...p}>
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4.5 20a7.5 7.5 0 0 1 15 0" />
+    <path d="M8.5 6.5h7" />
+  </IconBase>
+);
+
+/** Quetes. */
+export const IconQuest = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M6 3.5h9.5L19 7v13.5H6a1.5 1.5 0 0 1-1.5-1.5V5A1.5 1.5 0 0 1 6 3.5Z" />
+    <path d="M15 3.5V7h4" />
+    <path d="m8.5 13 1.8 1.8 4-4.2" />
+  </IconBase>
+);
+
+/** Reglages. */
+export const IconSettings = (p: IconProps) => (
+  <IconBase {...p}>
+    <circle cx="12" cy="12" r="3" />
+    <path d="M12 3.5v2M12 18.5v2M4.6 7.8l1.8 1M17.6 15.2l1.8 1M4.6 16.2l1.8-1M17.6 8.8l1.8-1" />
+  </IconBase>
+);
+
+/** Voix disponible (§166 : 🔊). */
+export const IconSpeaker = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M5 9.5h3L12 6v12l-4-3.5H5Z" />
+    <path d="M15.5 9.5a4 4 0 0 1 0 5" />
+    <path d="M18 7.5a7 7 0 0 1 0 9" />
+  </IconBase>
+);
+
+/** Lecture en cours (§166 : 🔉). */
+export const IconSpeakerPlaying = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M5 9.5h3L12 6v12l-4-3.5H5Z" />
+    <path d="M15.5 9.5a4 4 0 0 1 0 5" />
+  </IconBase>
+);
+
+/** Son coupe (§166 : 🔇). */
+export const IconSpeakerMuted = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M5 9.5h3L12 6v12l-4-3.5H5Z" />
+    <path d="m16 10 4 4M20 10l-4 4" />
+  </IconBase>
+);
+
+/** Micro (§166 : 🎙️). */
+export const IconMic = (p: IconProps) => (
+  <IconBase {...p}>
+    <rect x="9" y="3" width="6" height="10" rx="3" />
+    <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0" />
+    <path d="M12 18v3M9 21h6" />
+  </IconBase>
+);
+
+export const IconBack = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M14.5 5 8 12l6.5 7" />
+  </IconBase>
+);
+
+export const IconForward = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M9.5 5 16 12l-6.5 7" />
+  </IconBase>
+);
+
+export const IconPlay = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M8 5.5 18 12 8 18.5Z" />
+  </IconBase>
+);
+
+export const IconStop = (p: IconProps) => (
+  <IconBase {...p}>
+    <rect x="6" y="6" width="12" height="12" rx="3" />
+  </IconBase>
+);
+
+export const IconPause = (p: IconProps) => (
+  <IconBase {...p}>
+    <rect x="7" y="5.5" width="3.6" height="13" rx="1.6" />
+    <rect x="13.4" y="5.5" width="3.6" height="13" rx="1.6" />
+  </IconBase>
+);
+
+export const IconRecord = (p: IconProps) => (
+  <IconBase {...p}>
+    <circle cx="12" cy="12" r="6.5" />
+  </IconBase>
+);
+
+export const IconTrash = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M5.5 6.5h13" />
+    <path d="M9 6.5V5a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 5v1.5" />
+    <path d="M7 6.5 7.8 19a1.5 1.5 0 0 0 1.5 1.4h5.4a1.5 1.5 0 0 0 1.5-1.4L17 6.5" />
+  </IconBase>
+);
+
+export const IconCheck = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="m5.5 12.5 4 4L18.5 7" />
+  </IconBase>
+);
+
+/** Jamais utilisee comme "faux" cotee enfant (§14) : reservee a l'admin. */
+export const IconClose = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="m6.5 6.5 11 11M17.5 6.5l-11 11" />
+  </IconBase>
+);
+
+export const IconLock = (p: IconProps) => (
+  <IconBase {...p}>
+    <rect x="5" y="10" width="14" height="10" rx="3" />
+    <path d="M8.5 10V7.5a3.5 3.5 0 0 1 7 0V10" />
+  </IconBase>
+);
+
+export const IconStar = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="m12 4 2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4L4.2 9.7l5.4-.8Z" />
+  </IconBase>
+);
+
+export const IconHome = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M4 11 12 4l8 7" />
+    <path d="M6.5 10v9.5h11V10" />
+    <path d="M10 19.5v-5h4v5" />
+  </IconBase>
+);
+
+/** Centre Pokemon (croix de soin). */
+export const IconCenter = (p: IconProps) => (
+  <IconBase {...p}>
+    <rect x="3.5" y="6.5" width="17" height="13" rx="3.5" />
+    <path d="M12 9.5v7M8.5 13h7" />
+    <path d="m5 6.5 7-3.5 7 3.5" />
+  </IconBase>
+);
+
+export const IconChart = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M4 19.5h16" />
+    <rect x="6" y="11" width="3.4" height="8.5" rx="1.4" />
+    <rect x="11.3" y="6.5" width="3.4" height="13" rx="1.4" />
+    <rect x="16.6" y="14" width="3.4" height="5.5" rx="1.4" />
+  </IconBase>
+);
+
+export const IconPlus = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M12 5.5v13M5.5 12h13" />
+  </IconBase>
+);
+
+export const IconMinus = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M5.5 12h13" />
+  </IconBase>
+);
+
+export const IconDownload = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M12 4v10" />
+    <path d="m7.5 10 4.5 4.5L16.5 10" />
+    <path d="M4.5 18.5h15" />
+  </IconBase>
+);
+
+export const IconUpload = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M12 19V9" />
+    <path d="m7.5 13 4.5-4.5L16.5 13" />
+    <path d="M4.5 4.5h15" />
+  </IconBase>
+);
+
+export const IconRefresh = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M19 12a7 7 0 1 1-2.4-5.3" />
+    <path d="M19.5 4v4h-4" />
+  </IconBase>
+);
+
+export const IconHeart = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M12 19.5S4.5 14.8 4.5 9.9A4 4 0 0 1 12 7.7a4 4 0 0 1 7.5 2.2c0 4.9-7.5 9.6-7.5 9.6Z" />
+  </IconBase>
+);
+
+/** Ball de capture (motif original, §15). */
+export const IconBall = (p: IconProps) => (
+  <IconBase {...p}>
+    <circle cx="12" cy="12" r="8.2" />
+    <path d="M3.8 12h16.4" />
+    <circle cx="12" cy="12" r="2.6" />
+  </IconBase>
+);
+
+export const IconSparkle = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M12 4v5M12 15v5M4 12h5M15 12h5" />
+    <path d="m7 7 2.5 2.5M14.5 14.5 17 17M17 7l-2.5 2.5M9.5 14.5 7 17" />
+  </IconBase>
+);
+
+export const IconArrowLeft = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M19 12H5.5" />
+    <path d="M11 5.5 4.5 12l6.5 6.5" />
+  </IconBase>
+);
+
+export const IconArrowRight = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M5 12h13.5" />
+    <path d="M13 5.5 19.5 12 13 18.5" />
+  </IconBase>
+);
+
+export const IconArrowUp = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M12 19V5.5" />
+    <path d="M5.5 11 12 4.5 18.5 11" />
+  </IconBase>
+);
+
+export const IconArrowDown = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M12 5v13.5" />
+    <path d="M5.5 13 12 19.5 18.5 13" />
+  </IconBase>
+);
+
+export const IconWarning = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M12 4.5 21 19.5H3Z" />
+    <path d="M12 10v4M12 16.6v.4" />
+  </IconBase>
+);
+
+export const IconImage = (p: IconProps) => (
+  <IconBase {...p}>
+    <rect x="3.5" y="5" width="17" height="14" rx="3" />
+    <circle cx="9" cy="10" r="1.6" />
+    <path d="m5 17 4.5-4.5 3.5 3.5 2.5-2 3.5 3.5" />
+  </IconBase>
+);
+
+export const IconRelease = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M12 3.5 20 8v8l-8 4.5L4 16V8Z" />
+    <path d="M12 12.2 20 8M12 12.2v8.3M12 12.2 4 8" />
+  </IconBase>
+);

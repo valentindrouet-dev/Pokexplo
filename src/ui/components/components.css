@@ -1,0 +1,666 @@
+/*
+ * Composants du design system (docs/UI_DESIGN.md §182).
+ * Aucune valeur brute : uniquement des tokens (§181).
+ */
+
+/* ---------------------------------------------------------------- *
+ * Base tactile commune (§161 : scale 1 -> 0.96 -> 1)
+ * ---------------------------------------------------------------- */
+.ds-tap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: var(--touch-min);
+  min-width: var(--touch-min);
+  font-family: var(--font-rounded);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  transition:
+    transform var(--duration-tap) var(--ease-soft),
+    background var(--duration-fast) var(--ease-soft),
+    box-shadow var(--duration-fast) var(--ease-soft),
+    opacity var(--duration-fast) var(--ease-soft);
+}
+
+.ds-tap:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.ds-tap:disabled,
+.ds-tap[aria-disabled='true'] {
+  opacity: var(--opacity-disabled);
+  filter: saturate(var(--saturate-disabled));
+  cursor: default;
+}
+
+/* ---------------------------------------------------------------- *
+ * SoftPanel (§183) — surface principale de presque tous les ecrans
+ * ---------------------------------------------------------------- */
+.ds-panel {
+  background: var(--color-surface);
+  border: var(--border-hairline);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-6);
+  min-width: 0;
+}
+
+.ds-panel--soft {
+  background: var(--color-surface-soft);
+}
+
+.ds-panel--muted {
+  background: var(--color-surface-muted);
+}
+
+.ds-panel--flat {
+  box-shadow: none;
+}
+
+.ds-panel--tight {
+  padding: var(--space-4);
+}
+
+.ds-panel--roomy {
+  padding: var(--space-7);
+}
+
+.ds-panel__title {
+  font-size: var(--title);
+  font-weight: var(--weight-heavy);
+  line-height: var(--line-tight);
+  margin-bottom: var(--space-4);
+}
+
+/* ---------------------------------------------------------------- *
+ * ModalPanel (§172) — rare, fond attenue, 1 a 2 actions maximum
+ * ---------------------------------------------------------------- */
+.ds-modal-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: grid;
+  place-items: center;
+  padding: var(--space-6);
+  padding-top: calc(var(--space-6) + var(--safe-top));
+  padding-bottom: calc(var(--space-6) + var(--safe-bottom));
+  background: var(--scrim-dark);
+  backdrop-filter: blur(var(--blur-scene));
+}
+
+.ds-modal {
+  width: min(720px, 100%);
+  max-height: 100%;
+  overflow: auto;
+  animation: ds-panel-in var(--duration-panel) var(--ease-soft) both;
+}
+
+.ds-modal__actions {
+  display: flex;
+  gap: var(--space-4);
+  justify-content: flex-end;
+  margin-top: var(--space-5);
+  flex-wrap: wrap;
+}
+
+/* ---------------------------------------------------------------- *
+ * Boutons (§151-152)
+ * ---------------------------------------------------------------- */
+.ds-button {
+  min-height: var(--touch-comfort);
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-md);
+  font-size: var(--text-normal);
+  box-shadow: var(--shadow-soft);
+}
+
+.ds-button--primary {
+  background: var(--color-action);
+  color: var(--color-text-onbright);
+  box-shadow: var(--shadow-soft), var(--shadow-inset-soft);
+}
+
+.ds-button--secondary {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: var(--border-hairline-strong);
+}
+
+.ds-button--nav {
+  background: var(--color-aqua-soft);
+}
+
+.ds-button--challenge {
+  background: var(--color-coral-soft);
+}
+
+.ds-button--nature {
+  background: var(--color-green-soft);
+}
+
+.ds-button--collection {
+  background: var(--color-lavender-soft);
+}
+
+.ds-button--large {
+  min-height: var(--touch-large);
+  font-size: var(--text-large);
+  padding: 0 var(--space-7);
+  border-radius: var(--radius-lg);
+}
+
+.ds-button--block {
+  width: 100%;
+}
+
+.ds-icon-button {
+  width: var(--touch-min);
+  height: var(--touch-min);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+  color: var(--color-text);
+}
+
+.ds-icon-button--large {
+  width: var(--touch-comfort);
+  height: var(--touch-comfort);
+}
+
+.ds-icon-button--ghost {
+  background: transparent;
+  box-shadow: none;
+}
+
+.ds-icon-button--accent {
+  background: var(--color-action);
+  color: var(--color-text-onbright);
+}
+
+.ds-pill {
+  min-height: var(--touch-min);
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  border: var(--border-hairline-strong);
+  font-size: var(--text-small);
+}
+
+.ds-pill[aria-pressed='true'] {
+  background: var(--color-action);
+  color: var(--color-text-onbright);
+  border-color: transparent;
+  box-shadow: var(--shadow-soft);
+}
+
+/* ---------------------------------------------------------------- *
+ * ChoiceButton (§167) — reponses immenses
+ * ---------------------------------------------------------------- */
+.ds-choice {
+  position: relative;
+  flex-direction: column;
+  min-width: var(--answer-min-width);
+  min-height: var(--answer-min-height);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+  font-size: var(--text-large);
+  font-weight: var(--weight-heavy);
+}
+
+.ds-choice--wide {
+  min-width: calc(var(--answer-min-width) * 1.6);
+}
+
+.ds-choice[data-state='selected'] {
+  background: var(--color-action);
+  color: var(--color-text-onbright);
+  transform: scale(1.04);
+}
+
+.ds-choice[data-state='correct'] {
+  background: var(--color-green);
+  color: var(--color-text-onbright);
+}
+
+/* §14 : jamais de croix brutale. On invite a regarder de nouveau. */
+.ds-choice[data-state='retry'] {
+  background: var(--color-yellow-soft);
+  animation: ds-nudge var(--duration-slow) var(--ease-soft) both;
+}
+
+.ds-choice[data-state='removed'] {
+  opacity: var(--opacity-disabled);
+  filter: saturate(var(--saturate-disabled));
+  pointer-events: none;
+}
+
+.ds-choice__media {
+  display: grid;
+  place-items: center;
+}
+
+.ds-choice__label {
+  font-size: var(--text-large);
+}
+
+.ds-choice__label--small {
+  font-size: var(--text-normal);
+}
+
+/* ---------------------------------------------------------------- *
+ * Onglets (§149)
+ * ---------------------------------------------------------------- */
+.ds-tabs {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ds-tab {
+  position: relative;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: var(--touch-comfort);
+  min-height: var(--touch-comfort);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+  font-size: var(--text-small);
+}
+
+.ds-tab[aria-selected='true'] {
+  background: var(--color-action);
+  color: var(--color-text-onbright);
+  transform: scale(1.04);
+}
+
+/* Marqueur de l'onglet actif : la couleur ne suffit jamais (§142). */
+.ds-tab__marker {
+  width: var(--space-5);
+  height: var(--space-1);
+  border-radius: var(--radius-pill);
+  background: currentColor;
+  opacity: 0;
+}
+
+.ds-tab[aria-selected='true'] .ds-tab__marker {
+  opacity: 1;
+}
+
+/* ---------------------------------------------------------------- *
+ * Selection (§140-142)
+ * ---------------------------------------------------------------- */
+.ds-tile {
+  position: relative;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: var(--touch-large);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+  font-size: var(--text-normal);
+  text-align: center;
+}
+
+.ds-tile[aria-pressed='true'],
+.ds-tile[data-selected='true'] {
+  background: var(--color-action);
+  color: var(--color-text-onbright);
+  transform: scale(1.03);
+}
+
+.ds-tile--locked {
+  opacity: var(--opacity-disabled);
+  filter: saturate(var(--saturate-disabled));
+}
+
+.ds-pointer {
+  display: block;
+  width: var(--space-5);
+  height: var(--space-4);
+  margin: 0 auto var(--space-1);
+  color: var(--color-action-strong);
+  animation: ds-pointer-float 1.8s var(--ease-soft) infinite;
+}
+
+.ds-pointer--inline {
+  margin: 0;
+}
+
+/* ---------------------------------------------------------------- *
+ * VoiceButton (§168-169)
+ * ---------------------------------------------------------------- */
+.ds-voice {
+  width: var(--touch-comfort);
+  height: var(--touch-comfort);
+  border-radius: var(--radius-pill);
+  background: var(--color-aqua-soft);
+  color: var(--color-text);
+  box-shadow: var(--shadow-soft);
+}
+
+.ds-voice[data-state='playing'] {
+  background: var(--color-aqua);
+  animation: ds-voice-pulse 1s var(--ease-soft) infinite;
+}
+
+.ds-voice[data-state='muted'] {
+  background: var(--color-surface-muted);
+  color: var(--color-text-soft);
+}
+
+.ds-voice[data-state='unavailable'] {
+  opacity: var(--opacity-disabled);
+}
+
+.ds-voice--small {
+  width: var(--touch-min);
+  height: var(--touch-min);
+}
+
+/* ---------------------------------------------------------------- *
+ * CreatureCard (§156)
+ * ---------------------------------------------------------------- */
+.ds-creature-card {
+  position: relative;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.ds-creature-card[data-selected='true'] {
+  background: var(--color-action);
+  color: var(--color-text-onbright);
+  transform: scale(1.04);
+}
+
+.ds-creature-card__media {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+}
+
+.ds-creature-card[data-selected='true'] .ds-creature-card__media {
+  background: var(--ui-white);
+}
+
+.ds-creature-card__name {
+  font-size: var(--text-small);
+  font-weight: var(--weight-bold);
+  line-height: var(--line-tight);
+}
+
+.ds-creature-card__unknown {
+  font-size: var(--text-large);
+  color: var(--color-text-soft);
+}
+
+/* ---------------------------------------------------------------- *
+ * Barres (§149, §184)
+ * ---------------------------------------------------------------- */
+.ds-bottom-bar {
+  position: relative;
+  z-index: var(--z-bar);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+}
+
+.ds-bottom-bar__side {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+/* ---------------------------------------------------------------- *
+ * DialogCard (§170)
+ * ---------------------------------------------------------------- */
+.ds-dialog {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-5);
+  width: min(920px, 100%);
+}
+
+.ds-dialog__portrait {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: clamp(96px, 12vw, 148px);
+  height: clamp(96px, 12vw, 148px);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-float);
+}
+
+.ds-dialog__body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ds-dialog__speaker {
+  font-size: var(--text-small);
+  font-weight: var(--weight-heavy);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-soft);
+  margin-bottom: var(--space-2);
+}
+
+.ds-dialog__text {
+  font-size: var(--text-large);
+  font-weight: var(--weight-bold);
+  line-height: var(--line-normal);
+}
+
+.ds-dialog__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+}
+
+/* ---------------------------------------------------------------- *
+ * TwoPaneLayout (§154) — 45 % / 55 %
+ * ---------------------------------------------------------------- */
+.ds-two-pane {
+  display: grid;
+  grid-template-columns: 45fr 55fr;
+  gap: var(--space-5);
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+.ds-two-pane__pane {
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 900px) {
+  .ds-two-pane {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------------------------------------------------------------- *
+ * Etats et retours (§173-175)
+ * ---------------------------------------------------------------- */
+.ds-loading {
+  display: grid;
+  place-items: center;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  color: var(--color-text-soft);
+}
+
+.ds-loading__ball {
+  animation: ds-ball-spin 1.4s linear infinite;
+  color: var(--color-coral);
+}
+
+.ds-missing-media {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+  color: var(--color-text-soft);
+}
+
+.ds-hearts {
+  display: flex;
+  gap: var(--space-2);
+  color: var(--color-coral);
+}
+
+.ds-heart--empty {
+  color: var(--color-locked);
+}
+
+.ds-progress {
+  width: 100%;
+  height: var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-sunken);
+  overflow: hidden;
+}
+
+.ds-progress__fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--color-green);
+  transition: width var(--duration-slow) var(--ease-soft);
+}
+
+.ds-progress__fill--nav {
+  background: var(--color-aqua);
+}
+
+.ds-progress__fill--collection {
+  background: var(--color-lavender);
+}
+
+.ds-badge-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--space-6);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-soft);
+  font-size: var(--text-small);
+  font-weight: var(--weight-bold);
+}
+
+.ds-scene {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-scene);
+  overflow: hidden;
+}
+
+/* §133 : le monde reste reconnaissable derriere les panneaux. */
+.ds-scene__scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--scrim-light);
+  backdrop-filter: blur(var(--blur-scene));
+}
+
+.ds-scene__scrim--soft {
+  background: var(--scrim-soft);
+}
+
+.ds-screen {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.ds-screen__content {
+  position: relative;
+  z-index: var(--z-panel);
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+}
+
+.ds-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-height: 0;
+}
+
+.ds-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.ds-row--between {
+  justify-content: space-between;
+}
+
+.ds-grid-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-5);
+}
+
+.ds-scroll {
+  overflow: auto;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ds-list-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+  min-height: var(--list-row-min);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  text-align: left;
+  font-size: var(--text-normal);
+}
+
+.ds-list-row[aria-pressed='true'],
+.ds-list-row[data-selected='true'] {
+  background: var(--color-action);
+  color: var(--color-text-onbright);
+}
+
+.ds-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}

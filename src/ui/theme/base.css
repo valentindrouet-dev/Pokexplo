@@ -1,0 +1,132 @@
+/* Base globale. Toutes les valeurs viennent de tokens.css (§181). */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-rounded);
+  font-size: var(--text-normal);
+  font-weight: var(--weight-regular);
+  line-height: var(--line-normal);
+  color: var(--color-text);
+  background: var(--color-surface-soft);
+  overscroll-behavior: none;
+  /* L'enfant touche partout : on desactive la selection et le zoom accidentel. */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* L'admin est une interface adulte : la selection de texte y est utile. */
+body[data-surface='admin'] {
+  -webkit-user-select: auto;
+  user-select: auto;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+figure {
+  margin: 0;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* Focus visible : indispensable au clavier, invisible au toucher. */
+:focus-visible {
+  outline: 3px solid var(--color-lavender);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+/* §163 / accessibilite : on n'anime pas si l'utilisateur ne le souhaite pas. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Ecran de demarrage affiche avant React (index.html). */
+.boot-splash {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  background: var(--color-surface-soft);
+}
+
+.boot-splash__mark {
+  width: var(--touch-large);
+  height: var(--touch-large);
+  border-radius: var(--radius-pill);
+  background: linear-gradient(180deg, var(--color-aqua) 50%, var(--color-lavender) 50%);
+  box-shadow: var(--shadow-soft);
+}
+
+/* Lecteur d'ecran uniquement. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.app-root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
+}

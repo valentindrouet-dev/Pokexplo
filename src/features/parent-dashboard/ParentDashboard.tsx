@@ -1,0 +1,205 @@
+import { useMemo, useState } from 'react';
+import type { AudioSettings } from '../../types';
+import { masteryByCategory, skillsToPractice } from '../../exercise-engine';
+import { AssetService } from '../../services';
+import {
+  BadgeChip,
+  IconDownload,
+  IconSettings,
+  LoadingBall,
+  PillButton,
+  PrimaryButton,
+  ProgressBar,
+  SecondaryButton,
+  SoftPanel,
+} from '../../ui';
+import { percent } from '../../utils/text';
+import { useAudio } from '../../app/providers/AudioProvider';
+import { useContent } from '../../app/providers/ContentProvider';
+import { useGame } from '../../app/providers/GameProvider';
+import { useNavigation } from '../../app/router';
+import './parent.css';
+
+/**
+ * TABLEAU PARENT (CONCEPTION §77).
+ *
+ * Il montre la maitrise par domaine et ce qui est a retravailler.
+ * L'enfant ne voit jamais ces chiffres (§75).
+ */
+export function ParentDashboard() {
+  const { navigate } = useNavigation();
+  const { bundle } = useContent();
+  const { save, dispatch } = useGame();
+  const { settings, setSettings } = useAudio();
+  const [download, setDownload] = useState<string | null>(null);
+
+  const skillLabels = useMemo(
+    () => new Map(bundle?.skills.map((skill) => [skill.id, skill]) ?? []),
+    [bundle],
+  );
+
+  const categories = useMemo(() => {
+    if (!save || !bundle) return {};
+    const mapping: Record<string, string> = {};
+    for (const skill of bundle.skills) mapping[skill.id] = skill.parentLabel;
+    return masteryByCategory(save.learning, mapping);
+  }, [save, bundle]);
+
+  if (!bundle || !save) {
+    return <LoadingBall />;
+  }
+
+  const toPractice = skillsToPractice(save.learning);
+  const captured = Object.values(save.pokedex).filter((entry) => entry.state === 'CAPTURED').length;
+
+  const update = (patch: Partial<AudioSettings>): void => setSettings({ ...settings, ...patch });
+
+  const runDownload = async (): Promise<void> => {
+    setDownload('Téléchargement…');
+    const result = await AssetService.downloadCurrentAdventure(bundle);
+    setDownload(
+      `${result.loaded} fichier(s) en cache${result.missing > 0 ? `, ${result.missing} sans média (voix non enregistrée)` : ''}.`,
+    );
+  };
+
+  return (
+    <div className="parent">
+      <div className="ds-row ds-row--between">
+        <h1 className="ds-panel__title">Espace parents — {save.profile.nickname}</h1>
+        <div className="ds-row">
+          <SecondaryButton onClick={() => navigate({ name: 'center' })}>
+            Retour au jeu
+          </SecondaryButton>
+          <SecondaryButton
+            icon={<IconSettings size={26} />}
+            onClick={() => navigate({ name: 'admin', section: 'dashboard' })}
+          >
+            Administration
+          </SecondaryButton>
+        </div>
+      </div>
+
+      <div className="parent__grid">
+        <SoftPanel title="Progression pédagogique">
+          {Object.keys(categories).length === 0 ? (
+            <p>Les statistiques apparaîtront après les premiers exercices.</p>
+          ) : (
+            Object.entries(categories).map(([label, value]) => (
+              <div key={label} className="parent__stat">
+                <div className="parent__stat-head">
+                  <span>{label}</span>
+                  <span>{percent(value)}</span>
+                </div>
+                <ProgressBar value={value} label={label} />
+              </div>
+            ))
+          )}
+        </SoftPanel>
+
+        <SoftPanel title="À retravailler">
+          {toPractice.length === 0 ? (
+            <p>Rien de particulier pour l’instant. Tout se passe bien !</p>
+          ) : (
+            <ul className="parent__list">
+              {toPractice.map((stats) => (
+                <li key={stats.skillId} className="ds-list-row">
+                  <span>{skillLabels.get(stats.skillId)?.label ?? stats.skillId}</span>
+                  <span>{percent(stats.mastery)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </SoftPanel>
+
+        <SoftPanel title="Aventure">
+          <div className="ds-row">
+            <BadgeChip>{captured} créatures attrapées</BadgeChip>
+            <BadgeChip>{save.state.badges.length} badge(s)</BadgeChip>
+            <BadgeChip>{save.state.completedNodes.length} lieux explorés</BadgeChip>
+          </div>
+          <p className="start__subtitle">
+            Sauvegarde n° {save.state.saveRevision} — contenu {save.contentReleaseId}
+          </p>
+        </SoftPanel>
+
+        <SoftPanel title="Programme">
+          <div className="ds-row">
+            {bundle.curriculumPacks.map((pack) => (
+              <PillButton
+                key={pack.id}
+                active={save.profile.packId === pack.id}
+                onClick={() => void dispatch({ kind: 'PROFILE_UPDATE', packId: pack.id })}
+              >
+                {pack.label}
+              </PillButton>
+            ))}
+          </div>
+          <p className="start__subtitle">
+            Le programme limite la difficulté des exercices proposés.
+          </p>
+        </SoftPanel>
+
+        <SoftPanel title="Son">
+          <label className="parent__slider">
+            Voix
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={Math.round(settings.voicesVolume * 100)}
+              onChange={(event) => update({ voicesVolume: Number(event.target.value) / 100 })}
+            />
+          </label>
+          <label className="parent__slider">
+            Musique
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={Math.round(settings.musicVolume * 100)}
+              onChange={(event) => update({ musicVolume: Number(event.target.value) / 100 })}
+            />
+          </label>
+          <label className="parent__slider">
+            Bruitages
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={Math.round(settings.sfxVolume * 100)}
+              onChange={(event) => update({ sfxVolume: Number(event.target.value) / 100 })}
+            />
+          </label>
+          <div className="ds-row">
+            <PillButton active={settings.muted} onClick={() => update({ muted: !settings.muted })}>
+              {settings.muted ? 'Son coupé' : 'Son activé'}
+            </PillButton>
+            <PillButton
+              active={settings.autoPlayVoices}
+              onClick={() => update({ autoPlayVoices: !settings.autoPlayVoices })}
+            >
+              Lecture automatique
+            </PillButton>
+            <PillButton
+              active={settings.ttsFallback}
+              onClick={() => update({ ttsFallback: !settings.ttsFallback })}
+            >
+              Voix de synthèse si besoin
+            </PillButton>
+          </div>
+        </SoftPanel>
+
+        <SoftPanel title="Hors ligne">
+          <p>
+            Télécharge les images et les voix de l’aventure pour jouer sans connexion (mode avion,
+            voiture, vacances).
+          </p>
+          <PrimaryButton icon={<IconDownload size={26} />} onClick={() => void runDownload()}>
+            Télécharger l’aventure
+          </PrimaryButton>
+          {download ? <p className="start__subtitle">{download}</p> : null}
+        </SoftPanel>
+      </div>
+    </div>
+  );
+}

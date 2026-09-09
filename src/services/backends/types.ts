@@ -1,0 +1,66 @@
+import type {
+  AppMeta,
+  ContentBundle,
+  ContentRelease,
+  MediaPath,
+  ProfileId,
+  ReleaseId,
+  SaveFile,
+} from '../../types';
+
+export type UserRole = 'ADMIN' | 'PLAYER';
+
+export interface SessionUser {
+  uid: string;
+  role: UserRole;
+  displayName: string;
+}
+
+export interface AuthPort {
+  currentUser(): Promise<SessionUser>;
+  /** Passage en mode administrateur (§93). */
+  elevate(secret: string): Promise<SessionUser>;
+  signOutAdmin(): Promise<SessionUser>;
+}
+
+export interface ContentPort {
+  getMeta(): Promise<AppMeta | null>;
+  setMeta(meta: AppMeta): Promise<void>;
+  getRelease(id: ReleaseId): Promise<ContentRelease | null>;
+  listReleases(): Promise<ContentRelease[]>;
+  putRelease(release: ContentRelease): Promise<void>;
+  getDraft(): Promise<ContentBundle | null>;
+  putDraft(bundle: ContentBundle): Promise<void>;
+}
+
+export interface SavePort {
+  list(): Promise<SaveFile[]>;
+  get(profileId: ProfileId): Promise<SaveFile | null>;
+  put(save: SaveFile): Promise<void>;
+  /** Jamais de suppression silencieuse : on archive (CLAUDE.md §2). */
+  archive(profileId: ProfileId): Promise<void>;
+}
+
+export interface MediaRecordMeta {
+  path: MediaPath;
+  mimeType: string;
+  size: number;
+  duration?: number;
+  updatedAt: number;
+}
+
+export interface MediaPort {
+  put(path: MediaPath, blob: Blob, meta: Omit<MediaRecordMeta, 'path' | 'size' | 'updatedAt'>): Promise<MediaRecordMeta>;
+  getBlob(path: MediaPath): Promise<Blob | null>;
+  getUrl(path: MediaPath): Promise<string | null>;
+  list(prefix?: string): Promise<MediaRecordMeta[]>;
+  remove(path: MediaPath): Promise<void>;
+}
+
+export interface Backend {
+  readonly kind: 'local' | 'firebase';
+  auth: AuthPort;
+  content: ContentPort;
+  saves: SavePort;
+  media: MediaPort;
+}

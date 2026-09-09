@@ -1,0 +1,237 @@
+/*
+ * Ecran d'exercice (docs/UI_DESIGN.md §165-167).
+ * Une seule question visuelle, des reponses immenses, rien d'autre.
+ */
+
+.exercise {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  align-items: center;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.exercise__prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  text-align: center;
+}
+
+.exercise__question {
+  font-size: var(--text-large);
+  font-weight: var(--weight-heavy);
+  line-height: var(--line-tight);
+  max-width: 22ch;
+}
+
+.exercise__stage {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.exercise__answers {
+  display: flex;
+  gap: var(--space-5);
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.exercise__answers--column {
+  flex-direction: column;
+}
+
+.exercise__hint {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-pill);
+  background: var(--color-yellow-soft);
+  font-size: var(--text-normal);
+  font-weight: var(--weight-bold);
+  animation: ds-pop-in var(--duration-panel) var(--ease-bounce) both;
+}
+
+/* ------------------------- presentations ------------------------- */
+
+.stage-group {
+  position: relative;
+  width: min(100%, 620px);
+  aspect-ratio: 16 / 9;
+}
+
+.stage-group__item {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  transition: transform var(--duration-fast) var(--ease-soft);
+}
+
+.stage-group__item[data-highlight='true'] {
+  transform: translate(-50%, -50%) scale(1.18);
+  filter: var(--drop-shadow-glow);
+}
+
+.stage-word {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.stage-word__letter {
+  display: grid;
+  place-items: center;
+  min-width: var(--touch-min);
+  min-height: var(--touch-comfort);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+  font-size: var(--title);
+  font-weight: var(--weight-heavy);
+}
+
+.stage-word__letter--hidden {
+  background: var(--color-yellow-soft);
+  color: var(--color-text-soft);
+}
+
+.stage-syllables {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.stage-syllables__row {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.stage-syllables__chunk {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--color-lavender-soft);
+  font-size: var(--text-large);
+  font-weight: var(--weight-heavy);
+}
+
+.stage-numbers {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.stage-numbers__cell {
+  display: grid;
+  place-items: center;
+  min-width: var(--touch-comfort);
+  min-height: var(--touch-comfort);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+  font-size: var(--title);
+  font-weight: var(--weight-heavy);
+}
+
+.stage-numbers__cell--hole {
+  background: var(--color-yellow-soft);
+  color: var(--color-text-soft);
+}
+
+.stage-operation {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.stage-operation__side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.stage-operation__objects {
+  display: flex;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 220px;
+}
+
+.stage-operation__value {
+  font-size: var(--title);
+  font-weight: var(--weight-heavy);
+}
+
+.stage-operation__sign {
+  font-size: var(--hero-title);
+  font-weight: var(--weight-heavy);
+  color: var(--color-text-soft);
+}
+
+.stage-grid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.stage-grid__board {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.stage-grid__cell {
+  display: grid;
+  place-items: center;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-soft);
+}
+
+.stage-grid__cell--start {
+  background: var(--color-aqua-soft);
+}
+
+.stage-grid__path {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  color: var(--color-coral);
+}
+
+.choice-group {
+  display: flex;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 180px;
+}
+
+.choice-mini-grid {
+  display: grid;
+  gap: var(--space-0);
+}
+
+.choice-mini-grid__cell {
+  width: var(--space-4);
+  height: var(--space-4);
+  border-radius: var(--radius-xs);
+  background: var(--color-surface-muted);
+}
+
+.choice-mini-grid__cell--on {
+  background: var(--color-coral);
+}

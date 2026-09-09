@@ -1,0 +1,311 @@
+/*
+ * ADMIN (docs/UI_DESIGN.md §178).
+ * Interface adulte : elle peut etre plus dense et utiliser tableaux et
+ * formulaires. Elle partage couleurs, typographie et composants avec /play.
+ */
+
+.admin {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  height: 100%;
+  min-height: 0;
+}
+
+@media (max-width: 900px) {
+  .admin {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+}
+
+.admin__nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  padding-top: calc(var(--space-4) + var(--safe-top));
+  background: var(--color-surface-soft);
+  border-right: var(--border-hairline);
+  overflow: auto;
+}
+
+.admin__brand {
+  font-size: var(--text-large);
+  font-weight: var(--weight-heavy);
+  margin-bottom: var(--space-3);
+}
+
+.admin__nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--touch-min);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--text-small);
+  font-weight: var(--weight-bold);
+  text-align: left;
+  width: 100%;
+}
+
+.admin__nav-item[aria-current='true'] {
+  background: var(--color-action);
+  color: var(--color-text-onbright);
+}
+
+.admin__main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  padding-top: calc(var(--space-5) + var(--safe-top));
+  padding-bottom: calc(var(--space-5) + var(--safe-bottom));
+  overflow: auto;
+  min-height: 0;
+}
+
+.admin__gate {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  padding: var(--space-6);
+}
+
+.admin__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.admin__status {
+  font-size: var(--text-small);
+  color: var(--color-text-soft);
+}
+
+.admin__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-4);
+}
+
+.admin__metric {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.admin__metric-value {
+  font-size: var(--hero-title);
+  font-weight: var(--weight-heavy);
+  line-height: var(--line-tight);
+}
+
+.admin__metric-label {
+  font-size: var(--text-small);
+  color: var(--color-text-soft);
+}
+
+.admin__editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-height: 0;
+}
+
+.admin__scroll-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  overflow: auto;
+  max-height: 60vh;
+  min-height: 0;
+}
+
+.admin__issue {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+  font-size: var(--text-small);
+}
+
+.admin__issue--error {
+  background: var(--color-coral-soft);
+}
+
+/* ----------------------------- champs ----------------------------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.field__label {
+  font-size: var(--text-small);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-soft);
+}
+
+.field__input,
+.field__select,
+.field__textarea {
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  border: var(--border-hairline-strong);
+  background: var(--color-surface);
+  font-size: var(--text-normal);
+  font-family: var(--font-rounded);
+}
+
+.field__textarea {
+  min-height: calc(var(--touch-min) * 2);
+  resize: vertical;
+  line-height: var(--line-normal);
+}
+
+.field__row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-4);
+}
+
+/* ------------------------ VoiceTextEditor ------------------------- */
+
+.vte {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-soft);
+  border: var(--border-hairline);
+}
+
+.vte__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.vte__title {
+  font-size: var(--text-small);
+  font-weight: var(--weight-heavy);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-soft);
+}
+
+.vte__status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-small);
+  font-weight: var(--weight-bold);
+  background: var(--color-surface-muted);
+}
+
+.vte__status--ok {
+  background: var(--color-green-soft);
+}
+
+.vte__status--outdated {
+  background: var(--color-yellow-soft);
+}
+
+.vte__status--missing {
+  background: var(--color-coral-soft);
+}
+
+.vte__actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.vte__warning {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-yellow-soft);
+  font-size: var(--text-small);
+  font-weight: var(--weight-bold);
+}
+
+.vte__take {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.vte__hidden-input {
+  display: none;
+}
+
+/* Prompteur plein ecran pendant l'enregistrement (§41). */
+.prompter {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  padding: var(--space-7);
+  padding-top: calc(var(--space-7) + var(--safe-top));
+  padding-bottom: calc(var(--space-7) + var(--safe-bottom));
+  background: var(--color-surface);
+  text-align: center;
+}
+
+.prompter__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  font-size: var(--text-large);
+  font-weight: var(--weight-heavy);
+  color: var(--color-coral);
+}
+
+.prompter__timer {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
+.prompter__text {
+  font-size: clamp(32px, 5vw, 56px);
+  font-weight: var(--weight-heavy);
+  line-height: var(--line-tight);
+  max-width: 18ch;
+  text-transform: uppercase;
+}
+
+.dubbing {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.dubbing__counter {
+  font-size: var(--text-large);
+  font-weight: var(--weight-heavy);
+}

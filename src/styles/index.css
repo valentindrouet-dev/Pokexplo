@@ -1,0 +1,20 @@
+/*
+ * FEUILLE DE STYLE GLOBALE (arborescence CONCEPTION §85).
+ *
+ * Ce fichier est le SEUL point d'entrée CSS de l'application : il assemble les
+ * couches dans l'ordre imposé par le design system (docs/UI_DESIGN.md §179).
+ *
+ *   1. tokens      — toutes les valeurs centrales (§180) ;
+ *   2. base        — reset, typographie, safe-area, prefers-reduced-motion ;
+ *   3. animations  — keyframes partagées (§162) ;
+ *   4. composants  — design system (§182) puis composants transverses.
+ *
+ * Les styles d'écran vivent à côté de leur feature et n'utilisent QUE des
+ * tokens (§181, vérifié par tests/ui/design-tokens.test.ts).
+ */
+
+@import '../ui/theme/tokens.css';
+@import '../ui/theme/base.css';
+@import '../ui/animations/animations.css';
+@import '../ui/components/components.css';
+@import '../components/components.css';

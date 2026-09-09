@@ -1,0 +1,101 @@
+import {
+  createContext,
+  use,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
+import type { ContentBundle, ValidationReport } from '../../types';
+import { ContentService } from '../../services';
+
+export interface AdminDraftValue {
+  draft: ContentBundle | null;
+  /** Modifie le brouillon (immuable) et declenche l'enregistrement differe. */
+  update: (mutate: (draft: ContentBundle) => ContentBundle) => void;
+  saving: boolean;
+  savedAt: number | null;
+  validation: ValidationReport | null;
+  revalidate: () => void;
+  reload: () => Promise<void>;
+  resetFromPublished: () => Promise<void>;
+}
+
+const AdminDraftContext = createContext<AdminDraftValue | null>(null);
+
+const AUTOSAVE_MS = 700;
+
+/**
+ * CONCEPTION §99 — le Master travaille toujours sur un BROUILLON.
+ * Rien n'est visible par l'enfant tant que la release n'est pas publiee.
+ */
+export function AdminDraftProvider({ children }: { children: ReactNode }) {
+  const [draft, setDraft] = useState<ContentBundle | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [validation, setValidation] = useState<ValidationReport | null>(null);
+  const timer = useRef<number | null>(null);
+
+  const reload = useCallback(async () => {
+    const loaded = await ContentService.getDraft();
+    setDraft(loaded);
+    setValidation(ContentService.validate(loaded));
+  }, []);
+
+  useEffect(() => {
+    void reload();
+  }, [reload]);
+
+  useEffect(
+    () => () => {
+      if (timer.current !== null) window.clearTimeout(timer.current);
+    },
+    [],
+  );
+
+  const update = useCallback((mutate: (current: ContentBundle) => ContentBundle) => {
+    setDraft((current) => {
+      if (!current) return current;
+      const next = mutate(current);
+      if (timer.current !== null) window.clearTimeout(timer.current);
+      timer.current = window.setTimeout(() => {
+        setSaving(true);
+        void ContentService.saveDraft(next)
+          .then(() => setSavedAt(Date.now()))
+          .finally(() => setSaving(false));
+      }, AUTOSAVE_MS);
+      setValidation(ContentService.validate(next));
+      return next;
+    });
+  }, []);
+
+  const resetFromPublished = useCallback(async () => {
+    const restored = await ContentService.resetDraftFromPublished();
+    setDraft(restored);
+    setValidation(ContentService.validate(restored));
+  }, []);
+
+  const value = useMemo<AdminDraftValue>(
+    () => ({
+      draft,
+      update,
+      saving,
+      savedAt,
+      validation,
+      revalidate: () => setValidation(draft ? ContentService.validate(draft) : null),
+      reload,
+      resetFromPublished,
+    }),
+    [draft, update, saving, savedAt, validation, reload, resetFromPublished],
+  );
+
+  return <AdminDraftContext value={value}>{children}</AdminDraftContext>;
+}
+
+export function useAdminDraft(): AdminDraftValue {
+  const context = use(AdminDraftContext);
+  if (!context) throw new Error('useAdminDraft doit être utilisé dans <AdminDraftProvider>');
+  return context;
+}
