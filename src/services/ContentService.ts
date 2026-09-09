@@ -9,6 +9,7 @@ import type {
 import { SAVE_SCHEMA_VERSION } from '../types/save';
 import { defaultContentBundle } from '../content/defaultContent';
 import { voiceStatus } from '../utils/voice';
+import { deepClone } from '../utils/clone';
 import { getBackend } from './backends';
 
 const APP_VERSION = typeof __APP_VERSION__ === 'string' ? __APP_VERSION__ : '0.0.0';
@@ -77,7 +78,7 @@ class ContentServiceImpl {
     const draft = await backend.content.getDraft();
     if (draft) return draft;
     const published = await this.load();
-    const copy: ContentBundle = structuredClone(published.bundle);
+    const copy: ContentBundle = deepClone(published.bundle);
     await backend.content.putDraft(copy);
     return copy;
   }
@@ -90,7 +91,7 @@ class ContentServiceImpl {
   async resetDraftFromPublished(): Promise<ContentBundle> {
     const backend = await getBackend();
     const published = await this.load(true);
-    const copy: ContentBundle = structuredClone(published.bundle);
+    const copy: ContentBundle = deepClone(published.bundle);
     await backend.content.putDraft(copy);
     return copy;
   }

@@ -1,6 +1,7 @@
 import type { AppMeta, ContentBundle, ContentRelease, ReleaseId } from '../types';
 import { SAVE_SCHEMA_VERSION } from '../types/save';
 import { releaseId as makeReleaseId } from '../utils/id';
+import { deepClone } from '../utils/clone';
 import { getBackend } from './backends';
 import { ContentService } from './ContentService';
 
@@ -67,7 +68,7 @@ class ReleaseServiceImpl {
     const backend = await getBackend();
     const id = await this.nextReleaseId();
     const bundle: ContentBundle = {
-      ...structuredClone(draft),
+      ...deepClone(draft),
       releaseId: id,
       contentVersion: id,
       createdAt: Date.now(),

@@ -27,6 +27,15 @@ Trois versions sont suivies séparément (§112) : `APP_VERSION`, `CONTENT_VERSI
   faisait échouer la lecture des fichiers servis sans en-tête CORS.
 - Navigation unifiée : plus aucune écriture directe de `window.location.hash`
   hors du routeur.
+- **Compatibilité iPadOS antérieur à 15.4** : `structuredClone`, appelé dès le
+  premier chargement, n'y existe pas. Une copie profonde compatible prend le
+  relais. Préfixe `-webkit-` ajouté sur `backdrop-filter` (Safari).
+
+### Ajouté
+
+- La version installée est affichée sur l'écran d'accueil : indispensable pour
+  vérifier, depuis l'iPad, que le Service Worker ne sert plus une version
+  précédente.
 
 ## [1.0.0] — Version initiale
 

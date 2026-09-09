@@ -91,3 +91,31 @@ describe('Stockage local (docs/TECHNICAL_SPEC.md)', () => {
     expect(await db().keys(STORES.media)).toEqual(['media/b']);
   });
 });
+
+describe('Compatibilité iPadOS ancien', () => {
+  it('copie le contenu même sans structuredClone (< iPadOS 15.4)', async () => {
+    const original = Object.getOwnPropertyDescriptor(globalThis, 'structuredClone');
+    Object.defineProperty(globalThis, 'structuredClone', {
+      configurable: true,
+      writable: true,
+      value: undefined,
+    });
+
+    try {
+      const { deepClone } = await import('../../src/utils/clone');
+      const { defaultContentBundle } = await import('../../src/content/defaultContent');
+
+      const source = { nested: { list: [1, 2, 3] }, nom: 'Piloupi' };
+      const copy = deepClone(source);
+      expect(copy).toEqual(source);
+      expect(copy.nested).not.toBe(source.nested);
+
+      // Le contenu livré doit pouvoir être construit sans structuredClone.
+      const bundle = defaultContentBundle();
+      expect(bundle.creatures.length).toBeGreaterThan(0);
+      expect(bundle.voiceMessages.length).toBeGreaterThan(0);
+    } finally {
+      if (original) Object.defineProperty(globalThis, 'structuredClone', original);
+    }
+  });
+});

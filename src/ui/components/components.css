@@ -86,6 +86,8 @@
   padding-top: calc(var(--space-6) + var(--safe-top));
   padding-bottom: calc(var(--space-6) + var(--safe-bottom));
   background: var(--scrim-dark);
+  /* Safari exige encore le prefixe pour l'effet de voile (§133). */
+  -webkit-backdrop-filter: blur(var(--blur-scene));
   backdrop-filter: blur(var(--blur-scene));
 }
 
@@ -584,6 +586,8 @@
   position: absolute;
   inset: 0;
   background: var(--scrim-light);
+  /* Safari exige encore le prefixe pour l'effet de voile (§133). */
+  -webkit-backdrop-filter: blur(var(--blur-scene));
   backdrop-filter: blur(var(--blur-scene));
 }
 

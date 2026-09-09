@@ -1,4 +1,5 @@
 import type { ContentBundle } from '../types';
+import { deepClone } from '../utils/clone';
 import { defaultCreatures } from './creatures';
 import { defaultBiomes } from './biomes';
 import { defaultNodes, defaultSpecialEncounters } from './nodes';
@@ -46,5 +47,5 @@ export function defaultContentBundle(): ContentBundle {
     ],
   };
 
-  return structuredClone(bundle);
+  return deepClone(bundle);
 }
