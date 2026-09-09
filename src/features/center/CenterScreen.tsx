@@ -5,9 +5,11 @@ import {
   IconBadge,
   IconMap,
   IconPokedex,
+  IconChart,
   IconProfessor,
   IconQuest,
   IconTeam,
+  IconButton,
   LoadingBall,
   PrimaryButton,
   ProgressBar,
@@ -77,11 +79,24 @@ export function CenterScreen() {
       backTo={null}
       scrim="light"
       extraLeft={
-        <VoiceButton
-          state={buttonState(professorVoiceId)}
-          onPlay={() => speak(professorVoiceId)}
-          label="Écouter le Professeur"
-        />
+        <>
+          <VoiceButton
+            state={buttonState(professorVoiceId)}
+            onPlay={() => speak(professorVoiceId)}
+            label="Écouter le Professeur"
+          />
+          {/*
+            Accès adulte depuis le hub. Volontairement discret (bouton fantôme,
+            sans aplat de couleur) : il ne doit pas attirer l'enfant, mais un
+            parent doit pouvoir le trouver sans relancer l'application.
+          */}
+          <IconButton
+            ghost
+            label="Espace parents"
+            icon={<IconChart size={26} />}
+            onClick={() => navigate({ name: 'parents' })}
+          />
+        </>
       }
       action={
         <PrimaryButton large icon={<IconMap size={30} />} onClick={() => navigate({ name: 'map' })}>

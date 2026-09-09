@@ -176,7 +176,7 @@ export function EncounterScreen({ nodeId }: { nodeId: string }) {
             instance={instance}
             header={
               <div className="encounter__creature">
-                <CreatureSprite creature={creature} size={110} animated />
+                <CreatureSprite creature={creature} size={88} animated />
               </div>
             }
             onAttempt={(_correct, attempts) => {

@@ -38,7 +38,7 @@ export function ExercisePresentationView({
             >
               <CreatureSprite
                 creature={creature(item.creatureId)}
-                size={Math.round(88 * item.scale)}
+                size={Math.round(74 * item.scale)}
               />
             </span>
           ))}
@@ -46,7 +46,7 @@ export function ExercisePresentationView({
       );
 
     case 'CREATURE_SINGLE':
-      return <CreatureSprite creature={creature(presentation.creatureId)} size={200} animated />;
+      return <CreatureSprite creature={creature(presentation.creatureId)} size={160} animated />;
 
     case 'WORD':
       return (

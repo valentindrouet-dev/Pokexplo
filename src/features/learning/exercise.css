@@ -6,7 +6,7 @@
 .exercise {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--space-4);
   align-items: center;
   flex: 1 1 auto;
   min-height: 0;
@@ -16,8 +16,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
   text-align: center;
+  flex: 0 0 auto;
 }
 
 .exercise__question {
@@ -27,20 +28,28 @@
   max-width: 22ch;
 }
 
+/*
+ * Zone de jeu.
+ *
+ * `overflow: hidden` est essentiel : sans lui, la scene debordait par-dessus
+ * les reponses et l'enfant voyait des creatures derriere les boutons.
+ */
 .exercise__stage {
   display: grid;
   place-items: center;
   width: 100%;
   flex: 1 1 auto;
-  min-height: 0;
+  min-height: var(--stage-min);
+  overflow: hidden;
 }
 
 .exercise__answers {
   display: flex;
   gap: var(--space-5);
   justify-content: center;
-  align-items: center;
+  align-items: stretch;
   flex-wrap: wrap;
+  flex: 0 0 auto;
 }
 
 .exercise__answers--column {
@@ -48,6 +57,7 @@
 }
 
 .exercise__hint {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: var(--space-3);
@@ -61,10 +71,15 @@
 
 /* ------------------------- presentations ------------------------- */
 
+/*
+ * On ne fixe PAS de ratio : une boite en `aspect-ratio` ne contribue pas a la
+ * hauteur intrinseque de son parent flex, et elle debordait donc de la scene.
+ * La scene donne sa hauteur, le placement en pourcentage s'y adapte.
+ */
 .stage-group {
   position: relative;
   width: min(100%, 620px);
-  aspect-ratio: 16 / 9;
+  height: 100%;
 }
 
 .stage-group__item {

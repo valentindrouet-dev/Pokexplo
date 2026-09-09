@@ -177,12 +177,17 @@ export function ExerciseView({ instance, onSolved, header, onAttempt }: Exercise
             wide={choice.kind === 'TEXT'}
             state={choiceState(choice)}
             onClick={() => handleChoice(choice)}
-            media={<ChoiceMedia choice={choice} />}
+            media={hasMedia(choice) ? <ChoiceMedia choice={choice} /> : undefined}
           />
         ))}
       </div>
     </div>
   );
+}
+
+/** Seules ces reponses portent une illustration ; les autres restent textuelles. */
+function hasMedia(choice: ExerciseChoice): boolean {
+  return choice.kind === 'CREATURE' || choice.kind === 'GROUP' || choice.kind === 'CELL';
 }
 
 function choiceLabel(choice: ExerciseChoice): string {

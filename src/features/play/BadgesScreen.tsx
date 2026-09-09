@@ -19,7 +19,7 @@ export function BadgesScreen() {
 
   return (
     <PlayScreen scrim="soft">
-      <SoftPanel title="Tes badges" padding="roomy" className="ds-stack">
+      <SoftPanel title="Tes badges" padding="roomy" fill className="ds-scroll">
         <div className="badges">
           {bundle.badges.map((badge) => {
             const owned = save.state.badges.includes(badge.id);

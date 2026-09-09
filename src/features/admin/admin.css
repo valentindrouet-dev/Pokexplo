@@ -4,9 +4,14 @@
  * formulaires. Elle partage couleurs, typographie et composants avec /play.
  */
 
+/*
+ * Administration : interface ADULTE (§178), donc dense.
+ * `surface-dense` (tokens.css) reduit typographie, espacements et cible
+ * tactile a 44 px : les treize sections tiennent alors sur un ecran d'iPad.
+ */
 .admin {
   display: grid;
-  grid-template-columns: 240px 1fr;
+  grid-template-columns: 232px 1fr;
   height: 100%;
   min-height: 0;
 }
@@ -21,12 +26,39 @@
 .admin__nav {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
-  padding: var(--space-4);
-  padding-top: calc(var(--space-4) + var(--safe-top));
+  gap: var(--space-2);
+  padding: var(--space-3);
+  padding-top: calc(var(--space-3) + var(--safe-top));
+  padding-bottom: calc(var(--space-3) + var(--safe-bottom));
   background: var(--color-surface-soft);
   border-right: var(--border-hairline);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.admin__nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Sur une seule ligne : les treize sections tiennent alors sans defilement. */
+.admin__nav-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex: 0 0 auto;
+  padding-top: var(--space-3);
+  border-top: var(--border-hairline);
+}
+
+.admin__nav-actions > button {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0 var(--space-3);
 }
 
 .admin__brand {
@@ -38,14 +70,22 @@
 .admin__nav-item {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: var(--space-3);
   min-height: var(--touch-min);
-  padding: 0 var(--space-4);
+  padding: 0 var(--space-3);
   border-radius: var(--radius-md);
   font-size: var(--text-small);
   font-weight: var(--weight-bold);
   text-align: left;
   width: 100%;
+  /* Les libelles tiennent sur une ligne : la colonne reste compacte. */
+  white-space: nowrap;
+}
+
+.admin__nav-item > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .admin__nav-item[aria-current='true'] {
@@ -56,11 +96,12 @@
 .admin__main {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-  padding: var(--space-5);
-  padding-top: calc(var(--space-5) + var(--safe-top));
-  padding-bottom: calc(var(--space-5) + var(--safe-bottom));
+  gap: var(--space-3);
+  padding: var(--space-4);
+  padding-top: calc(var(--space-4) + var(--safe-top));
+  padding-bottom: calc(var(--space-4) + var(--safe-bottom));
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
   min-height: 0;
 }
 
@@ -86,8 +127,9 @@
 
 .admin__cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-3);
+  flex: 0 0 auto;
 }
 
 .admin__metric {
@@ -97,7 +139,7 @@
 }
 
 .admin__metric-value {
-  font-size: var(--hero-title);
+  font-size: var(--title);
   font-weight: var(--weight-heavy);
   line-height: var(--line-tight);
 }
@@ -119,11 +161,18 @@
   flex-direction: column;
   gap: var(--space-2);
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
   max-height: 60vh;
   min-height: 0;
 }
 
+.admin__scroll-list > *,
+.admin__editor > * {
+  flex-shrink: 0;
+}
+
 .admin__issue {
+  flex: 0 0 auto;
   display: flex;
   gap: var(--space-3);
   align-items: flex-start;
@@ -180,6 +229,7 @@
 /* ------------------------ VoiceTextEditor ------------------------- */
 
 .vte {
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   gap: var(--space-3);

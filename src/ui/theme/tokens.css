@@ -88,6 +88,10 @@
   --list-row-min: 64px;
   --answer-min-width: 120px;
   --answer-min-height: 80px;
+  /* Vignette carree d'une carte de creature (§156). */
+  --creature-tile: 96px;
+  /* Hauteur minimale de la scene d'exercice (§165). */
+  --stage-min: 170px;
 
   /* ---------------- TYPOGRAPHIE (§143-145) ---------------- */
   --font-rounded: ui-rounded, 'SF Pro Rounded', 'Arial Rounded MT Bold', 'Nunito',
@@ -127,4 +131,37 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
+}
+
+/*
+ * ÉCHELLE DENSE — interfaces ADULTES uniquement (§178).
+ *
+ * `/parents` et `/admin` affichent beaucoup d'informations : conserver
+ * l'échelle enfant (titres de 34 px, cibles de 56 px) obligeait à faire défiler
+ * en permanence sur un iPad, et repoussait la moitié des menus hors de l'écran.
+ * On redéfinit donc les tokens localement — jamais de valeur en dur ailleurs.
+ *
+ * 44 px reste la cible tactile minimale recommandée par Apple pour un adulte.
+ * L'interface enfant, elle, garde ses 56 px (§4).
+ */
+.surface-dense {
+  --text-small: 13px;
+  --text-normal: 15px;
+  --text-large: 19px;
+  --title: 21px;
+  --hero-title: 26px;
+
+  --space-5: 16px;
+  --space-6: 20px;
+  --space-7: 28px;
+  --space-8: 36px;
+
+  --touch-min: 44px;
+  --touch-comfort: 48px;
+  --touch-large: 56px;
+  --list-row-min: 44px;
+
+  --radius-panel: 18px;
+  --radius-xl: 20px;
+  --radius-lg: 16px;
 }

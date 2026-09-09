@@ -23,7 +23,7 @@ export function QuestsScreen() {
 
   return (
     <PlayScreen scrim="soft">
-      <SoftPanel title="Tes quêtes" padding="roomy" className="ds-stack">
+      <SoftPanel title="Tes quêtes" padding="roomy" fill>
         {quests.length === 0 ? (
           <p className="start__subtitle">
             Va voir le Professeur au Centre : il a sûrement une mission pour toi !

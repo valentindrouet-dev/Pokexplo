@@ -49,7 +49,7 @@ export function ParentDashboard() {
   // lisible et avec une sortie possible — jamais une page nue (§175).
   if (!bundle) {
     return (
-      <div className="parent">
+      <div className="parent surface-dense">
         <SoftPanel title="Espace parents">
           <LoadingBall message="Chargement du contenu…" />
           <SecondaryButton onClick={() => navigate({ name: 'start' })}>
@@ -67,7 +67,7 @@ export function ParentDashboard() {
    */
   if (!save) {
     return (
-      <div className="parent">
+      <div className="parent surface-dense">
         <SoftPanel title="Espace parents">
           <p>Aucun profil n’a encore été créé.</p>
           <p className="admin__status">
@@ -104,9 +104,9 @@ export function ParentDashboard() {
   };
 
   return (
-    <div className="parent">
-      <div className="ds-row ds-row--between">
-        <h1 className="ds-panel__title">Espace parents — {save.profile.nickname}</h1>
+    <div className="parent surface-dense">
+      <header className="parent__header">
+        <h1 className="parent__title">Espace parents — {save.profile.nickname}</h1>
         <div className="ds-row">
           <SecondaryButton onClick={() => navigate({ name: 'center' })}>
             Retour au jeu
@@ -118,7 +118,7 @@ export function ParentDashboard() {
             Administration
           </SecondaryButton>
         </div>
-      </div>
+      </header>
 
       <div className="parent__grid">
         <SoftPanel title="Progression pédagogique">
@@ -175,9 +175,7 @@ export function ParentDashboard() {
               </PillButton>
             ))}
           </div>
-          <p className="start__subtitle">
-            Le programme limite la difficulté des exercices proposés.
-          </p>
+          <p className="admin__status">Limite la difficulté des exercices proposés.</p>
         </SoftPanel>
 
         <SoftPanel title="Son">
@@ -211,7 +209,7 @@ export function ParentDashboard() {
               onChange={(event) => update({ sfxVolume: Number(event.target.value) / 100 })}
             />
           </label>
-          <div className="ds-row">
+          <div className="parent__toggles">
             <PillButton active={settings.muted} onClick={() => update({ muted: !settings.muted })}>
               {settings.muted ? 'Son coupé' : 'Son activé'}
             </PillButton>
@@ -225,16 +223,13 @@ export function ParentDashboard() {
               active={settings.ttsFallback}
               onClick={() => update({ ttsFallback: !settings.ttsFallback })}
             >
-              Voix de synthèse si besoin
+              Voix de synthèse
             </PillButton>
           </div>
         </SoftPanel>
 
         <SoftPanel title="Hors ligne">
-          <p>
-            Télécharge les images et les voix de l’aventure pour jouer sans connexion (mode avion,
-            voiture, vacances).
-          </p>
+          <p>Télécharge images et voix pour jouer sans connexion.</p>
           <PrimaryButton icon={<IconDownload size={26} />} onClick={() => void runDownload()}>
             Télécharger l’aventure
           </PrimaryButton>

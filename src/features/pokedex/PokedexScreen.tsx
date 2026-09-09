@@ -60,8 +60,8 @@ export function PokedexScreen() {
         leftLabel="Créatures"
         rightLabel="Détail"
         left={
-          <SoftPanel padding="tight" className="ds-stack">
-            <div className="ds-row">
+          <SoftPanel padding="tight" fill>
+            <div className="ds-row pokedex__filters">
               {FILTERS.map((item) => (
                 <PillButton
                   key={item.id}
@@ -92,7 +92,7 @@ export function PokedexScreen() {
           </SoftPanel>
         }
         right={
-          <SoftPanel padding="roomy" className="ds-stack">
+          <SoftPanel padding="roomy" fill className="ds-scroll">
             {selected ? (
               <div className="pokedex__detail">
                 <CreatureSprite

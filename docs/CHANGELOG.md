@@ -4,6 +4,37 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 Trois versions sont suivies séparément (§112) : `APP_VERSION`, `CONTENT_VERSION`,
 `SAVE_SCHEMA_VERSION`.
 
+## [1.0.2] — Ergonomie iPad
+
+`APP_VERSION 1.0.2` · `CONTENT_VERSION release_0001` · `SAVE_SCHEMA_VERSION 3`
+
+### Corrigé
+
+- **Cartes et listes qui se chevauchent.** Sur un `<button>`, une hauteur
+  tactile minimale empêchait la carte de grandir avec son illustration : la
+  ligne de grille se calait sur ce minimum et l'image débordait sur les cartes
+  voisines. Le Pokédex était illisible. Même cause pour les réponses illustrées
+  et les listes de l'Admin, où les enfants d'une colonne défilante se
+  compressaient au lieu de conserver leur hauteur.
+- **Scène d'exercice par-dessus les réponses.** Une boîte en `aspect-ratio` ne
+  contribue pas à la hauteur intrinsèque de son parent : les créatures à
+  compter s'affichaient derrière les boutons de réponse.
+- **Espace parents et Admin illisibles sur iPad.** Ils utilisaient l'échelle
+  typographique de l'interface enfant : la moitié des informations et quatre
+  sections de menu tombaient hors de l'écran. Une échelle dense, réservée aux
+  interfaces adultes (§178), est désormais définie dans `tokens.css`. Tout
+  l'espace parents tient sur un écran ; les treize sections de l'Admin aussi,
+  avec ses deux actions toujours visibles.
+
+### Ajouté
+
+- **Accès à l'espace parents depuis le Centre** : jusque-là, une fois
+  l'aventure lancée, il fallait relancer l'application pour y revenir. Le bouton
+  est volontairement discret pour ne pas attirer l'enfant.
+- `e2e/layout.spec.ts` : garde-fous qui échouent si des cartes, des réponses ou
+  des lignes de liste se recouvrent, si la scène d'exercice déborde, ou si une
+  action de l'Admin sort de l'écran.
+
 ## [1.0.1] — Correctifs iPad
 
 `APP_VERSION 1.0.1` · `CONTENT_VERSION release_0001` · `SAVE_SCHEMA_VERSION 3`

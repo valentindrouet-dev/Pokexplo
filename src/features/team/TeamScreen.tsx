@@ -57,7 +57,7 @@ export function TeamScreen() {
         leftLabel="Ton équipe"
         rightLabel="Ta collection"
         left={
-          <SoftPanel title="Ton équipe" padding="tight" className="ds-stack">
+          <SoftPanel title="Ton équipe" padding="tight" fill className="ds-scroll">
             <div className="team__slots">
               {Array.from({ length: MAX_TEAM_SIZE }, (_, index) => {
                 const member = creature(team[index]);
@@ -88,7 +88,7 @@ export function TeamScreen() {
           </SoftPanel>
         }
         right={
-          <SoftPanel title="Ta collection" padding="tight" className="ds-stack">
+          <SoftPanel title="Ta collection" padding="tight" fill>
             {collection.length === 0 ? (
               <p className="start__subtitle">Attrape ta première créature dans la prairie !</p>
             ) : (

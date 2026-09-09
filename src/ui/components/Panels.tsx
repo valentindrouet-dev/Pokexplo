@@ -11,6 +11,11 @@ export interface SoftPanelProps {
   tone?: PanelTone;
   padding?: PanelPadding;
   flat?: boolean;
+  /**
+   * Le panneau occupe la hauteur disponible et laisse defiler son contenu.
+   * A utiliser des qu'il contient une grille ou une liste (§154).
+   */
+  fill?: boolean;
   className?: string;
   /** Anime l'apparition (fade + scale .97 -> 1, §162). */
   animated?: boolean;
@@ -27,6 +32,7 @@ export function SoftPanel({
   tone = 'main',
   padding = 'normal',
   flat = false,
+  fill = false,
   className,
   animated = false,
   id,
@@ -41,6 +47,7 @@ export function SoftPanel({
         padding === 'tight' && 'ds-panel--tight',
         padding === 'roomy' && 'ds-panel--roomy',
         flat && 'ds-panel--flat',
+        fill && 'ds-panel--fill',
         animated && 'ds-anim-panel-in',
         className,
       )}

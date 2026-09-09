@@ -89,6 +89,9 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: var(--space-5);
+  align-content: center;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .center-hub__tile {
@@ -205,13 +208,23 @@
 
 /* ------------------------------ POKEDEX ------------------------------ */
 
+/* La barre de filtres ne doit jamais etre compressee par la grille. */
+.pokedex__filters {
+  flex: 0 0 auto;
+  margin-bottom: var(--space-3);
+}
+
 .pokedex__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  /* `start` empeche les lignes de s'etirer et les cartes de se chevaucher. */
+  align-content: start;
   gap: var(--space-4);
-  overflow: auto;
+  flex: 1 1 auto;
   min-height: 0;
+  overflow: auto;
   padding-right: var(--space-2);
+  -webkit-overflow-scrolling: touch;
 }
 
 .pokedex__detail {
@@ -249,7 +262,9 @@
 .team__slots {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  align-content: start;
   gap: var(--space-4);
+  flex: 0 0 auto;
 }
 
 .team__empty {
@@ -268,6 +283,7 @@
   gap: var(--space-6);
   flex-wrap: wrap;
   justify-content: center;
+  align-content: start;
 }
 
 .badge-medal {
@@ -288,11 +304,14 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  overflow: auto;
+  flex: 1 1 auto;
   min-height: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .quest-row {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: var(--space-4);

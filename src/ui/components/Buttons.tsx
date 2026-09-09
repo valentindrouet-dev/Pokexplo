@@ -187,6 +187,7 @@ export function ChoiceButton({
     <button
       type="button"
       data-state={state}
+      data-media={media ? 'true' : undefined}
       aria-label={accessibleLabel ?? (label || undefined)}
       aria-disabled={state === 'removed' ? true : undefined}
       {...rest}

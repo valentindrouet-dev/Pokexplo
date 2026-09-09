@@ -62,6 +62,19 @@
   padding: var(--space-4);
 }
 
+/*
+ * Panneau qui occupe la hauteur disponible et confie le defilement a son
+ * contenu. Sans cela, une grille interne (Pokedex, collection) depasse son
+ * panneau et les cartes se chevauchent.
+ */
+.ds-panel--fill {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .ds-panel--roomy {
   padding: var(--space-7);
 }
@@ -214,6 +227,18 @@
 
 .ds-choice--wide {
   min-width: calc(var(--answer-min-width) * 1.6);
+}
+
+/*
+ * Reponse illustree : la hauteur vient de l'illustration.
+ *
+ * Une hauteur minimale explicite empecherait le bouton de grandir avec son
+ * contenu (l'illustration deborderait alors sur les cartes voisines), tandis
+ * qu'une reponse purement textuelle a besoin de ce minimum pour rester une
+ * grande cible tactile (§167).
+ */
+.ds-choice[data-media='true'] {
+  min-height: auto;
 }
 
 .ds-choice[data-state='selected'] {
@@ -370,11 +395,21 @@
 /* ---------------------------------------------------------------- *
  * CreatureCard (§156)
  * ---------------------------------------------------------------- */
+/*
+ * `min-height: auto` est INDISPENSABLE ici.
+ *
+ * `.ds-tap` impose une hauteur tactile minimale ; sur un <button> qui contient
+ * une vignette, la ligne de grille se calait sur cette valeur au lieu de la
+ * hauteur reelle du contenu, et les cartes se chevauchaient. Le contenu
+ * (vignette + nom) depasse de toute facon largement la cible tactile.
+ */
 .ds-creature-card {
   position: relative;
   flex-direction: column;
+  justify-content: flex-start;
   gap: var(--space-2);
   width: 100%;
+  min-height: auto;
   padding: var(--space-3);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
@@ -387,11 +422,20 @@
   transform: scale(1.04);
 }
 
+/*
+ * Vignette de la carte.
+ *
+ * On N'UTILISE PAS `aspect-ratio` avec `width: 100%` ici : dans un conteneur
+ * flex en colonne, une boite en ratio ne contribue pas a la hauteur
+ * intrinseque du bouton. La carte se reduisait alors a la hauteur tactile
+ * minimale et l'illustration debordait par-dessus les cartes voisines.
+ */
 .ds-creature-card__media {
   display: grid;
   place-items: center;
   width: 100%;
-  aspect-ratio: 1 / 1;
+  min-height: var(--creature-tile);
+  padding: var(--space-2);
   border-radius: var(--radius-md);
   background: var(--color-surface-soft);
 }
@@ -644,7 +688,13 @@
   -webkit-overflow-scrolling: touch;
 }
 
+/*
+ * `flex: 0 0 auto` est indispensable : dans une colonne qui defile, un enfant
+ * flex se compresse par defaut des que le contenu depasse la hauteur
+ * disponible — les lignes se chevauchaient alors les unes sur les autres.
+ */
 .ds-list-row {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: var(--space-4);
@@ -667,4 +717,10 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+}
+
+/* Meme regle pour tout conteneur defilant : on ne compresse jamais. */
+.ds-scroll > *,
+.ds-list > * {
+  flex-shrink: 0;
 }

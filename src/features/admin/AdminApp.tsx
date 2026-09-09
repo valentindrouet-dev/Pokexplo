@@ -71,7 +71,7 @@ function AdminGate() {
   const [code, setCode] = useState('');
 
   return (
-    <div className="admin__gate">
+    <div className="admin__gate surface-dense">
       <SoftPanel title="Espace administrateur" padding="roomy">
         <p>Cet espace est réservé aux adultes.</p>
         <label className="field">
@@ -106,22 +106,25 @@ function AdminShell({ section }: { section: AdminSection }) {
   const { signOutAdmin } = useAuth();
 
   return (
-    <div className="admin">
+    <div className="admin surface-dense">
       <nav className="admin__nav" aria-label="Sections de l’administration">
         <p className="admin__brand">Pokexplo — Admin</p>
-        {NAV.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            className="ds-tap admin__nav-item"
-            aria-current={item.id === section}
-            onClick={() => navigate({ name: 'admin', section: item.id })}
-          >
-            {item.icon}
-            {item.label}
-          </button>
-        ))}
-        <div className="ds-stack" style={{ marginTop: 'var(--space-5)' }}>
+        {/* Seule la liste défile : les deux actions restent toujours visibles. */}
+        <div className="admin__nav-list">
+          {NAV.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className="ds-tap admin__nav-item"
+              aria-current={item.id === section}
+              onClick={() => navigate({ name: 'admin', section: item.id })}
+            >
+              {item.icon}
+              <span>{item.label}</span>
+            </button>
+          ))}
+        </div>
+        <div className="admin__nav-actions">
           <SecondaryButton onClick={() => navigate({ name: 'center' })}>Voir le jeu</SecondaryButton>
           <SecondaryButton onClick={() => void signOutAdmin()}>Quitter l’admin</SecondaryButton>
         </div>
