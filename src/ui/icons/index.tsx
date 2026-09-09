@@ -531,3 +531,19 @@ export const IconCircle = (p: IconProps) => (
     <circle cx="12" cy="12" r="3" />
   </IconBase>
 );
+
+/** Loupe — rechercher dans une liste. */
+export const IconSearch = (p: IconProps) => (
+  <IconBase {...p}>
+    <circle cx="11" cy="11" r="6.5" />
+    <path d="m16 16 4.5 4.5" />
+  </IconBase>
+);
+
+/** Deux feuilles — dupliquer. */
+export const IconCopy = (p: IconProps) => (
+  <IconBase {...p}>
+    <rect x="9" y="9" width="11" height="11" rx="2.5" />
+    <path d="M15 6.5A2.5 2.5 0 0 0 12.5 4h-6A2.5 2.5 0 0 0 4 6.5v6A2.5 2.5 0 0 0 6.5 15" />
+  </IconBase>
+);

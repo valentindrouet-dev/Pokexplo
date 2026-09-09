@@ -97,3 +97,38 @@ export function removeNode(bundle: ContentBundle, nodeId: string): ContentBundle
     ),
   };
 }
+
+/**
+ * Duplique un lieu : à côté de l'original, dans la même région, avec ses
+ * créatures et ses exercices — mais **sans ses chemins**, qui décrivent la
+ * place de l'original dans l'aventure, pas la sienne.
+ */
+export function duplicateNode(bundle: ContentBundle, nodeId: string, id: string): ContentBundle {
+  const source = bundle.nodes.find((node) => node.id === nodeId);
+  if (!source) return bundle;
+
+  const voiceId = `voice.node.${id}`;
+  const at = freeSpotNear(source, bundle.nodes, null, { x: source.x + 10, y: source.y });
+  const copy: MapNode = {
+    ...structuredClone(source),
+    id,
+    label: `${source.label} (copie)`,
+    x: at.x,
+    y: at.y,
+    connections: [],
+    arrivalVoiceId: voiceId,
+    // Une Arène et une rencontre spéciale sont uniques : la copie n'en hérite pas.
+    ...(source.gymId ? { gymId: undefined, kind: 'ENCOUNTER' as const } : {}),
+    ...(source.specialEncounterId ? { specialEncounterId: undefined } : {}),
+  };
+
+  const arrival = bundle.voiceMessages.find((voice) => voice.id === source.arrivalVoiceId);
+  return {
+    ...bundle,
+    nodes: [...bundle.nodes, copy],
+    voiceMessages: [
+      ...bundle.voiceMessages,
+      createVoiceMessage(voiceId, arrival?.text ?? 'Nous voilà arrivés !', 'adventure'),
+    ],
+  };
+}

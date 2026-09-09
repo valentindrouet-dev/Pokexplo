@@ -7,7 +7,7 @@ import { EntityPane } from '../EntityPane';
 import { NumberField, SelectField, TextField } from '../fields';
 import { VoiceTextEditor } from '../VoiceTextEditor';
 import { uid } from '../../../utils/id';
-import { createNodeAfter } from '../nodeFactory';
+import { createNodeAfter, duplicateNode, removalBlocker, removeNode } from '../nodeFactory';
 import { PlaceIconPicker } from '../PlaceIconPicker';
 
 const NODE_KINDS: NodeKind[] = ['CENTER', 'PATH', 'ENCOUNTER', 'GYM', 'EVENT', 'REST'];
@@ -72,6 +72,16 @@ export function WorldSection() {
           hintOf={(item) => `${item.kind} · ${item.biomeId}`}
           onCreate={createNode}
           createLabel="Nouveau nœud"
+          onDuplicate={(id) => {
+            const copyId = uid('node');
+            update((current) => duplicateNode(current, id, copyId));
+            setNodeId(copyId);
+          }}
+          onDelete={(id) => {
+            update((current) => removeNode(current, id));
+            setNodeId(null);
+          }}
+          deleteBlocker={(id) => removalBlocker(draft, id)}
         >
           {node ? (
             <>

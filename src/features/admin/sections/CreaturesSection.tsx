@@ -7,6 +7,7 @@ import { createVoiceMessage } from '../../../utils/voice';
 import { uid } from '../../../utils/id';
 import { useAdminDraft } from '../AdminDraftContext';
 import { EntityPane } from '../EntityPane';
+import { creatureBlocker, duplicateCreature, removeCreature } from '../entityActions';
 import { NumberField, SelectField, TextAreaField, TextField } from '../fields';
 import { VoiceTextEditor } from '../VoiceTextEditor';
 
@@ -79,6 +80,17 @@ export function CreaturesSection() {
       hintOf={(item) => `${TYPE_LABELS[item.type1]} · ${RARITY_LABELS[item.rarity]}`}
       onCreate={create}
       createLabel="Nouvelle créature"
+      onDuplicate={(id) => {
+        const copy = duplicateCreature(draft, id);
+        if (!copy) return;
+        update(() => copy.bundle);
+        setSelectedId(copy.created.id);
+      }}
+      onDelete={(id) => {
+        update((current) => removeCreature(current, id));
+        setSelectedId(null);
+      }}
+      deleteBlocker={(id) => creatureBlocker(draft, id)}
     >
       {creature ? (
         <>

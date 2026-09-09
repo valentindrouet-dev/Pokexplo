@@ -4,6 +4,35 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 Trois versions sont suivies séparément (§112) : `APP_VERSION`, `CONTENT_VERSION`,
 `SAVE_SCHEMA_VERSION`.
 
+## [1.10.0] — Passe UX : l'Admin se range en quatre familles, et sait enfin dupliquer
+
+`APP_VERSION 1.10.0` · `CONTENT_VERSION bundled-5` · `SAVE_SCHEMA_VERSION 3`
+
+### Modifié — la navigation
+
+- **Quatre familles au lieu de treize entrées à plat** (§196) : Contenu,
+  Médias, Tester & publier, Famille. « Je veux modifier X, dans quel menu ? »
+  trouve sa réponse avant d'avoir à chercher.
+- **Des fusions qui ne retirent aucune possibilité** : biomes + nœuds = le
+  **Monde**, quêtes + Arènes = **Histoire & Arènes**, les **packs** vivent dans
+  Exercices, les **releases** dans Publication. De treize entrées à onze,
+  rangées.
+- **Les anciennes adresses continuent de fonctionner** (`#/admin/biomes`,
+  `#/admin/releases`…) : un signet ne tombe jamais sur une page vide.
+
+### Ajouté — les trois opérations qui manquaient
+
+- **Rechercher** dans une liste, dès qu'elle dépasse six éléments. Casse et
+  accents indifférents.
+- **Dupliquer** — l'opération la plus utile de l'édition d'un jeu, et elle
+  n'existait pas. « Prairie 02 » se fait en copiant « Prairie 01 ». Les
+  **voix suivent** : sans cela, renommer la copie aurait renommé ce que dit
+  l'original. Un lieu dupliqué n'emporte **pas** les chemins de l'original, et
+  une Arène dupliquée redevient un lieu ordinaire.
+- **Supprimer**, avec confirmation — et un **refus qui s'explique** : « On peut
+  la rencontrer à Prairie : retirez-la d'abord », au lieu d'un bouton grisé
+  sans un mot. Les voix restent toujours dans le brouillon (CLAUDE.md §3).
+
 ## [1.9.0] — Passe UX : la carte se choisit en deux temps, l'exercice remet la voix devant
 
 `APP_VERSION 1.9.0` · `CONTENT_VERSION bundled-5` · `SAVE_SCHEMA_VERSION 3`

@@ -10,14 +10,16 @@ import type { TemplateTextField } from '../exerciseText';
 import { EXERCISE_TYPES, generateExercise } from '../../../exercise-engine';
 import { randomSeed } from '../../../utils/rng';
 import { createVoiceMessage } from '../../../utils/voice';
-import { IconRefresh, SecondaryButton, SoftPanel } from '../../../ui';
+import { IconRefresh, PillButton, SecondaryButton, SoftPanel } from '../../../ui';
 import { ExerciseView } from '../../learning/ExerciseView';
 import { useAdminDraft } from '../AdminDraftContext';
 import { EntityPane } from '../EntityPane';
+import { duplicateTemplate, removeTemplate, templateBlocker } from '../entityActions';
 import { NumberField, SelectField, TextField } from '../fields';
 import { applyTemplateVoice, templateTextBlocks } from '../exerciseText';
 import { EXERCISE_TYPE_LABELS, addTemplate, createTemplate } from '../templateFactory';
 import { VoiceTextEditor } from '../VoiceTextEditor';
+import { PacksSection } from './PacksSection';
 
 const HINT_TYPES: HintType[] = [
   'highlightOneByOne',
@@ -36,6 +38,27 @@ const CATEGORIES: PedagogyCategory[] = ['READING', 'MATH', 'SPATIAL', 'ENGLISH',
  * une instance tiree au hasard parmi les centaines qu'elle peut produire.
  */
 export function ExercisesSection() {
+  const [tab, setTab] = useState<'templates' | 'packs'>('templates');
+  return (
+    <>
+      <div className="ds-row">
+        <PillButton active={tab === 'templates'} onClick={() => setTab('templates')}>
+          Matrices d’exercices
+        </PillButton>
+        <PillButton active={tab === 'packs'} onClick={() => setTab('packs')}>
+          Packs pédagogiques
+        </PillButton>
+      </div>
+      {tab === 'templates' ? <TemplatesPane /> : <PacksSection />}
+    </>
+  );
+}
+
+/**
+ * Les PACKS étaient une entrée de menu à part, alors qu'ils ne servent qu'à
+ * plafonner la difficulté des matrices : ils vivent désormais à côté d'elles.
+ */
+function TemplatesPane() {
   const { draft, update } = useAdminDraft();
   const [selectedId, setSelectedId] = useState<string | null>(
     draft?.exerciseTemplates[0]?.id ?? null,
@@ -114,6 +137,17 @@ export function ExercisesSection() {
         />
       }
       onCreate={create}
+      onDuplicate={(id) => {
+        const copy = duplicateTemplate(draft, id);
+        if (!copy) return;
+        update(() => copy.bundle);
+        setSelectedId(copy.created.id);
+      }}
+      onDelete={(id) => {
+        update((current) => removeTemplate(current, id));
+        setSelectedId(null);
+      }}
+      deleteBlocker={(id) => templateBlocker(draft, id)}
       createLabel="Nouvelle matrice"
     >
       {template ? (

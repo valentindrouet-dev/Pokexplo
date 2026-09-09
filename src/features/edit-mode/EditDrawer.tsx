@@ -102,7 +102,7 @@ export default function EditDrawer() {
         const node = bundle.nodes.find((entry) => entry.id === item.id);
         return {
           title: node ? `Lieu — ${node.label}` : 'Lieu',
-          section: 'biomes',
+          section: 'world',
           body: node ? (
             <NodeForm node={node} bundle={bundle} update={update} open={open} close={close} />
           ) : null,
@@ -112,7 +112,7 @@ export default function EditDrawer() {
         const biome = bundle.biomes.find((entry) => entry.id === item.id);
         return {
           title: biome ? `Région — ${biome.name}` : 'Région',
-          section: 'biomes',
+          section: 'world',
           body: biome ? <BiomeForm biome={biome} update={update} /> : null,
         };
       }
@@ -136,7 +136,7 @@ export default function EditDrawer() {
         const quest = bundle.quests.find((entry) => entry.id === item.id);
         return {
           title: quest ? `Quête — ${quest.title}` : 'Quête',
-          section: 'quests',
+          section: 'story',
           body: quest ? <QuestForm quest={quest} bundle={bundle} update={update} /> : null,
         };
       }
@@ -145,7 +145,7 @@ export default function EditDrawer() {
         const chapter = bundle.chapters.find((entry) => entry.id === item.id);
         return {
           title: chapter ? `Chapitre — ${chapter.title}` : 'Chapitre',
-          section: 'quests',
+          section: 'story',
           body: chapter ? <ChapterForm chapter={chapter} bundle={bundle} update={update} /> : null,
         };
       }

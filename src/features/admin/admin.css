@@ -75,6 +75,28 @@
   line-height: var(--line-tight);
 }
 
+/*
+ * FAMILLES DE LA NAVIGATION (§196).
+ *
+ * L'intitule de famille repond avant qu'on ait a chercher : « je veux
+ * modifier X » devient « X, c'est du contenu » puis une seule entree.
+ */
+.admin__nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-bottom: var(--space-3);
+}
+
+.admin__nav-family {
+  padding: var(--space-2) var(--space-3) 0;
+  font-size: var(--text-small);
+  font-weight: var(--weight-heavy);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-soft);
+}
+
 .admin__nav-item {
   display: flex;
   align-items: center;
@@ -266,6 +288,24 @@
     overflow-y: hidden;
     padding-bottom: var(--space-1);
     scroll-snap-type: x proximity;
+  }
+
+  /*
+   * Ecran etroit : les familles se mettent EN LIGNE elles aussi. Empilees,
+   * elles rendaient a la barre les 700 px de hauteur qu'on venait de lui
+   * retirer — et le formulaire repassait sous l'ecran.
+   */
+  .admin__nav-group {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: 0;
+    flex: 0 0 auto;
+  }
+
+  .admin__nav-family {
+    padding: 0 var(--space-2);
+    white-space: nowrap;
   }
 
   .admin__nav-item {

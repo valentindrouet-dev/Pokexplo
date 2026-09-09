@@ -10,11 +10,9 @@ import {
   IconMic,
   IconPokedex,
   IconProfessor,
-  IconQuest,
   IconRelease,
   IconSettings,
   IconSparkle,
-  IconTeam,
   LoadingBall,
   PrimaryButton,
   SecondaryButton,
@@ -29,9 +27,7 @@ import { DashboardSection } from './sections/DashboardSection';
 import { CreaturesSection } from './sections/CreaturesSection';
 import { ExercisesSection } from './sections/ExercisesSection';
 import { WorldSection } from './sections/WorldSection';
-import { GymsSection } from './sections/GymsSection';
-import { QuestsSection } from './sections/QuestsSection';
-import { PacksSection } from './sections/PacksSection';
+import { StorySection } from './sections/StorySection';
 import { AudioSection } from './sections/AudioSection';
 import { ImagesSection } from './sections/ImagesSection';
 import { ReleasesSection } from './sections/ReleasesSection';
@@ -44,20 +40,50 @@ import './admin.css';
 /** Version installee : elle doit etre lisible sans ouvrir les reglages. */
 const APP_VERSION = typeof __APP_VERSION__ === 'string' ? __APP_VERSION__ : 'dev';
 
-const NAV: Array<{ id: AdminSection; label: string; icon: React.ReactNode }> = [
-  { id: 'dashboard', label: 'Tableau de bord', icon: <IconChart size={24} /> },
-  { id: 'creatures', label: 'Créatures', icon: <IconPokedex size={24} /> },
-  { id: 'exercises', label: 'Exercices', icon: <IconSparkle size={24} /> },
-  { id: 'biomes', label: 'Biomes et nœuds', icon: <IconMap size={24} /> },
-  { id: 'gyms', label: 'Arènes', icon: <IconBadge size={24} /> },
-  { id: 'quests', label: 'Quêtes', icon: <IconQuest size={24} /> },
-  { id: 'packs', label: 'Packs', icon: <IconTeam size={24} /> },
-  { id: 'audio', label: 'Voix', icon: <IconMic size={24} /> },
-  { id: 'images', label: 'Images', icon: <IconImage size={24} /> },
-  { id: 'releases', label: 'Releases', icon: <IconRelease size={24} /> },
-  { id: 'profiles', label: 'Profils', icon: <IconProfessor size={24} /> },
-  { id: 'progress', label: 'Progression', icon: <IconChart size={24} /> },
-  { id: 'preview', label: 'Prévisualiser', icon: <IconSettings size={24} /> },
+/**
+ * NAVIGATION EN QUATRE FAMILLES (UI_DESIGN §196).
+ *
+ * Treize sections à plat posaient sans cesse la même question : « je veux
+ * modifier X, dans quel menu dois-je aller ? » Les familles répondent avant
+ * d'avoir à chercher, et les fusions retirent des entrées sans rien retirer
+ * des possibilités : biomes + nœuds = le MONDE, quêtes + Arènes = l'HISTOIRE,
+ * les packs vivent dans les exercices, les releases dans la publication.
+ */
+const NAV: Array<{
+  family: string;
+  items: Array<{ id: AdminSection; label: string; icon: React.ReactNode }>;
+}> = [
+  {
+    family: 'Contenu',
+    items: [
+      { id: 'world', label: 'Monde', icon: <IconMap size={24} /> },
+      { id: 'creatures', label: 'Créatures', icon: <IconPokedex size={24} /> },
+      { id: 'exercises', label: 'Exercices', icon: <IconSparkle size={24} /> },
+      { id: 'story', label: 'Histoire & Arènes', icon: <IconBadge size={24} /> },
+    ],
+  },
+  {
+    family: 'Médias',
+    items: [
+      { id: 'audio', label: 'Voix', icon: <IconMic size={24} /> },
+      { id: 'images', label: 'Images', icon: <IconImage size={24} /> },
+    ],
+  },
+  {
+    family: 'Tester & publier',
+    items: [
+      { id: 'dashboard', label: 'Tableau de bord', icon: <IconChart size={24} /> },
+      { id: 'preview', label: 'Aperçu', icon: <IconSettings size={24} /> },
+      { id: 'publish', label: 'Publication', icon: <IconRelease size={24} /> },
+    ],
+  },
+  {
+    family: 'Famille',
+    items: [
+      { id: 'profiles', label: 'Profils', icon: <IconProfessor size={24} /> },
+      { id: 'progress', label: 'Progression', icon: <IconChart size={24} /> },
+    ],
+  },
 ];
 
 /** INTERFACE D'ADMINISTRATION (CONCEPTION §115). */
@@ -148,17 +174,22 @@ function AdminShell({ section }: { section: AdminSection }) {
         </div>
         {/* Seule la liste défile : les sorties restent toujours visibles. */}
         <div className="admin__nav-list">
-          {NAV.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className="ds-tap admin__nav-item"
-              aria-current={item.id === section}
-              onClick={() => navigate({ name: 'admin', section: item.id })}
-            >
-              {item.icon}
-              <span>{item.label}</span>
-            </button>
+          {NAV.map((group) => (
+            <div key={group.family} className="admin__nav-group">
+              <span className="admin__nav-family">{group.family}</span>
+              {group.items.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className="ds-tap admin__nav-item"
+                  aria-current={item.id === section}
+                  onClick={() => navigate({ name: 'admin', section: item.id })}
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </div>
           ))}
         </div>
         {/* Trois sorties toujours visibles : la liste seule defile. */}
@@ -199,20 +230,15 @@ function AdminSectionView({ section }: { section: AdminSection }) {
       return <CreaturesSection />;
     case 'exercises':
       return <ExercisesSection />;
-    case 'biomes':
-    case 'nodes':
+    case 'world':
       return <WorldSection />;
-    case 'gyms':
-      return <GymsSection />;
-    case 'quests':
-      return <QuestsSection />;
-    case 'packs':
-      return <PacksSection />;
+    case 'story':
+      return <StorySection />;
     case 'audio':
       return <AudioSection />;
     case 'images':
       return <ImagesSection />;
-    case 'releases':
+    case 'publish':
       return <ReleasesSection />;
     case 'profiles':
       return <ProfilesSection />;

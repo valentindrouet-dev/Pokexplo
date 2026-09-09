@@ -290,3 +290,39 @@
   padding: 0 var(--space-3);
   width: auto;
 }
+
+/* ----------------------------- Recherche ----------------------------- */
+
+/*
+ * Chercher dans une liste : l'operation la plus banale d'un editeur, et elle
+ * manquait (§196). Elle n'apparait qu'a partir d'une liste ou elle sert.
+ */
+.entity-search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-3);
+  border: var(--border-hairline-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-soft);
+}
+
+.entity-search__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: var(--touch-min);
+  border: none;
+  background: none;
+  font-size: var(--text-normal);
+  font-family: var(--font-rounded);
+  color: var(--color-text);
+}
+
+.entity-search__input:focus {
+  outline: none;
+}
+
+.entity-search:focus-within {
+  border-color: var(--color-lavender);
+}

@@ -105,9 +105,51 @@ test('toutes les sections de l’admin sont atteignables sans défilement caché
   await expect(page.getByRole('button', { name: 'Quitter l’admin' })).toBeInViewport();
 
   // La dernière section est accessible (visible, ou par défilement de la liste).
-  const last = page.getByRole('button', { name: 'Prévisualiser' });
+  const last = page.getByRole('button', { name: 'Progression' });
   await last.scrollIntoViewIfNeeded();
   await expect(last).toBeInViewport();
+});
+
+test('les sections de l’admin sont rangées en quatre familles (§196)', async ({ page }) => {
+  await page.goto('./#/admin');
+  await page.getByLabel('Code d’accès').fill('parent');
+  await page.getByRole('button', { name: 'Entrer' }).click();
+  await expect(page.getByText('Pokexplo — Admin')).toBeVisible({ timeout: 20_000 });
+
+  // Régression : treize entrées à plat, et la question « dans quel menu ? ».
+  const families = await page.locator('.admin__nav-family').allTextContents();
+  expect(families).toEqual(['Contenu', 'Médias', 'Tester & publier', 'Famille']);
+  const entries = await page.locator('.admin__nav-item').count();
+  expect(entries).toBeLessThanOrEqual(11);
+
+  // Les fusions ne retirent aucune possibilité : elles la rangent ailleurs.
+  await page.getByRole('button', { name: 'Histoire & Arènes' }).click();
+  await expect(page.getByRole('button', { name: /arènes et badges/i })).toBeVisible();
+  await page.getByRole('button', { name: 'Exercices' }).click();
+  await expect(page.getByRole('button', { name: /packs pédagogiques/i })).toBeVisible();
+});
+
+test('les anciennes adresses de l’admin mènent toujours quelque part', async ({ page }) => {
+  await page.goto('./#/admin');
+  await page.getByLabel('Code d’accès').fill('parent');
+  await page.getByRole('button', { name: 'Entrer' }).click();
+  await expect(page.getByText('Pokexplo — Admin')).toBeVisible({ timeout: 20_000 });
+
+  // Un signet, un lien mis de côté : rien ne doit tomber sur une page vide.
+  for (const [old, expected] of [
+    ['biomes', 'Monde'],
+    ['nodes', 'Monde'],
+    ['gyms', 'Histoire & Arènes'],
+    ['quests', 'Histoire & Arènes'],
+    ['packs', 'Exercices'],
+    ['releases', 'Publication'],
+  ] as const) {
+    await page.goto(`./#/admin/${old}`);
+    await expect(
+      page.getByRole('button', { name: expected, exact: true }),
+      `« ${old} » doit mener à « ${expected} »`,
+    ).toHaveAttribute('aria-current', 'true');
+  }
 });
 
 test('l’Admin affiche sa version et ramène à l’accueil', async ({ page }) => {
@@ -324,7 +366,7 @@ test('la navigation de l’Admin reste compacte quand l’écran est étroit', a
   expect(main!.height / viewport.height).toBeGreaterThan(0.6);
 
   // Toutes les sections restent atteignables par defilement horizontal.
-  const last = page.getByRole('button', { name: 'Prévisualiser' });
+  const last = page.getByRole('button', { name: 'Progression' });
   await last.scrollIntoViewIfNeeded();
   await expect(last).toBeInViewport();
 });
@@ -399,4 +441,38 @@ test('le Centre donne accès à l’espace parents, par un appui maintenu', asyn
   await page.waitForTimeout(1500);
   await page.mouse.up();
   await expect(page.getByText(/espace parents — lucie/i)).toBeVisible({ timeout: 20_000 });
+});
+
+test('l’Admin sait chercher, dupliquer et supprimer (§196)', async ({ page }) => {
+  await page.goto('./#/admin/creatures');
+  await page.getByLabel('Code d’accès').fill('parent');
+  await page.getByRole('button', { name: 'Entrer' }).click();
+  await expect(page.getByRole('button', { name: 'Nouvelle créature' })).toBeVisible({
+    timeout: 20_000,
+  });
+
+  // Chercher : la casse et les accents ne changent rien.
+  const search = page.getByRole('searchbox', { name: /rechercher dans créatures/i });
+  await search.fill('PILOUPI');
+  await expect(page.locator('.ds-list-row')).toHaveCount(1);
+  await search.fill('');
+
+  // Dupliquer : une action, et la copie est sélectionnée pour être renommée.
+  const before = await page.locator('.ds-list-row').count();
+  await page.locator('.ds-list-row', { hasText: 'Piloupi' }).first().click();
+  await page.getByRole('button', { name: 'Dupliquer' }).click();
+  await expect(page.locator('.ds-list-row')).toHaveCount(before + 1);
+  await expect(page.getByLabel('Nom', { exact: true })).toHaveValue('Piloupi (copie)');
+
+  // Supprimer : l'original est refusé — on rencontre Piloupi dans la Prairie —
+  // et le refus s'EXPLIQUE au lieu de griser un bouton sans un mot.
+  await page.locator('.ds-list-row', { hasText: /^Piloupi/ }).first().click();
+  await expect(page.getByText(/on peut la rencontrer à/i)).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Supprimer' })).toBeDisabled();
+
+  // La copie, elle, ne sert nulle part : elle peut partir.
+  await page.locator('.ds-list-row', { hasText: 'Piloupi (copie)' }).first().click();
+  await page.getByRole('button', { name: 'Supprimer' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Supprimer' }).click();
+  await expect(page.locator('.ds-list-row')).toHaveCount(before);
 });

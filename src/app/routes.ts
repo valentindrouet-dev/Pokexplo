@@ -4,21 +4,40 @@
  * Indispensable sur GitHub Pages : aucune configuration serveur n'est
  * necessaire pour servir des URL profondes.
  */
+/**
+ * SECTIONS DE L'ADMIN (UI_DESIGN §196).
+ *
+ * Il y en avait treize, à plat : « je veux modifier X, dans quel menu ? »
+ * revenait sans cesse. Elles sont regroupées en quatre familles, et certaines
+ * ont fusionné : biomes et nœuds forment le MONDE, quêtes et Arènes
+ * l'HISTOIRE, les packs vivent dans les exercices, les releases dans la
+ * publication.
+ */
 export type AdminSection =
   | 'dashboard'
   | 'creatures'
   | 'exercises'
-  | 'biomes'
-  | 'nodes'
-  | 'gyms'
-  | 'quests'
-  | 'packs'
+  | 'world'
+  | 'story'
   | 'audio'
   | 'images'
-  | 'releases'
+  | 'publish'
   | 'profiles'
   | 'progress'
   | 'preview';
+
+/**
+ * Anciennes adresses. Un lien mis de côté, un signet, un tiroir d'édition qui
+ * demande « ouvrir dans les menus » : rien ne doit tomber sur une page vide.
+ */
+const SECTION_ALIASES: Record<string, AdminSection> = {
+  biomes: 'world',
+  nodes: 'world',
+  gyms: 'story',
+  quests: 'story',
+  packs: 'exercises',
+  releases: 'publish',
+};
 
 export type Route =
   | { name: 'start' }
@@ -38,14 +57,11 @@ const ADMIN_SECTIONS: AdminSection[] = [
   'dashboard',
   'creatures',
   'exercises',
-  'biomes',
-  'nodes',
-  'gyms',
-  'quests',
-  'packs',
+  'world',
+  'story',
   'audio',
   'images',
-  'releases',
+  'publish',
   'profiles',
   'progress',
   'preview',
@@ -83,7 +99,8 @@ export function parseHash(hash: string): Route {
   if (parts[0] === 'parents') return { name: 'parents' };
 
   if (parts[0] === 'admin') {
-    const section = (parts[1] ?? 'dashboard') as AdminSection;
+    const asked = parts[1] ?? 'dashboard';
+    const section = SECTION_ALIASES[asked] ?? (asked as AdminSection);
     return { name: 'admin', section: ADMIN_SECTIONS.includes(section) ? section : 'dashboard' };
   }
 
