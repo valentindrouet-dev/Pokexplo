@@ -1,22 +1,36 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import type {
   Biome,
   Chapter,
   ContentBundle,
   Creature,
   ExerciseTemplate,
+  ExerciseType,
   MapNode,
   Quest,
   VoiceMessage,
 } from '../../types';
 import type { AdminSection } from '../../app/routes';
 import { CreatureSprite } from '../../components/CreatureSprite';
-import { IconClose, IconButton, PillButton, SecondaryButton } from '../../ui';
+import { EXERCISE_TYPES } from '../../exercise-engine';
+import {
+  IconClose,
+  IconButton,
+  IconPlus,
+  IconTrash,
+  ModalPanel,
+  PillButton,
+  PrimaryButton,
+  SecondaryButton,
+} from '../../ui';
 import { useEditMode, type EditTarget } from '../../app/providers/EditModeProvider';
 import { useNavigation } from '../../app/router';
 import { useAdminDraftOptional } from '../admin/AdminDraftContext';
 import { SelectField, TextAreaField, TextField } from '../admin/fields';
 import { applyTemplateVoice, templateTextBlocks } from '../admin/exerciseText';
+import { removalBlocker, removeNode } from '../admin/nodeFactory';
+import { PlaceIconPicker } from '../admin/PlaceIconPicker';
+import { EXERCISE_TYPE_LABELS, addTemplate, createTemplate } from '../admin/templateFactory';
 import { VoiceTextEditor } from '../admin/VoiceTextEditor';
 import '../admin/forms.css';
 import './edit-mode.css';
@@ -37,7 +51,7 @@ import './edit-mode.css';
  * voix obsolète quand le texte change.
  */
 export default function EditDrawer() {
-  const { target, close } = useEditMode();
+  const { target, close, open } = useEditMode();
   const drafting = useAdminDraftOptional();
   const { navigate } = useNavigation();
 
@@ -89,7 +103,9 @@ export default function EditDrawer() {
         return {
           title: node ? `Lieu — ${node.label}` : 'Lieu',
           section: 'biomes',
-          body: node ? <NodeForm node={node} bundle={bundle} update={update} /> : null,
+          body: node ? (
+            <NodeForm node={node} bundle={bundle} update={update} open={open} close={close} />
+          ) : null,
         };
       }
       case 'biome': {
@@ -182,7 +198,23 @@ function VoiceBlock({
   return <VoiceTextEditor voice={voice} onChange={write} title={title} />;
 }
 
-function NodeForm({ node, bundle, update }: { node: MapNode; bundle: ContentBundle; update: Update }) {
+function NodeForm({
+  node,
+  bundle,
+  update,
+  open,
+  close,
+}: {
+  node: MapNode;
+  bundle: ContentBundle;
+  update: Update;
+  open: (target: EditTarget) => void;
+  close: () => void;
+}) {
+  const [newType, setNewType] = useState<ExerciseType>('COUNT');
+  const [confirmRemove, setConfirmRemove] = useState(false);
+  const biome = bundle.biomes.find((entry) => entry.id === node.biomeId) ?? null;
+
   const patch = (changes: Partial<MapNode>): void =>
     update((current) => ({
       ...current,
@@ -190,6 +222,19 @@ function NodeForm({ node, bundle, update }: { node: MapNode; bundle: ContentBund
     }));
 
   const templates = node.exerciseTemplateIds ?? [];
+  const encounters = node.encounters ?? [];
+  const blocker = removalBlocker(bundle, node.id);
+
+  /*
+   * « + » : une NOUVELLE matrice, du type choisi, attachée à ce lieu et
+   * ouverte aussitôt pour en reformuler les textes. On ne code jamais un
+   * exercice : on crée une matrice (CLAUDE.md §2), ici comme dans les menus.
+   */
+  const addExercise = (): void => {
+    const created = createTemplate(newType, bundle.skills);
+    update((current) => addTemplate(current, created, node.id));
+    open({ kind: 'template', id: created.template.id });
+  };
 
   return (
     <>
@@ -202,9 +247,40 @@ function NodeForm({ node, bundle, update }: { node: MapNode; bundle: ContentBund
       <SelectField
         label="Région"
         value={node.biomeId}
-        options={bundle.biomes.map((biome) => ({ value: biome.id, label: biome.name }))}
+        options={bundle.biomes.map((entry) => ({ value: entry.id, label: entry.name }))}
         onChange={(biomeId) => patch({ biomeId })}
       />
+
+      <PlaceIconPicker node={node} biome={biome} onChange={(icon) => patch({ icon })} />
+
+      <div className="field">
+        <span className="field__label">Créatures que l’on peut y rencontrer</span>
+        <div className="ds-row">
+          {bundle.creatures.map((creature) => {
+            const present = encounters.some((entry) => entry.creatureId === creature.id);
+            return (
+              <PillButton
+                key={creature.id}
+                active={present}
+                onClick={() =>
+                  patch({
+                    encounters: present
+                      ? encounters.filter((entry) => entry.creatureId !== creature.id)
+                      : [...encounters, { creatureId: creature.id, weight: 2 }],
+                  })
+                }
+              >
+                {creature.name}
+              </PillButton>
+            );
+          })}
+        </div>
+        {encounters.length === 0 ? (
+          <span className="admin__status">
+            Aucune créature : l’enfant ne rencontrera personne ici. Touchez-en une ou plusieurs.
+          </span>
+        ) : null}
+      </div>
 
       <div className="field">
         <span className="field__label">Exercices possibles ici</span>
@@ -225,6 +301,17 @@ function NodeForm({ node, bundle, update }: { node: MapNode; bundle: ContentBund
             </PillButton>
           ))}
         </div>
+        <div className="ds-row">
+          <SelectField
+            label="Nouvel exercice"
+            value={newType}
+            options={EXERCISE_TYPES.map((type) => ({ value: type, label: EXERCISE_TYPE_LABELS[type] }))}
+            onChange={setNewType}
+          />
+          <PrimaryButton icon={<IconPlus size={22} />} onClick={addExercise}>
+            Créer et ajouter ici
+          </PrimaryButton>
+        </div>
       </div>
 
       <VoiceBlock
@@ -233,6 +320,42 @@ function NodeForm({ node, bundle, update }: { node: MapNode; bundle: ContentBund
         bundle={bundle}
         update={update}
       />
+
+      <div className="ds-row">
+        <SecondaryButton
+          icon={<IconTrash size={22} />}
+          disabled={blocker !== null}
+          onClick={() => setConfirmRemove(true)}
+        >
+          Retirer ce lieu de la carte
+        </SecondaryButton>
+        {blocker ? <span className="admin__status">{blocker}</span> : null}
+      </div>
+
+      <ModalPanel
+        open={confirmRemove}
+        title={`Retirer « ${node.label} » ?`}
+        onDismiss={() => setConfirmRemove(false)}
+        actions={
+          <>
+            <SecondaryButton onClick={() => setConfirmRemove(false)}>Annuler</SecondaryButton>
+            <PrimaryButton
+              onClick={() => {
+                update((current) => removeNode(current, node.id));
+                setConfirmRemove(false);
+                close();
+              }}
+            >
+              Retirer
+            </PrimaryButton>
+          </>
+        }
+      >
+        <p>
+          Les chemins qui y menaient disparaissent. Sa phrase d’arrivée reste enregistrée. Les
+          sauvegardes de votre enfant ne sont pas touchées.
+        </p>
+      </ModalPanel>
     </>
   );
 }

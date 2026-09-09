@@ -261,12 +261,24 @@
   font-size: 3.6px;
   font-weight: var(--weight-bold);
   fill: var(--color-text);
-  text-anchor: middle;
+  /* L'ancrage est porte par l'attribut : l'etiquette change de cote pour ne
+     jamais en recouvrir une autre (mapGeometry.layoutLabels). */
   /* Halo clair : le libelle reste lisible par-dessus une bulle de region. */
   stroke: var(--color-surface);
   stroke-width: 1.1;
   paint-order: stroke fill;
   stroke-linejoin: round;
+}
+
+/*
+ * Trait de rattachement : sur une carte tres serree, une etiquette part
+ * chercher sa place plus loin. Discret, il dit seulement a qui elle appartient.
+ */
+.map__label-leader {
+  stroke: var(--color-text-soft);
+  stroke-width: 0.4;
+  stroke-linecap: round;
+  opacity: 0.55;
 }
 
 /* Pastille d'etat posee en coin : le pictogramme du lieu reste visible (§142). */
@@ -285,10 +297,12 @@
 }
 
 /*
- * Pastille d'édition posée sur un lieu ou une région (mode adulte).
- * Elle n'apparaît qu'en mode édition : l'enfant ne la voit jamais.
+ * Pastilles d'édition posées sur un lieu ou une région (mode adulte) : le
+ * crayon modifie, le « + » ajoute un lieu à côté. Elles n'apparaissent qu'en
+ * mode édition : l'enfant ne les voit jamais.
  */
 .map__edit,
+.map__add,
 .map__zone-edit {
   color: var(--color-text-invert);
   cursor: pointer;
@@ -301,6 +315,7 @@
 }
 
 .map__edit:focus-visible .map__edit-dot,
+.map__add:focus-visible .map__add-dot,
 .map__zone-edit:focus-visible .map__zone-label--editable {
   stroke: var(--color-lavender);
   stroke-width: 1.2;
@@ -310,6 +325,17 @@
   fill: var(--color-lavender);
   stroke: var(--color-surface);
   stroke-width: 0.5;
+}
+
+/* Le « + » se distingue du crayon par sa couleur d'action (§150). */
+.map__add-dot {
+  fill: var(--color-green);
+  stroke: var(--color-surface);
+  stroke-width: 0.5;
+}
+
+.map__add:focus-visible .map__add-dot {
+  stroke: var(--color-lavender);
 }
 
 .map__avatar {

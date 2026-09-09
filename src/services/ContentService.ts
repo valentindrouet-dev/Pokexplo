@@ -10,6 +10,7 @@ import { SAVE_SCHEMA_VERSION } from '../types/save';
 import { defaultContentBundle } from '../content/defaultContent';
 import { voiceStatus } from '../utils/voice';
 import { deepClone } from '../utils/clone';
+import { crowdedPairs } from '../features/world-map/mapGeometry';
 import { getBackend } from './backends';
 import { failAfter } from '../utils/async';
 
@@ -326,6 +327,19 @@ class ContentServiceImpl {
         error('NODE_GYM', `Arène inconnue sur « ${node.label} ».`, node.id);
       }
       checkVoice(node.arrivalVoiceId, node.id);
+    }
+
+    /*
+     * Deux lieux qui se touchent : aucune disposition d'étiquettes ne peut
+     * plus être propre. La carte écarte un lieu qu'on lâche sur un autre ; ce
+     * contrôle rattrape un contenu importé ou saisi au clavier dans les menus.
+     */
+    for (const [a, b] of crowdedPairs(bundle.nodes)) {
+      warn(
+        'NODE_CROWDED',
+        `« ${a.label} » et « ${b.label} » sont trop proches sur la carte : écartez-les.`,
+        a.id,
+      );
     }
 
     for (const template of bundle.exerciseTemplates) {

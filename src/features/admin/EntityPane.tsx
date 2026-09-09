@@ -13,6 +13,8 @@ export interface EntityPaneProps<T> {
   hintOf?: (item: T) => string;
   onCreate?: () => void;
   createLabel?: string;
+  /** Réglage qui accompagne la création (le type d'une nouvelle matrice). */
+  createExtra?: ReactNode;
   children: ReactNode;
 }
 
@@ -27,6 +29,7 @@ export function EntityPane<T>({
   hintOf,
   onCreate,
   createLabel = 'Ajouter',
+  createExtra,
   children,
 }: EntityPaneProps<T>) {
   return (
@@ -35,6 +38,7 @@ export function EntityPane<T>({
       rightLabel="Édition"
       left={
         <SoftPanel title={`${title} (${items.length})`} padding="tight" className="ds-stack">
+          {createExtra}
           {onCreate ? <PrimaryButton onClick={onCreate}>{createLabel}</PrimaryButton> : null}
           <div className="admin__scroll-list">
             {items.map((item) => {

@@ -4,6 +4,48 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 Trois versions sont suivies séparément (§112) : `APP_VERSION`, `CONTENT_VERSION`,
 `SAVE_SCHEMA_VERSION`.
 
+## [1.6.0] — Ajouter depuis la carte, choisir les pictogrammes, textes jamais superposés
+
+`APP_VERSION 1.6.0` · `CONTENT_VERSION bundled-4` · `SAVE_SCHEMA_VERSION 3`
+
+### Ajouté
+
+- **« + » sur chaque lieu, en mode édition** : crée un nouveau lieu juste à
+  côté, dans la même région, relié par un chemin, avec les créatures et les
+  exercices de son voisin — jouable tout de suite — et ouvre son tiroir pour
+  le nommer. « Retirer ce lieu » défait l'opération (jamais le Centre, ni un
+  lieu qui porte une Arène ou une rencontre spéciale).
+- **Le tiroir d'un lieu règle ses rencontres et ses exercices** : une pastille
+  par créature, et **« Créer et ajouter ici »** fabrique une nouvelle matrice
+  du type choisi, attachée au lieu et ouverte aussitôt. Les menus
+  `Exercices` proposent la même création (« Nouvelle matrice ») — il n'y en
+  avait aucune.
+- **Pictogramme des lieux au choix** (`MapNode.icon`, facultatif) : arbre,
+  champignon, poisson, montagne, pierre précieuse, soleil, lune, pont, drapeau,
+  œuf… ; « Région » revient au dessin de la région. Dans le tiroir comme dans
+  les menus. Dix icônes de plus dans le design system, même trait.
+- Depuis l'écran de rencontre, en édition : **« Créatures et exercices de ce
+  lieu »** ouvre le tiroir du lieu sans revenir à la carte.
+
+### Corrigé
+
+- **Les textes de la carte se superposaient** dès qu'on déplaçait ou renommait
+  des lieux : un titre de région tombait sur le nom d'un lieu voisin. Les
+  étiquettes sont désormais posées ensemble, après coup : chaque nom cherche
+  une place libre tout autour de son lieu (deux tours, pour que les premiers
+  servis libèrent la place aux suivants), les titres de région prennent ce qui
+  reste autour de leur bulle, un titre long passe sur deux lignes, et une
+  étiquette qui a dû s'éloigner est rattachée par un trait. En édition, le
+  crayon et le « + » comptent parmi les obstacles : ils ne masquent plus un
+  nom voisin. Vérifié sur des cartes volontairement serrées, dans les deux
+  orientations, en géométrie pure ET sur les rectangles réellement rendus —
+  c'est cette mesure qui a montré que le modèle de boîte surestimait la
+  hauteur du texte, au point de faire fuir chaque étiquette de sa place
+  naturelle.
+- **Deux lieux ne se posent plus l'un sur l'autre** : lâché sur un voisin, un
+  lieu s'écarte de lui-même. Un contenu qui en contient tout de même est
+  signalé par la validation (« trop proches sur la carte »).
+
 ## [1.5.0] — « Mon enfant voit-il mes modifications ? »
 
 `APP_VERSION 1.5.0` · `CONTENT_VERSION bundled-4` · `SAVE_SCHEMA_VERSION 3`

@@ -36,7 +36,9 @@ async function openMapInEditMode(page: Page): Promise<void> {
 
 /** Centre d'un lieu, en pixels d'écran. */
 async function centreOf(page: Page, label: string): Promise<{ x: number; y: number }> {
-  const box = await page.locator(`.map__node[aria-label^="${label}"]`).boundingBox();
+  // L'anneau du lieu, et non le groupe entier : celui-ci contient aussi
+  // l'etiquette (qui change de cote) et les pastilles d'edition.
+  const box = await page.locator(`.map__node[aria-label^="${label}"] .map__node-ring`).boundingBox();
   if (!box) throw new Error(`lieu « ${label} » introuvable`);
   return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
 }
@@ -111,7 +113,7 @@ test('un simple appui reste un voyage, même en mode édition', async ({ page })
   await openMapInEditMode(page);
   const before = await draftNode(page, 'prairie-1');
 
-  await page.locator('.map__node[aria-label^="Prairie"]').click();
+  await page.locator('.map__node[aria-label^="Prairie"] .map__node-ring').click();
 
   // On part en voyage : l'adulte peut parcourir l'aventure tout en l'éditant.
   await expect(page).toHaveURL(/#\/play\/encounter\/prairie-1/, { timeout: 20_000 });
@@ -138,7 +140,7 @@ test('un lieu ne peut pas être lâché hors du cadre', async ({ page }) => {
   expect(at.y).toBeGreaterThanOrEqual(11);
 
   // Le lieu et sa bulle restent entièrement dans le panneau de la carte.
-  const node = (await page.locator('.map__node[aria-label^="Grand pré"]').boundingBox())!;
+  const node = (await page.locator('.map__node[aria-label^="Grand pré"] .map__node-ring').boundingBox())!;
   expect(node.x).toBeGreaterThanOrEqual(map.x - 1);
   expect(node.y).toBeGreaterThanOrEqual(map.y - 1);
 });
@@ -181,7 +183,7 @@ test('l’enfant ne peut jamais déplacer un lieu', async ({ page }) => {
 
   // « Grand pré » est encore fermé : le toucher ne déclenche aucun voyage, on
   // observe donc le seul effet possible d'un glissement — aucun.
-  const node = page.locator('.map__node[aria-label^="Grand pré"]');
+  const node = page.locator('.map__node[aria-label^="Grand pré"] .map__node-ring');
   const before = await node.boundingBox();
   await dragBy(page, 'Grand pré', 120, -70);
   await page.waitForTimeout(500);

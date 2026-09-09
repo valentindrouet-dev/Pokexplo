@@ -376,3 +376,93 @@ export const IconVolcano = (p: IconProps) => (
     <path d="M12 3.5v2" />
   </IconBase>
 );
+
+/* ------------------------------------------------------------------ *
+ * Pictogrammes de lieux (§147) — au choix de l'administrateur.
+ * Même grille, même trait : ils se mélangent aux précédents sans heurt.
+ * ------------------------------------------------------------------ */
+
+/** Arbre. */
+export const IconTree = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M12 3 6.5 10.5h3L6 16h12l-3.5-5.5h3Z" />
+    <path d="M12 16v5" />
+  </IconBase>
+);
+
+/** Champignon. */
+export const IconMushroom = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M3.5 11.5C3.5 7 7.5 3.5 12 3.5s8.5 3.5 8.5 8a1.5 1.5 0 0 1-1.5 1.5H5a1.5 1.5 0 0 1-1.5-1.5Z" />
+    <path d="M9 13v4.5A2.5 2.5 0 0 0 11.5 20h1a2.5 2.5 0 0 0 2.5-2.5V13" />
+    <circle cx="9" cy="8" r="1" />
+    <circle cx="14.5" cy="7" r="1" />
+  </IconBase>
+);
+
+/** Montagne. */
+export const IconMountain = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="m3 19 6.5-11 3.5 5.5 2-3L21 19Z" />
+    <path d="m8 12.5 1.5 1.5 1.5-1.5" />
+  </IconBase>
+);
+
+/** Pont. */
+export const IconBridge = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M3 17V8" />
+    <path d="M21 17V8" />
+    <path d="M3 12c3-3.5 6-5 9-5s6 1.5 9 5" />
+    <path d="M3 17h18" />
+    <path d="M8 17v-6.2M12 17v-7M16 17v-6.2" />
+  </IconBase>
+);
+
+/** Drapeau. */
+export const IconFlag = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M6 21V4" />
+    <path d="M6 4h11l-2.5 4 2.5 4H6" />
+  </IconBase>
+);
+
+/** Soleil. */
+export const IconSun = (p: IconProps) => (
+  <IconBase {...p}>
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4" />
+  </IconBase>
+);
+
+/** Lune. */
+export const IconMoon = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M19 14.5A7.5 7.5 0 0 1 9.5 5a7.5 7.5 0 1 0 9.5 9.5Z" />
+  </IconBase>
+);
+
+/** Poisson. */
+export const IconFish = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M3 12c2.5-4 6-6 9.5-6S19 9 21 12c-2 3-5 6-8.5 6S5.5 16 3 12Z" />
+    <path d="M17 12h4" />
+    <circle cx="8.5" cy="11" r="1" />
+  </IconBase>
+);
+
+/** Pierre précieuse. */
+export const IconGem = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M7 4h10l4 5.5L12 21 3 9.5Z" />
+    <path d="M3 9.5h18M9.5 4l2.5 5.5L14.5 4M9.5 9.5 12 21l2.5-11.5" />
+  </IconBase>
+);
+
+/** Œuf. */
+export const IconEgg = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M12 3c3.5 0 7 5 7 10a7 7 0 0 1-14 0c0-5 3.5-10 7-10Z" />
+    <path d="M9 12.5c0-2 1-4.5 2.5-6" />
+  </IconBase>
+);

@@ -1,7 +1,13 @@
 import { useMemo, useState } from 'react';
-import type { ExerciseTemplate, HintType, PedagogyCategory, VoiceMessage } from '../../../types';
+import type {
+  ExerciseTemplate,
+  ExerciseType,
+  HintType,
+  PedagogyCategory,
+  VoiceMessage,
+} from '../../../types';
 import type { TemplateTextField } from '../exerciseText';
-import { generateExercise } from '../../../exercise-engine';
+import { EXERCISE_TYPES, generateExercise } from '../../../exercise-engine';
 import { randomSeed } from '../../../utils/rng';
 import { createVoiceMessage } from '../../../utils/voice';
 import { IconRefresh, SecondaryButton, SoftPanel } from '../../../ui';
@@ -10,6 +16,7 @@ import { useAdminDraft } from '../AdminDraftContext';
 import { EntityPane } from '../EntityPane';
 import { NumberField, SelectField, TextField } from '../fields';
 import { applyTemplateVoice, templateTextBlocks } from '../exerciseText';
+import { EXERCISE_TYPE_LABELS, addTemplate, createTemplate } from '../templateFactory';
 import { VoiceTextEditor } from '../VoiceTextEditor';
 
 const HINT_TYPES: HintType[] = [
@@ -34,6 +41,7 @@ export function ExercisesSection() {
     draft?.exerciseTemplates[0]?.id ?? null,
   );
   const [seed, setSeed] = useState(() => randomSeed());
+  const [newType, setNewType] = useState<ExerciseType>('COUNT');
 
   const template =
     draft?.exerciseTemplates.find((item) => item.id === selectedId) ??
@@ -50,6 +58,13 @@ export function ExercisesSection() {
   }, [draft, template, seed]);
 
   if (!draft) return null;
+
+  /** Même fabrique que le « + » du mode édition : une matrice jouable d'emblée. */
+  const create = (): void => {
+    const created = createTemplate(newType, draft.skills);
+    update((current) => addTemplate(current, created));
+    setSelectedId(created.template.id);
+  };
 
   const patch = (changes: Partial<ExerciseTemplate>): void => {
     if (!template) return;
@@ -90,6 +105,16 @@ export function ExercisesSection() {
       idOf={(item) => item.id}
       labelOf={(item) => item.label}
       hintOf={(item) => `${item.type} · niveau ${item.difficulty}`}
+      createExtra={
+        <SelectField
+          label="Type de la nouvelle matrice"
+          value={newType}
+          options={EXERCISE_TYPES.map((type) => ({ value: type, label: EXERCISE_TYPE_LABELS[type] }))}
+          onChange={setNewType}
+        />
+      }
+      onCreate={create}
+      createLabel="Nouvelle matrice"
     >
       {template ? (
         <>

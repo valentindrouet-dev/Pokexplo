@@ -122,8 +122,10 @@ l'écran à l'enfant, à l'identique.
 | Sur l'écran | On touche | On modifie |
 | --- | --- | --- |
 | Carte | **on fait glisser un lieu** | **sa place sur la carte** |
-| Carte | le crayon sur un lieu | son nom, sa région, ses exercices, sa phrase d'arrivée |
+| Carte | le crayon sur un lieu | son nom, sa région, **son pictogramme**, ses créatures, ses exercices, sa phrase d'arrivée |
+| Carte | **le « + » vert sur un lieu** | **crée un nouveau lieu juste à côté**, relié à lui, et l'ouvre pour le nommer |
 | Carte | le titre d'une région (en mauve) | le nom de la région, son nom court sur la carte |
+| Rencontre | « Créatures et exercices de ce lieu » | les créatures que l'on peut y rencontrer, les exercices qui s'y jouent |
 | Centre | le titre du chapitre | le titre, les voix d'ouverture et de fin |
 | Centre | la bulle du Professeur | la quête proposée : titre et répliques |
 | Rencontre | la créature | son nom, son habitat, ses syllabes, sa description, sa voix |
@@ -145,17 +147,52 @@ le doigt, les chemins suivent : vous voyez tout de suite ce que l'enfant verra.
   chercher là-bas et traverserait la voisine — la carte deviendrait illisible.
   Rien n'est réaffecté sans votre accord.
 
+### Ajouter une rencontre ou un exercice
+
+- **Un nouveau lieu** : touchez le **« + »** vert d'un lieu. Le nouveau lieu se
+  pose à côté, dans la même région, relié par un chemin, et **hérite des
+  créatures et des exercices de son voisin** — il est jouable tout de suite.
+  Son tiroir s'ouvre pour le nommer. Le bouton **« Retirer ce lieu »** du
+  tiroir défait l'opération (jamais le Centre, ni un lieu qui porte une Arène).
+- **Les créatures que l'on peut y rencontrer** : dans le tiroir du lieu, une
+  pastille par créature — on active, on désactive.
+- **Un nouvel exercice** : dans le tiroir du lieu, choisissez un type
+  (compter, additionner, lettre manquante, syllabes…) puis **« Créer et
+  ajouter ici »**. Une matrice prête à jouer est créée, attachée à ce lieu, et
+  s'ouvre pour reformuler consigne, indices et félicitations. Les menus
+  `Admin → Exercices` proposent la même création (« Nouvelle matrice »).
+
+### Changer le pictogramme d'un lieu
+
+Par défaut, un lieu porte le dessin de sa région : une fleur en prairie, une
+feuille en forêt, une goutte en rivière, un rocher dans les pierres. Pour le
+changer : **crayon du lieu → « Pictogramme sur la carte »**, et touchez un
+dessin (arbre, champignon, poisson, montagne, pierre précieuse, soleil, lune,
+pont, drapeau, œuf…). **« Région »** revient au dessin de la région. Le même
+choix existe dans `Admin → Biomes et nœuds`.
+
+### Les textes ne se chevauchent jamais
+
+Chaque nom de lieu prend la **première place libre** autour de son lieu
+(dessous, puis dessus, à droite, à gauche…), et les titres de région prennent
+ce qui reste autour de leur bulle — un titre long passe sur deux lignes. Vous
+le voyez se faire en direct pendant un glissement. Deux lieux ne se posent
+jamais l'un sur l'autre : lâché sur un voisin, un lieu **s'écarte** de
+lui-même. Si un contenu importé contient deux lieux qui se touchent, le
+tableau de bord le signale (« trop proches sur la carte »).
+
 Les textes se saisissent **dans l'enregistreur de voix**, jamais ailleurs :
 c'est le seul point d'entrée pour associer une voix à un texte, et c'est lui qui
 signale une voix devenue obsolète quand le texte change.
 
 ### Ce qui reste dans les menus
 
-Le mode édition modifie ce qui existe. **Créer, supprimer, relier** reste dans
-`/admin` : ajouter une créature ou un lieu, composer une Arène, dessiner la
-carte, changer le type ou la difficulté d'un exercice, enregistrer une série de
-voix à la chaîne. Chaque tiroir propose **« Ouvrir dans les menus »** pour y
-aller d'un geste, sur l'élément qu'on regardait.
+Le mode édition modifie ce qui existe et ajoute des lieux et des exercices.
+Le reste de la structure vit dans `/admin` : créer une créature ou une région,
+composer une Arène, relier deux lieux éloignés, changer la difficulté ou les
+réglages fins d'un exercice, enregistrer une série de voix à la chaîne. Chaque
+tiroir propose **« Ouvrir dans les menus »** pour y aller d'un geste, sur
+l'élément qu'on regardait.
 
 ### Deux vues, un seul brouillon
 

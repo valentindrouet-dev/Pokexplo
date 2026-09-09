@@ -1,20 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
-import type { Biome, BiomeKind, MapNode, NodeState } from '../../types';
+import type { Biome, MapNode, NodeState } from '../../types';
 import { canTravelTo, nodeState, pathBetween } from '../../game-engine';
 import {
   BadgeChip,
   IconBadge,
-  IconCenter,
-  IconDroplet,
-  IconFlower,
-  IconLeaf,
   IconLock,
   IconPencil,
-  IconRock,
-  IconSnow,
+  IconPlus,
   IconSparkle,
-  IconVolcano,
-  IconWave,
   LoadingBall,
   PrimaryButton,
   SecondaryButton,
@@ -29,18 +22,27 @@ import { useEditMode } from '../../app/providers/EditModeProvider';
 import { PlayScreen } from '../play/PlayScreen';
 import { useOrientation } from '../../utils/useOrientation';
 import { useAdminDraftOptional } from '../admin/AdminDraftContext';
+import { createNodeAfter } from '../admin/nodeFactory';
+import { uid } from '../../utils/id';
 import {
   HIT_R,
   NODE_R,
   NODE_R_GYM,
   PROJECTIONS,
+  ZONE_LINE_H,
   ZONE_LINK_W,
   ZONE_R,
   foreignBiomeAt,
+  freeSpotNear,
+  layoutLabels,
   placeNode,
+  type Box,
+  type LabelZone,
+  type PlacedLabel,
   type Point,
   type Zone as ZoneShapeData,
 } from './mapGeometry';
+import { PLACE_ICONS, placeIconFor } from './placeIcons';
 
 const TRAVEL_STEP_MS = 320;
 
@@ -79,35 +81,12 @@ const STATE_FILL: Record<NodeState, string> = {
  * On n'affiche PLUS un cadenas a la place du lieu : l'enfant doit reconnaitre
  * d'abord OU il va (une fleur, une feuille, un rocher…). L'etat « ferme » est
  * porte par la couleur, la transparence et une petite pastille en coin (§142).
+ * Le dessin vient de `placeIcons` : celui choisi par l'administrateur, sinon
+ * celui de la region.
  */
 function PlaceIcon({ node, biome }: { node: MapNode; biome: Biome | null }) {
-  const size = 24;
-  if (node.kind === 'CENTER') return <IconCenter size={size} />;
-  if (node.kind === 'GYM') return <IconBadge size={size} />;
-
-  const kind: BiomeKind = biome?.kind ?? 'PRAIRIE';
-  switch (kind) {
-    case 'FOREST':
-      return <IconLeaf size={size} />;
-    case 'RIVER':
-      return <IconDroplet size={size} />;
-    case 'BEACH':
-      return <IconWave size={size} />;
-    case 'CAVE':
-    case 'MOUNTAIN':
-      return <IconRock size={size} />;
-    case 'SNOW':
-      return <IconSnow size={size} />;
-    case 'VOLCANO':
-      return <IconVolcano size={size} />;
-    case 'CENTER':
-      return <IconCenter size={size} />;
-    case 'PRAIRIE':
-    case 'SWAMP':
-    case 'CITY':
-    default:
-      return <IconFlower size={size} />;
-  }
+  const { Icon } = PLACE_ICONS[placeIconFor(node, biome)];
+  return <Icon size={24} />;
 }
 
 /**
@@ -123,18 +102,21 @@ function MapEditBadge({
   y,
   label,
   onOpen,
+  variant = 'edit',
 }: {
   x: number;
   y: number;
   label: string;
   onOpen: () => void;
+  /** `add` : le « + » qui pose un nouveau lieu à côté de celui-ci. */
+  variant?: 'edit' | 'add';
 }) {
   return (
     <g
-      className="map__edit"
+      className={variant === 'add' ? 'map__add' : 'map__edit'}
       role="button"
       tabIndex={0}
-      aria-label={`Modifier ${label}`}
+      aria-label={label}
       /*
        * Le crayon est POSE sur le lieu : sans cela, l'appui demarrait un
        * deplacement, la carte capturait le pointeur, et le `click` du crayon
@@ -153,9 +135,9 @@ function MapEditBadge({
       }}
     >
       <circle cx={x} cy={y} r={6} fill="transparent" />
-      <circle className="map__edit-dot" cx={x} cy={y} r={3.4} />
+      <circle className={variant === 'add' ? 'map__add-dot' : 'map__edit-dot'} cx={x} cy={y} r={3.4} />
       <g transform={`translate(${x - 2.2} ${y - 2.2}) scale(0.183)`} pointerEvents="none">
-        <IconPencil size={24} />
+        {variant === 'add' ? <IconPlus size={24} /> : <IconPencil size={24} />}
       </g>
     </g>
   );
@@ -218,7 +200,7 @@ export function MapScreen() {
   const [walking, setWalking] = useState<string[] | null>(null);
   const [step, setStep] = useState(0);
   const orientation = useOrientation();
-  const { w: VIEW_W, h: VIEW_H, toView, fromView, labelFor } = PROJECTIONS[orientation];
+  const { w: VIEW_W, h: VIEW_H, toView, fromView } = PROJECTIONS[orientation];
 
   /*
    * DÉPLACER LES LIEUX (mode édition).
@@ -296,14 +278,69 @@ export function MapScreen() {
           // Une region d'un seul lieu n'a pas besoin d'etiquette : le nom du
           // lieu, juste en dessous, suffit et evite un chevauchement.
           showLabel: nodes.length > 1,
-          label: labelFor(points, bundle.nodes.map(place)),
+          // Le lieu prefere pour le titre en premier : au-dessus du plus a
+          // gauche en paysage, a cote du plus haut en portrait.
+          preferred: [...points].sort((a, b) =>
+            orientation === 'portrait' ? a.y - b.y || a.x - b.x : a.x - b.x || a.y - b.y,
+          ),
         };
       })
       .filter((zone): zone is NonNullable<typeof zone> => zone !== null);
-  }, [bundle, links, place, labelFor]);
+  }, [bundle, links, place, orientation]);
 
   const currentNode = bundle?.nodes.find((node) => node.id === save?.state.currentNode) ?? null;
   const currentBiome = biome(currentNode?.biomeId);
+
+  const walkingNodeId = walking?.[step] ?? save?.state.currentNode ?? null;
+  const avatarNode =
+    bundle?.nodes.find((node) => node.id === walkingNodeId) ?? currentNode ?? null;
+  const avatar = avatarNode ? place(avatarNode) : null;
+
+  /*
+   * LES TEXTES NE SE CHEVAUCHENT JAMAIS.
+   *
+   * Noms de lieux et titres de region sont poses ensemble, apres coup, par
+   * `layoutLabels` : chaque nom prend la premiere place libre autour de son
+   * lieu, les titres prennent ce qui reste autour de leur bulle. Recalcule a
+   * chaque image pendant un glisser : l'adulte voit les etiquettes s'ecarter.
+   */
+  const labels = useMemo(() => {
+    if (!bundle) return { nodes: new Map<string, PlacedLabel>(), zones: new Map<string, PlacedLabel>() };
+    const labelNodes = bundle.nodes.map((node) => ({
+      id: node.id,
+      at: place(node),
+      radius: node.kind === 'GYM' ? NODE_R_GYM : NODE_R,
+      label: node.label,
+    }));
+    const labelZones: LabelZone[] = zones
+      .filter((zone) => zone.showLabel)
+      .map((zone) => ({
+        id: zone.biome.id,
+        points: zone.preferred,
+        label: zone.biome.shortName ?? zone.biome.name,
+      }));
+    // Le personnage se tient au-dessus du lieu courant : on ne le recouvre pas.
+    const avoid: Box[] = avatar
+      ? [{ left: avatar.x - 3.6, right: avatar.x + 3.6, top: avatar.y - 13.2, bottom: avatar.y - 5.9 }]
+      : [];
+    /*
+     * En edition, le crayon et le « + » sont des pastilles PLEINES posees sur
+     * la carte : une etiquette passant dessous serait masquee. Elles comptent
+     * donc parmi les obstacles — d'ou des etiquettes qui s'ecartent un peu
+     * quand on entre en edition, et reviennent en sortant.
+     */
+    if (editing) {
+      for (const node of labelNodes) {
+        const r = node.radius;
+        for (const side of [-1, 1]) {
+          const cx = node.at.x + side * r * 0.95;
+          const cy = node.at.y - r * 0.95;
+          avoid.push({ left: cx - 4.2, right: cx + 4.2, top: cy - 4.2, bottom: cy + 4.2 });
+        }
+      }
+    }
+    return layoutLabels(labelNodes, labelZones, { w: VIEW_W, h: VIEW_H }, avoid);
+  }, [bundle, zones, place, avatar, editing, VIEW_W, VIEW_H]);
 
   const arrive = useCallback(
     async (nodeId: string): Promise<void> => {
@@ -383,7 +420,8 @@ export function MapScreen() {
   /** Ecrit la nouvelle position dans le brouillon, et signale un lieu egare. */
   const moveNodeTo = (node: MapNode, position: Point): void => {
     if (!drafting) return;
-    const at = placeNode(position);
+    // Jamais deux lieux l'un sur l'autre : lache sur un voisin, il s'ecarte.
+    const at = freeSpotNear(node, bundle.nodes, node.id, placeNode(position));
     if (at.x === node.x && at.y === node.y) return;
 
     setPending({ id: node.id, at });
@@ -481,6 +519,31 @@ export function MapScreen() {
     ? [...bundle.nodes.filter((node) => node.id !== drag.id), ...bundle.nodes.filter((node) => node.id === drag.id)]
     : bundle.nodes;
 
+  /**
+   * « + » : un nouveau lieu a cote de celui-ci, dans sa region, relie a lui,
+   * avec ses creatures et ses exercices — et son tiroir s'ouvre aussitot pour
+   * le nommer. L'adulte cree ainsi une rencontre sans quitter la carte.
+   */
+  const addNodeAfter = (parent: MapNode): void => {
+    if (!drafting) return;
+    // L'identifiant est tire ICI : la mise a jour du brouillon est differee,
+    // et le tiroir doit s'ouvrir sur ce lieu des maintenant.
+    const id = uid('node');
+    drafting.update(
+      (current) =>
+        createNodeAfter(
+          current,
+          parent.id,
+          {
+            x: parent.x + (orientation === 'portrait' ? 0 : 10),
+            y: parent.y + (orientation === 'portrait' ? 8 : 0),
+          },
+          id,
+        ).bundle,
+    );
+    openEditor({ kind: 'node', id });
+  };
+
   const strayNode = bundle.nodes.find((node) => node.id === strayNodeId) ?? null;
   const strayBiome = bundle.biomes.find((item) => item.id === strayBiomeId) ?? null;
   const strayHome = bundle.biomes.find((item) => item.id === strayNode?.biomeId) ?? null;
@@ -496,10 +559,6 @@ export function MapScreen() {
     setStrayNodeId(null);
     setStrayBiomeId(null);
   };
-
-  const walkingNodeId = walking?.[step] ?? save.state.currentNode;
-  const avatarNode = bundle.nodes.find((node) => node.id === walkingNodeId) ?? currentNode;
-  const avatar = avatarNode ? place(avatarNode) : null;
 
   return (
     <PlayScreen
@@ -585,7 +644,11 @@ export function MapScreen() {
 
           {zones
             .filter((zone) => zone.showLabel)
-            .map((zone) => (
+            .map((zone) => ({ zone, label: labels.zones.get(zone.biome.id) }))
+            .filter((entry): entry is { zone: (typeof zones)[number]; label: PlacedLabel } =>
+              entry.label !== undefined,
+            )
+            .map(({ zone, label }) => (
               <g key={`${zone.biome.id}-label`}>
                 {/*
                   Le titre d'une region ne fait rien pour l'enfant : en mode
@@ -606,36 +669,16 @@ export function MapScreen() {
                     }}
                   >
                     <rect
-                      x={
-                        zone.label.anchor === 'start'
-                          ? zone.label.x
-                          : zone.label.anchor === 'end'
-                            ? zone.label.x - 48
-                            : zone.label.x - 24
-                      }
-                      y={zone.label.y - 4.6}
-                      width={48}
-                      height={6.4}
+                      x={label.box.left}
+                      y={label.box.top}
+                      width={label.box.right - label.box.left}
+                      height={label.box.bottom - label.box.top}
                       fill="transparent"
                     />
-                    <text
-                      className="map__zone-label map__zone-label--editable"
-                      x={zone.label.x}
-                      y={zone.label.y}
-                      textAnchor={zone.label.anchor}
-                    >
-                      {zone.biome.shortName ?? zone.biome.name}
-                    </text>
+                    <ZoneLabelText label={label} editable />
                   </g>
                 ) : (
-                  <text
-                    className="map__zone-label"
-                    x={zone.label.x}
-                    y={zone.label.y}
-                    textAnchor={zone.label.anchor}
-                  >
-                    {zone.biome.shortName ?? zone.biome.name}
-                  </text>
+                  <ZoneLabelText label={label} />
                 )}
               </g>
             ))}
@@ -706,7 +749,10 @@ export function MapScreen() {
                 {state === 'SPECIAL_EVENT' ? (
                   <g
                     className="map__badge map__badge--event"
-                    transform={`translate(${point.x + radius * 0.85} ${point.y - radius * 0.85})`}
+                    /* En edition, le coin haut-droit est pris par le « + ». */
+                    transform={`translate(${editing ? point.x - radius * 0.85 : point.x + radius * 0.85} ${
+                      editing ? point.y + radius * 0.85 : point.y - radius * 0.85
+                    })`}
                     pointerEvents="none"
                   >
                     <circle r={3.1} />
@@ -715,16 +761,47 @@ export function MapScreen() {
                     </g>
                   </g>
                 ) : null}
-                <text className="map__node-label" x={point.x} y={point.y + radius + 5.2}>
-                  {node.label}
-                </text>
+                {(() => {
+                  const label = labels.nodes.get(node.id);
+                  return (
+                    <>
+                      {/* Etiquette partie loin faute de place : on la rattache. */}
+                      {label?.leader ? (
+                        <line
+                          className="map__label-leader"
+                          x1={label.leader.from.x}
+                          y1={label.leader.from.y}
+                          x2={label.leader.to.x}
+                          y2={label.leader.to.y}
+                        />
+                      ) : null}
+                      <text
+                        className="map__node-label"
+                        x={label?.x ?? point.x}
+                        y={label?.y ?? point.y + radius + 5.2}
+                        textAnchor={label?.anchor ?? 'middle'}
+                      >
+                        {node.label}
+                      </text>
+                    </>
+                  );
+                })()}
                 {editing ? (
-                  <MapEditBadge
-                    x={point.x - radius * 0.95}
-                    y={point.y - radius * 0.95}
-                    label={`le lieu ${node.label}`}
-                    onOpen={() => openEditor({ kind: 'node', id: node.id })}
-                  />
+                  <>
+                    <MapEditBadge
+                      x={point.x - radius * 0.95}
+                      y={point.y - radius * 0.95}
+                      label={`Modifier le lieu ${node.label}`}
+                      onOpen={() => openEditor({ kind: 'node', id: node.id })}
+                    />
+                    <MapEditBadge
+                      variant="add"
+                      x={point.x + radius * 0.95}
+                      y={point.y - radius * 0.95}
+                      label={`Ajouter un lieu après ${node.label}`}
+                      onOpen={() => addNodeAfter(node)}
+                    />
+                  </>
                 ) : null}
               </g>
             );
@@ -757,6 +834,24 @@ export function MapScreen() {
         ) : null}
       </SoftPanel>
     </PlayScreen>
+  );
+}
+
+/** Titre de region, sur une ou deux lignes selon `layoutLabels`. */
+function ZoneLabelText({ label, editable = false }: { label: PlacedLabel; editable?: boolean }) {
+  return (
+    <text
+      className={editable ? 'map__zone-label map__zone-label--editable' : 'map__zone-label'}
+      x={label.x}
+      y={label.y}
+      textAnchor={label.anchor}
+    >
+      {label.lines.map((line, index) => (
+        <tspan key={index} x={label.x} dy={index === 0 ? 0 : ZONE_LINE_H}>
+          {line}
+        </tspan>
+      ))}
+    </text>
   );
 }
 

@@ -3,12 +3,13 @@ import type { ActiveEncounter, Creature, ExerciseInstance } from '../../types';
 import { generateExercise } from '../../exercise-engine';
 import { prepareEncounter } from '../../game-engine';
 import { createRng, randomSeed } from '../../utils/rng';
-import { LoadingBall, PrimaryButton, SoftPanel, VoiceButton } from '../../ui';
+import { IconPencil, LoadingBall, PrimaryButton, SecondaryButton, SoftPanel, VoiceButton } from '../../ui';
 import { CreatureSprite } from '../../components/CreatureSprite';
 import { useAudio } from '../../app/providers/AudioProvider';
 import { useContent } from '../../app/providers/ContentProvider';
 import { useGame } from '../../app/providers/GameProvider';
 import { useNavigation } from '../../app/router';
+import { useEditMode } from '../../app/providers/EditModeProvider';
 import { ExerciseView } from '../learning/ExerciseView';
 import { PlayScreen } from '../play/PlayScreen';
 import { Editable } from '../edit-mode/Editable';
@@ -30,6 +31,7 @@ export function EncounterScreen({ nodeId }: { nodeId: string }) {
   const { bundle, biome, creature: creatureById } = useContent();
   const { save, dispatch } = useGame();
   const { speak, buttonState } = useAudio();
+  const { editing, open: openEditor } = useEditMode();
   const [phase, setPhase] = useState<Phase>('intro');
   const [preparing, setPreparing] = useState(false);
 
@@ -173,6 +175,19 @@ export function EncounterScreen({ nodeId }: { nodeId: string }) {
             <PrimaryButton large onClick={() => setPhase('exercise')}>
               Relever le défi !
             </PrimaryButton>
+            {/*
+              En edition : ce qu'on peut rencontrer ICI et les exercices qui
+              s'y jouent se reglent dans le tiroir du lieu, sans revenir a la
+              carte. L'enfant ne voit jamais ce bouton.
+            */}
+            {editing ? (
+              <SecondaryButton
+                icon={<IconPencil size={22} />}
+                onClick={() => openEditor({ kind: 'node', id: node.id })}
+              >
+                Créatures et exercices de ce lieu
+              </SecondaryButton>
+            ) : null}
           </div>
         </SoftPanel>
       ) : null}

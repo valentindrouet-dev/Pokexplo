@@ -143,6 +143,38 @@ export interface Biome {
 /** CONCEPTION §11. */
 export type NodeState = 'LOCKED' | 'AVAILABLE' | 'CURRENT' | 'COMPLETED' | 'SPECIAL_EVENT';
 
+/**
+ * Pictogramme d'un lieu sur la carte (§147).
+ *
+ * Par defaut il decoule de la region (feuille en foret, goutte en riviere…) ;
+ * l'administrateur peut le choisir lui-meme. Les cles sont des donnees : le
+ * dessin correspondant vit dans `features/world-map/placeIcons`.
+ */
+export type PlaceIconKey =
+  | 'flower'
+  | 'leaf'
+  | 'tree'
+  | 'mushroom'
+  | 'droplet'
+  | 'wave'
+  | 'fish'
+  | 'rock'
+  | 'mountain'
+  | 'gem'
+  | 'snow'
+  | 'volcano'
+  | 'sun'
+  | 'moon'
+  | 'star'
+  | 'sparkle'
+  | 'bridge'
+  | 'flag'
+  | 'egg'
+  | 'heart'
+  | 'home'
+  | 'center'
+  | 'badge';
+
 export type NodeKind = 'CENTER' | 'PATH' | 'ENCOUNTER' | 'GYM' | 'EVENT' | 'REST';
 
 /** Condition de deblocage (nœud, biome, arene). */
@@ -174,6 +206,8 @@ export interface MapNode {
   /** Position sur la carte, en pourcentage (0-100), independante de la resolution. */
   x: number;
   y: number;
+  /** Pictogramme choisi par l'administrateur ; sinon celui de la region. */
+  icon?: PlaceIconKey;
   connections: NodeId[];
   requires?: UnlockCondition;
   /** Table de rencontre pour les nœuds ENCOUNTER. */

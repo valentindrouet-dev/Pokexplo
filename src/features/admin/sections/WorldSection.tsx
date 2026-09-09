@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import type { Biome, MapNode, NodeKind } from '../../../types';
 import { PillButton, PrimaryButton, SecondaryButton, SoftPanel } from '../../../ui';
-import { uid } from '../../../utils/id';
 import { useNavigation } from '../../../app/router';
 import { useAdminDraft } from '../AdminDraftContext';
 import { EntityPane } from '../EntityPane';
 import { NumberField, SelectField, TextField } from '../fields';
 import { VoiceTextEditor } from '../VoiceTextEditor';
-import { createVoiceMessage } from '../../../utils/voice';
+import { uid } from '../../../utils/id';
+import { createNodeAfter } from '../nodeFactory';
+import { PlaceIconPicker } from '../PlaceIconPicker';
 
 const NODE_KINDS: NodeKind[] = ['CENTER', 'PATH', 'ENCOUNTER', 'GYM', 'EVENT', 'REST'];
 
@@ -39,31 +40,10 @@ export function WorldSection() {
     }));
   };
 
+  /** Même fabrique que le « + » de la carte : à côté du lieu sélectionné, relié à lui. */
   const createNode = (): void => {
     const id = uid('node');
-    const voiceId = `voice.node.${id}`;
-    update((current) => ({
-      ...current,
-      nodes: [
-        ...current.nodes,
-        {
-          id,
-          biomeId: current.biomes[0]?.id ?? '',
-          label: 'Nouveau lieu',
-          kind: 'ENCOUNTER',
-          x: 50,
-          y: 50,
-          connections: [],
-          encounters: [],
-          exerciseTemplateIds: [],
-          arrivalVoiceId: voiceId,
-        },
-      ],
-      voiceMessages: [
-        ...current.voiceMessages,
-        createVoiceMessage(voiceId, 'Nous voilà arrivés !', 'adventure'),
-      ],
-    }));
+    update((current) => createNodeAfter(current, node?.id ?? null, null, id).bundle);
     setNodeId(id);
   };
 
@@ -115,6 +95,12 @@ export function WorldSection() {
                 <NumberField label="Position X (%)" value={node.x} min={0} max={100} onChange={(x) => patchNode({ x })} />
                 <NumberField label="Position Y (%)" value={node.y} min={0} max={100} onChange={(y) => patchNode({ y })} />
               </div>
+
+              <PlaceIconPicker
+                node={node}
+                biome={draft.biomes.find((item) => item.id === node.biomeId) ?? null}
+                onChange={(icon) => patchNode({ icon })}
+              />
 
               <div className="field">
                 <span className="field__label">Chemins vers…</span>

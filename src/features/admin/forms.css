@@ -243,3 +243,50 @@
   background: var(--color-coral-soft);
   color: var(--color-text);
 }
+
+/* -------------------------- Choix d'un pictogramme -------------------------- */
+
+/*
+ * Une grille de grands boutons carrés : on reconnaît le dessin d'un coup
+ * d'œil, et chaque cible reste au minimum tactile (§4). Le choix courant se
+ * lit à sa taille et à son anneau, pas seulement à sa couleur.
+ */
+.icon-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.icon-picker__item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  border: var(--border-hairline-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: transform var(--duration-fast) var(--ease-soft);
+}
+
+.icon-picker__item[aria-pressed='true'] {
+  background: var(--color-lavender-soft);
+  border-color: var(--color-lavender);
+  box-shadow: 0 0 0 var(--space-0) var(--color-lavender);
+  transform: scale(1.08);
+}
+
+.icon-picker__item:focus-visible {
+  outline: var(--space-0) solid var(--color-lavender);
+  outline-offset: var(--space-0);
+}
+
+/* « Région » : le choix par défaut, qui suit la région du lieu. */
+.icon-picker__auto {
+  font-size: var(--text-small);
+  font-weight: var(--weight-bold);
+  padding: 0 var(--space-3);
+  width: auto;
+}

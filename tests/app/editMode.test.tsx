@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { App } from '../../src/app/App';
 import {
@@ -173,4 +173,77 @@ describe('Éditer là où on le voit', () => {
     expect(screen.queryByText('Mode édition')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^Modifier le chapitre/iu })).not.toBeInTheDocument();
   }, 20_000);
+});
+
+describe('Ajouter depuis l’éditeur visuel', () => {
+  it('le tiroir d’un lieu propose ses créatures, un nouvel exercice et un pictogramme', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await startAdventure(user);
+    await becomeAdmin(user);
+    await enterEditMode(user);
+
+    goTo('#/play/map');
+    await user.click(
+      await screen.findByRole('button', { name: /modifier le lieu prairie/iu }, { timeout: 5000 }),
+    );
+    const drawer = await screen.findByRole('dialog');
+
+    // Les créatures que l'on peut rencontrer ici, à activer d'un geste.
+    expect(within(drawer).getByRole('button', { name: 'Piloupi', pressed: true })).toBeInTheDocument();
+
+    // Le pictogramme : celui de la région par défaut, remplaçable.
+    expect(
+      within(drawer).getByRole('button', { name: 'Pictogramme de la région', pressed: true }),
+    ).toBeInTheDocument();
+    await user.click(within(drawer).getByRole('button', { name: 'Champignon' }));
+    expect(within(drawer).getByRole('button', { name: 'Champignon', pressed: true })).toBeInTheDocument();
+
+    // Un nouvel exercice, du type choisi, attaché à ce lieu et ouvert aussitôt.
+    await user.selectOptions(within(drawer).getByLabelText('Nouvel exercice'), 'SYLLABLE');
+    await user.click(within(drawer).getByRole('button', { name: /créer et ajouter ici/iu }));
+    expect(await screen.findByText(/Exercice — Syllabes/u)).toBeInTheDocument();
+
+    // L'écriture du brouillon est différée : on l'attend.
+    await waitFor(
+      async () => {
+        const draft = await ContentService.getDraft();
+        const node = draft.nodes.find((entry) => entry.id === 'prairie-1')!;
+        expect(node.icon).toBe('mushroom');
+        const created = draft.exerciseTemplates.find(
+          (template) => template.type === 'SYLLABLE' && template.id.startsWith('ex_'),
+        );
+        expect(created).toBeDefined();
+        expect(node.exerciseTemplateIds).toContain(created!.id);
+      },
+      { timeout: 4000 },
+    );
+  }, 30_000);
+
+  it('le « + » d’un lieu en crée un autre à côté, relié à lui', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await startAdventure(user);
+    await becomeAdmin(user);
+    await enterEditMode(user);
+
+    goTo('#/play/map');
+    await user.click(
+      await screen.findByRole('button', { name: 'Ajouter un lieu après Grand pré' }, { timeout: 5000 }),
+    );
+    expect(await screen.findByLabelText(/^Nom du lieu/u)).toHaveValue('Nouveau lieu');
+
+    await waitFor(
+      async () => {
+        const draft = await ContentService.getDraft();
+        const parent = draft.nodes.find((entry) => entry.id === 'prairie-2')!;
+        const created = draft.nodes.find((entry) => entry.label === 'Nouveau lieu')!;
+        expect(created).toBeDefined();
+        expect(created.biomeId).toBe('prairie');
+        expect(parent.connections).toContain(created.id);
+        expect(created.exerciseTemplateIds).toEqual(parent.exerciseTemplateIds);
+      },
+      { timeout: 4000 },
+    );
+  }, 30_000);
 });
