@@ -1,11 +1,13 @@
 /**
  * Petit acces IndexedDB, sans dependance.
  *
- * En environnement de test (jsdom) ou dans un navigateur qui refuse
- * IndexedDB (navigation privee tres restrictive), on bascule automatiquement
- * sur une implementation en memoire : l'application ne plante jamais a cause
- * du stockage (CLAUDE.md).
+ * En environnement de test (jsdom), dans un navigateur qui refuse IndexedDB
+ * (navigation privee tres restrictive) ou quand Safari ne repond pas, on
+ * bascule automatiquement sur une implementation en memoire : l'application
+ * ne plante jamais a cause du stockage (CLAUDE.md).
  */
+
+import { delay, failAfter } from '../utils/async';
 
 export const DB_NAME = 'pokexplo';
 export const DB_VERSION = 1;
@@ -71,9 +73,21 @@ function hasIndexedDb(): boolean {
 
 let dbPromise: Promise<IDBDatabase> | null = null;
 
-function openDatabase(): Promise<IDBDatabase> {
-  if (dbPromise) return dbPromise;
-  dbPromise = new Promise<IDBDatabase>((resolve, reject) => {
+/**
+ * Safari/iPadOS peut laisser `indexedDB.open()` SANS AUCUNE reponse quand il
+ * est appele trop tot apres le chargement de la page (bug WebKit connu) : ni
+ * `onsuccess`, ni `onerror`, ni `onblocked`. Sans borne de temps, l'aventure
+ * resterait bloquee sur « Un instant… » indefiniment.
+ *
+ * On borne donc chaque tentative, et on reessaie deux fois avant d'abandonner
+ * au profit du stockage en memoire.
+ */
+const OPEN_TIMEOUT_MS = 1200;
+const OPEN_ATTEMPTS = 3;
+const OPEN_RETRY_DELAY_MS = 250;
+
+function openOnce(): Promise<IDBDatabase> {
+  return new Promise<IDBDatabase>((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
     request.onupgradeneeded = () => {
       const db = request.result;
@@ -85,6 +99,23 @@ function openDatabase(): Promise<IDBDatabase> {
     request.onerror = () => reject(request.error ?? new Error('IndexedDB indisponible'));
     request.onblocked = () => reject(new Error('IndexedDB bloquee par un autre onglet'));
   });
+}
+
+async function openWithRetry(): Promise<IDBDatabase> {
+  let lastError: unknown = null;
+  for (let attempt = 1; attempt <= OPEN_ATTEMPTS; attempt += 1) {
+    try {
+      return await failAfter(openOnce(), OPEN_TIMEOUT_MS, 'IndexedDB');
+    } catch (error) {
+      lastError = error;
+      if (attempt < OPEN_ATTEMPTS) await delay(OPEN_RETRY_DELAY_MS);
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error('IndexedDB injoignable');
+}
+
+function openDatabase(): Promise<IDBDatabase> {
+  dbPromise ??= openWithRetry();
   return dbPromise;
 }
 

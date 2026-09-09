@@ -9,6 +9,13 @@ import type {
   VoiceMessage,
 } from '../../types';
 import { ContentService } from '../../services';
+import { failAfter } from '../../utils/async';
+
+/**
+ * Au-dela de ce delai, on considere le chargement perdu et on propose de
+ * reessayer : l'enfant ne doit jamais rester devant « Un instant… » (§175).
+ */
+const LOAD_TIMEOUT_MS = 12_000;
 
 export interface ContentContextValue {
   bundle: ContentBundle | null;
@@ -38,7 +45,7 @@ export function ContentProvider({ children }: { children: ReactNode }) {
   const reload = useCallback(async () => {
     setLoading(true);
     try {
-      const loaded = await ContentService.load(true);
+      const loaded = await failAfter(ContentService.load(true), LOAD_TIMEOUT_MS, 'Le contenu');
       setBundle(loaded.bundle);
       setMeta(loaded.meta);
       setError(null);

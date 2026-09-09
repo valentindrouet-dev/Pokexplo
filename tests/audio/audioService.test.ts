@@ -28,6 +28,36 @@ describe('AudioService (CONCEPTION §60, §64, §127)', () => {
     expect(AudioService.isUnlocked()).toBe(true);
   });
 
+  it('se débloque même si le navigateur ne répond jamais à play() (iPadOS)', async () => {
+    // Sur iPadOS, `play()` peut rester indéfiniment en attente : le déblocage
+    // ne doit surtout pas bloquer l'écran d'accueil.
+    const play = vi
+      .spyOn(HTMLMediaElement.prototype, 'play')
+      .mockReturnValue(new Promise<void>(() => undefined));
+
+    const started = Date.now();
+    await AudioService.unlock();
+
+    expect(AudioService.isUnlocked()).toBe(true);
+    expect(Date.now() - started).toBeLessThan(3000);
+    expect(play).toHaveBeenCalled();
+  });
+
+  it('se débloque même si play() échoue', async () => {
+    vi.spyOn(HTMLMediaElement.prototype, 'play').mockRejectedValue(
+      new DOMException('NotAllowedError'),
+    );
+    await expect(AudioService.unlock()).resolves.toBeUndefined();
+    expect(AudioService.isUnlocked()).toBe(true);
+  });
+
+  it('amorce les trois canaux dans le geste, pas seulement la voix (§67)', async () => {
+    const play = vi.spyOn(HTMLMediaElement.prototype, 'play');
+    await AudioService.unlock();
+    // voix + musique + bruitages : sinon musique et sons resteraient muets.
+    expect(play).toHaveBeenCalledTimes(3);
+  });
+
   it('joue une voix enregistrée et publie son état', async () => {
     await AudioService.unlock();
     const audioPath = await storeVoice('bravo');

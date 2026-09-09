@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Biome, MapNode, NodeKind } from '../../../types';
 import { PillButton, PrimaryButton, SecondaryButton, SoftPanel } from '../../../ui';
 import { uid } from '../../../utils/id';
+import { useNavigation } from '../../../app/router';
 import { useAdminDraft } from '../AdminDraftContext';
 import { EntityPane } from '../EntityPane';
 import { NumberField, SelectField, TextField } from '../fields';
@@ -13,6 +14,7 @@ const NODE_KINDS: NodeKind[] = ['CENTER', 'PATH', 'ENCOUNTER', 'GYM', 'EVENT', '
 /** BIOMES ET NŒUDS (CONCEPTION §12, §115) — l'editeur de carte. */
 export function WorldSection() {
   const { draft, update } = useAdminDraft();
+  const { navigate } = useNavigation();
   const [tab, setTab] = useState<'nodes' | 'biomes'>('nodes');
   const [nodeId, setNodeId] = useState<string | null>(draft?.nodes[0]?.id ?? null);
   const [biomeId, setBiomeId] = useState<string | null>(draft?.biomes[0]?.id ?? null);
@@ -262,12 +264,10 @@ export function WorldSection() {
           <span className="admin__status">
             Les positions sont en pourcentage : la carte reste correcte sur tous les iPad (§159).
           </span>
-          <SecondaryButton onClick={() => (window.location.hash = '#/admin/preview')}>
+          <SecondaryButton onClick={() => navigate({ name: 'admin', section: 'preview' })}>
             Prévisualiser la carte
           </SecondaryButton>
-          <PrimaryButton onClick={() => (window.location.hash = '#/play/map')}>
-            Ouvrir le jeu
-          </PrimaryButton>
+          <PrimaryButton onClick={() => navigate({ name: 'map' })}>Ouvrir le jeu</PrimaryButton>
         </div>
       </SoftPanel>
     </>

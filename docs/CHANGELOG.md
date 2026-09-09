@@ -4,6 +4,30 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 Trois versions sont suivies séparément (§112) : `APP_VERSION`, `CONTENT_VERSION`,
 `SAVE_SCHEMA_VERSION`.
 
+## [1.0.1] — Correctifs iPad
+
+`APP_VERSION 1.0.1` · `CONTENT_VERSION release_0001` · `SAVE_SCHEMA_VERSION 3`
+
+### Corrigé
+
+- **« Commencer l'aventure » sans effet sur iPad.** La navigation attendait le
+  déblocage audio ; or `HTMLMediaElement.play()` peut ne jamais répondre sur
+  iPadOS. Le déblocage part toujours du geste (§64) mais ne bloque plus rien,
+  et il amorce désormais les trois canaux (voix, musique, bruitages).
+- **Application figée sur « Un instant… ».** `indexedDB.open()` peut rester sans
+  réponse sur Safari quand il est appelé trop tôt après le chargement. Chaque
+  tentative est bornée, réessayée deux fois, puis le stockage bascule en
+  mémoire. Un chien de garde de 12 s protège aussi le chargement du contenu.
+- **Espace parents bloqué.** Sans profil, l'écran tournait indéfiniment. Il
+  affiche maintenant un état clair avec une action (« Créer un profil »).
+- **Rechargement au premier lancement.** La prise de contrôle initiale du
+  Service Worker (`clients.claim()`) déclenchait un `reload()` juste après
+  l'ouverture. Seule une vraie mise à jour recharge désormais la page.
+- Suppression de `crossOrigin` sur les éléments audio : inutile ici, et cela
+  faisait échouer la lecture des fichiers servis sans en-tête CORS.
+- Navigation unifiée : plus aucune écriture directe de `window.location.hash`
+  hors du routeur.
+
 ## [1.0.0] — Version initiale
 
 `APP_VERSION 1.0.0` · `CONTENT_VERSION release_0001` · `SAVE_SCHEMA_VERSION 3`

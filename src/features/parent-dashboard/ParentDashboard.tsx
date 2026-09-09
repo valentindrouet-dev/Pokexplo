@@ -45,8 +45,49 @@ export function ParentDashboard() {
     return masteryByCategory(save.learning, mapping);
   }, [save, bundle]);
 
-  if (!bundle || !save) {
-    return <LoadingBall />;
+  // Aucun contenu encore charge : on montre un chargement, mais dans un cadre
+  // lisible et avec une sortie possible — jamais une page nue (§175).
+  if (!bundle) {
+    return (
+      <div className="parent">
+        <SoftPanel title="Espace parents">
+          <LoadingBall message="Chargement du contenu…" />
+          <SecondaryButton onClick={() => navigate({ name: 'start' })}>
+            Retour à l’accueil
+          </SecondaryButton>
+        </SoftPanel>
+      </div>
+    );
+  }
+
+  /*
+   * Aucun profil n'a encore ete cree : l'espace parents n'a rien a afficher.
+   * C'est un etat NORMAL, pas un chargement — il doit donc etre explique et
+   * offrir une action, au lieu de tourner indefiniment.
+   */
+  if (!save) {
+    return (
+      <div className="parent">
+        <SoftPanel title="Espace parents">
+          <p>Aucun profil n’a encore été créé.</p>
+          <p className="admin__status">
+            Lancez l’aventure une première fois : la progression, les statistiques et les réglages
+            de son apparaîtront ici.
+          </p>
+          <div className="ds-row">
+            <PrimaryButton onClick={() => navigate({ name: 'start' })}>
+              Créer un profil
+            </PrimaryButton>
+            <SecondaryButton
+              icon={<IconSettings size={26} />}
+              onClick={() => navigate({ name: 'admin', section: 'dashboard' })}
+            >
+              Administration
+            </SecondaryButton>
+          </div>
+        </SoftPanel>
+      </div>
+    );
   }
 
   const toPractice = skillsToPractice(save.learning);

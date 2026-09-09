@@ -65,6 +65,13 @@ export function registerServiceWorker(): void {
 
   window.addEventListener('load', () => {
     const url = `${import.meta.env.BASE_URL}sw.js`;
+    /*
+     * A la toute premiere visite, le Service Worker prend la main via
+     * `clients.claim()` : `controllerchange` se declenche alors qu'il ne
+     * s'agit PAS d'une mise a jour. Recharger a ce moment-la relançait la page
+     * juste apres son ouverture — l'application semblait « ne rien charger ».
+     */
+    const hadController = Boolean(navigator.serviceWorker.controller);
     void navigator.serviceWorker
       .register(url, { scope: import.meta.env.BASE_URL })
       .then((registration) => {
@@ -85,6 +92,7 @@ export function registerServiceWorker(): void {
       });
 
     navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!hadController) return;
       if (UpdateController.markReloading()) window.location.reload();
     });
   });

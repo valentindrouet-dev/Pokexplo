@@ -21,19 +21,36 @@ export function StartScreen() {
   const { save, profiles, ready, createProfile, selectProfile } = useGame();
   const [nickname, setNickname] = useState('');
   const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
-  const start = async (): Promise<void> => {
-    // Le deblocage audio DOIT se produire dans le geste de l'utilisateur.
-    await unlock();
+  /**
+   * Le deblocage audio doit partir DU geste (§64), mais la navigation ne
+   * l'attend jamais : sur iPadOS, `play()` peut rester sans reponse, et
+   * l'enfant se retrouverait devant un bouton qui ne fait rien.
+   */
+  const start = (): void => {
+    void unlock();
     navigate({ name: 'center' });
   };
 
   const create = async (): Promise<void> => {
+    if (creating) return;
     setCreating(true);
-    await unlock();
-    await createProfile(nickname.trim() || 'Explorateur', 'explorer');
-    setCreating(false);
-    navigate({ name: 'center' });
+    setCreateError(null);
+    void unlock();
+    try {
+      const created = await createProfile(nickname.trim() || 'Explorateur', 'explorer');
+      if (!created) {
+        setCreateError('L’aventure n’a pas pu démarrer. Essaie encore !');
+        return;
+      }
+      navigate({ name: 'center' });
+    } catch {
+      setCreateError('L’aventure n’a pas pu démarrer. Essaie encore !');
+    } finally {
+      // Toujours relacher le bouton, meme en cas d'echec.
+      setCreating(false);
+    }
   };
 
   // Le contenu n'a pas pu etre charge : on ne laisse jamais l'enfant devant un
@@ -76,7 +93,7 @@ export function StartScreen() {
 
           {save ? (
             <>
-              <PrimaryButton large icon={<IconPlay size={32} />} onClick={() => void start()}>
+              <PrimaryButton large icon={<IconPlay size={32} />} onClick={start}>
                 Commencer l’aventure
               </PrimaryButton>
               {profiles.length > 1 ? (
@@ -114,10 +131,11 @@ export function StartScreen() {
               >
                 Commencer l’aventure
               </PrimaryButton>
+              {createError ? <p className="start__subtitle">{createError}</p> : null}
             </>
           )}
 
-          <SecondaryButton onClick={() => (window.location.hash = '#/parents')}>
+          <SecondaryButton onClick={() => navigate({ name: 'parents' })}>
             Espace parents
           </SecondaryButton>
         </SoftPanel>

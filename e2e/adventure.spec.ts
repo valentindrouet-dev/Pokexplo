@@ -113,6 +113,39 @@ test('aucune fonctionnalité ne dépend du survol (§160)', async ({ page }) => 
   await expect(page.getByRole('button', { name: 'Tous' })).toBeVisible();
 });
 
+test('l’espace parents s’ouvre même sans profil, et propose une sortie', async ({ page }) => {
+  await page.goto('./#/parents');
+
+  // Regression : cet ecran restait bloque sur « Un instant… » tant qu'aucun
+  // profil n'existait.
+  await expect(page.getByText(/aucun profil n’a encore été créé/i)).toBeVisible({
+    timeout: 20_000,
+  });
+  await page.getByRole('button', { name: /créer un profil/i }).click();
+  await expect(page.getByPlaceholder('Ton prénom')).toBeVisible();
+});
+
+test('l’espace parents affiche la progression une fois le profil créé', async ({ page }) => {
+  await startAdventure(page);
+
+  // L'espace parents s'ouvre depuis l'accueil : le hub enfant ne doit pas y
+  // donner acces (§8, le Centre remplace les menus pour l'enfant).
+  await page.goto('./#/parents');
+
+  await expect(page.getByText(/espace parents — test/i)).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByRole('button', { name: 'Retour au jeu' })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Retour au jeu' }).click();
+  await expect(page.getByRole('button', { name: 'Partir !' })).toBeVisible();
+});
+
+test('l’accueil mène à l’espace parents en un seul geste', async ({ page }) => {
+  await page.goto('./');
+  await page.getByPlaceholder('Ton prénom').waitFor({ timeout: 20_000 });
+  await page.getByRole('button', { name: 'Espace parents' }).click();
+  await expect(page.getByText(/espace parents/i).first()).toBeVisible();
+});
+
 test('l’espace admin est protégé par un code', async ({ page }) => {
   await page.goto('./#/admin');
   await expect(page.getByText(/réservé aux adultes/i)).toBeVisible();

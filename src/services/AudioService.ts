@@ -1,5 +1,6 @@
 import type { AudioChannel, AudioSettings, MediaPath, VoiceMessage, VoiceMessageId } from '../types';
 import { DEFAULT_AUDIO_SETTINGS } from '../types/audio';
+import { settleWithin } from '../utils/async';
 import { AssetService } from './AssetService';
 
 export interface AudioState {
@@ -16,6 +17,15 @@ const MUSIC_DUCK_FACTOR = 0.3;
 /** Silence WAV minimal, utilise pour debloquer l'audio iPad au premier toucher. */
 const SILENCE =
   'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAgD4AAAB9AAACABAAZGF0YQAAAAA=';
+
+/**
+ * Delai maximal accorde au deblocage audio.
+ *
+ * Sur iPadOS, `play()` peut rester indefiniment en attente. L'interface ne
+ * doit JAMAIS dependre de cette reponse : passe ce delai, on continue sans
+ * son plutot que de bloquer l'enfant sur l'ecran d'accueil.
+ */
+const UNLOCK_TIMEOUT_MS = 600;
 
 /**
  * AUDIO SERVICE (CONCEPTION §60, §64, §67, §68).
@@ -116,34 +126,63 @@ class AudioServiceImpl {
   /**
    * CONCEPTION §64 — appele par le PREMIER toucher (« Commencer l'aventure »).
    * Safari/iPad refuse toute lecture automatique avant une interaction.
+   *
+   * Cette methode se resout TOUJOURS, et vite : l'appelant ne doit jamais
+   * attendre le navigateur pour continuer l'aventure.
    */
   async unlock(): Promise<void> {
     if (this.unlocked) return;
+
+    // On considere l'audio debloque immediatement : si le navigateur refuse,
+    // le jeu reste jouable sans son (§127) et le texte reste affiche.
+    this.unlocked = true;
+    this.emit();
+
     try {
       this.voiceElement = this.createElement();
       this.musicElement = this.createElement(true);
       this.sfxElement = this.createElement();
 
-      const primer = this.voiceElement;
-      primer.src = SILENCE;
-      await primer.play().catch(() => undefined);
-      primer.pause();
-      primer.currentTime = 0;
+      // iOS n'autorise que les elements demarres PENDANT le geste : on amorce
+      // les trois canaux, sinon musique et bruitages resteraient muets.
+      await Promise.all([
+        this.prime(this.voiceElement),
+        this.prime(this.musicElement),
+        this.prime(this.sfxElement),
+      ]);
 
       // Certaines voix de synthese ne se chargent qu'apres une premiere demande.
       if (typeof speechSynthesis !== 'undefined') speechSynthesis.getVoices();
     } catch {
       /* l'audio restera indisponible : le jeu doit rester jouable (§127) */
     }
-    this.unlocked = true;
-    this.emit();
+  }
+
+  /** Amorce un canal avec un silence, sans jamais bloquer plus que le delai. */
+  private async prime(element: HTMLAudioElement): Promise<void> {
+    try {
+      element.muted = true;
+      element.src = SILENCE;
+      await settleWithin(element.play(), UNLOCK_TIMEOUT_MS, undefined);
+    } catch {
+      /* le canal restera silencieux */
+    } finally {
+      try {
+        element.pause();
+        element.currentTime = 0;
+        element.muted = false;
+      } catch {
+        /* rien a faire */
+      }
+    }
   }
 
   private createElement(loop = false): HTMLAudioElement {
     const element = new Audio();
     element.preload = 'auto';
     element.loop = loop;
-    element.crossOrigin = 'anonymous';
+    // Pas de `crossOrigin` : nous ne lisons jamais les donnees audio, et
+    // l'exiger ferait echouer la lecture des fichiers servis sans en-tete CORS.
     return element;
   }
 

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { PrimaryButton, SecondaryButton, SoftPanel } from '../../../ui';
 import { useContent } from '../../../app/providers/ContentProvider';
+import { useNavigation } from '../../../app/router';
 import { useAdminDraft } from '../AdminDraftContext';
 
 /**
@@ -13,6 +14,7 @@ import { useAdminDraft } from '../AdminDraftContext';
 export function PreviewSection() {
   const { draft, validation } = useAdminDraft();
   const { preview, previewing, meta } = useContent();
+  const { navigate } = useNavigation();
   const [note, setNote] = useState<string | null>(null);
 
   if (!draft) return null;
@@ -45,13 +47,11 @@ export function PreviewSection() {
         ) : (
           <PrimaryButton onClick={start}>Prévisualiser le brouillon</PrimaryButton>
         )}
-        <SecondaryButton onClick={() => (window.location.hash = '#/play')}>
+        <SecondaryButton onClick={() => navigate({ name: 'center' })}>
           Ouvrir le Centre
         </SecondaryButton>
-        <SecondaryButton onClick={() => (window.location.hash = '#/play/map')}>
-          Ouvrir la carte
-        </SecondaryButton>
-        <SecondaryButton onClick={() => (window.location.hash = '#/dev/ui-kit')}>
+        <SecondaryButton onClick={() => navigate({ name: 'map' })}>Ouvrir la carte</SecondaryButton>
+        <SecondaryButton onClick={() => navigate({ name: 'uikit' })}>
           Design system
         </SecondaryButton>
       </div>
