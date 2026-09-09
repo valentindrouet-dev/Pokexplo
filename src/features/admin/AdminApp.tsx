@@ -23,6 +23,7 @@ import {
 import { useAuth } from '../../app/providers/AuthProvider';
 import { useNavigation } from '../../app/router';
 import { useAdminDraft } from './AdminDraftContext';
+import { DraftPublishControl } from './DraftPublishControl';
 import { DraftOutdatedNotice } from './DraftOutdatedNotice';
 import { DashboardSection } from './sections/DashboardSection';
 import { CreaturesSection } from './sections/CreaturesSection';
@@ -172,12 +173,14 @@ function AdminShell({ section }: { section: AdminSection }) {
 
       <main className="admin__main">
         <div className="admin__toolbar">
+          {/* « Enregistré » parlait du brouillon, et laissait croire que
+              l'enfant voyait deja les modifications. On repond a la vraie
+              question, au meme endroit qu'en mode edition. */}
+          <DraftPublishControl />
           <span className="admin__status">
-            Brouillon {saving ? '— enregistrement…' : savedAt ? '— enregistré' : ''}
-          </span>
-          <span className="admin__status">
+            {saving ? 'Enregistrement du brouillon…' : savedAt ? 'Brouillon enregistré' : ''}
             {validation
-              ? `${validation.issues.filter((issue) => issue.level === 'ERROR').length} erreur(s) · ${validation.missingVoices} voix manquante(s) · ${validation.outdatedVoices} obsolète(s)`
+              ? ` · ${validation.issues.filter((issue) => issue.level === 'ERROR').length} erreur(s) · ${validation.missingVoices} voix manquante(s) · ${validation.outdatedVoices} obsolète(s)`
               : ''}
           </span>
         </div>

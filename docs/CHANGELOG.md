@@ -4,6 +4,43 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 Trois versions sont suivies séparément (§112) : `APP_VERSION`, `CONTENT_VERSION`,
 `SAVE_SCHEMA_VERSION`.
 
+## [1.5.0] — « Mon enfant voit-il mes modifications ? »
+
+`APP_VERSION 1.5.0` · `CONTENT_VERSION bundled-4` · `SAVE_SCHEMA_VERSION 3`
+
+### Corrigé
+
+- **Les modifications faites en mode parent n'arrivaient pas chez l'enfant.**
+  Deux causes, l'une visible, l'autre non :
+  - **rien ne disait qu'il fallait publier.** On modifiait, on quittait
+    l'édition, l'écran revenait à l'ancienne version sans un mot — le brouillon
+    (§99) faisait exactement son travail, mais en silence. Le bandeau répond
+    désormais à la question en permanence, et publier tient en un geste ;
+  - **publier ne rafraîchissait pas le contenu servi.** La release partait bien,
+    le brouillon se marquait « à jour », et l'écran continuait pourtant
+    d'afficher le bundle chargé au démarrage.
+- **Une retouche faite juste avant de sortir était perdue en silence.**
+  L'enregistrement du brouillon est différé de quelques centaines de
+  millisecondes ; quitter le mode édition annulait purement et simplement
+  l'écriture en attente. Elle est maintenant menée à terme — en sortant, avant
+  de publier, et quand l'iPad passe en arrière-plan.
+- **Publier depuis les menus ne mettait pas à jour l'indicateur** : l'écran
+  Releases appelait le service directement, la barre affichait encore « Non
+  publié » après une publication réussie, et l'on republiait. Les deux surfaces
+  passent par le même chemin.
+
+### Ajouté
+
+- Bandeau **« Votre enfant voit cette version. » / « Non publié » +
+  « Publier pour mon enfant »**, présent dans le mode édition comme dans
+  l'Admin. Les voix manquantes ne bloquent pas : on annonce combien de textes
+  seront lus par la voix de synthèse et on propose de publier quand même (§53).
+- **Quitter avec des retouches non publiées prévient**, et propose
+  « Quitter sans publier » ou « Publier puis quitter ».
+- `e2e/publish.spec.ts` suit la boucle entière — du geste de l'adulte à l'écran
+  de l'enfant — dans les trois formats ; `tests/admin/draftPublish.test.tsx`
+  garde les deux régressions au niveau du brouillon.
+
 ## [1.4.0] — Ranger la carte au doigt
 
 `APP_VERSION 1.4.0` · `CONTENT_VERSION bundled-4` · `SAVE_SCHEMA_VERSION 3`

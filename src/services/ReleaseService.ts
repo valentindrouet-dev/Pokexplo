@@ -98,6 +98,8 @@ class ReleaseServiceImpl {
     };
     await backend.content.setMeta(meta);
     ContentService.invalidate();
+    // Le brouillon est desormais a jour : plus rien n'attend d'etre publie.
+    await ContentService.markDraftPublished(bundle.contentVersion);
 
     return { release: stored, meta };
   }

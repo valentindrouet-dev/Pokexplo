@@ -164,9 +164,38 @@ changez d'un côté apparaît immédiatement de l'autre, sans rien à synchronis
 Pendant l'édition, les écrans affichent ce brouillon plutôt que la version
 publiée — c'est le mécanisme de « Prévisualiser » (§118).
 
-**Rien n'est publié pour autant.** Tant que vous n'avez pas fait
-`Admin → Releases → Publier` (puis, pour l'iPad, `Envoyer sur le site`),
-l'enfant continue de jouer la version en service.
+### « Mon enfant voit-il mes modifications ? »
+
+C'est la seule question qui compte après une retouche, et le bandeau y répond
+en permanence, sans qu'on ait à la poser :
+
+| Ce que dit le bandeau | Ce que voit l'enfant |
+| --- | --- |
+| ✓ **« Votre enfant voit cette version. »** | Exactement ce que vous avez sous les yeux. |
+| **« Non publié »** + bouton **« Publier pour mon enfant »** | Encore l'ancienne version : vos retouches attendent dans le brouillon. |
+| **« N erreur(s) de contenu »** | L'ancienne version, et la publication est bloquée tant que ces erreurs sont là. |
+
+**Publier tient en un geste**, depuis le bandeau du mode édition comme depuis
+`Admin → Releases`. Les deux boutons font exactement la même chose : ils
+enregistrent d'abord la retouche en cours, publient, puis rechargent l'écran —
+la nouvelle version est en service **immédiatement**, sur cet appareil.
+
+Si des textes n'ont pas encore de voix enregistrée, Pokexplo ne bloque pas : il
+annonce combien seront lus par la **voix de synthèse** et propose de publier
+quand même (§53).
+
+**Quitter l'édition avec des retouches non publiées vous le dit**, plutôt que de
+laisser l'écran revenir en arrière sans un mot. Vous choisissez :
+**« Quitter sans publier »** — le brouillon garde tout, vous le retrouverez
+intact — ou **« Publier puis quitter »**.
+
+> Une retouche faite juste avant de sortir n'est jamais perdue : le brouillon
+> est écrit avant que l'écran ne se ferme, et aussi quand l'iPad passe en
+> arrière-plan.
+
+**Et sur les AUTRES appareils ?** Publier ne concerne que l'appareil où vous
+travaillez. Pour que l'iPad de l'enfant suive depuis votre ordinateur, il reste
+`Releases → Envoyer sur le site` — c'est l'objet de la section 4.
 
 > **Utilisez un profil de test.** Le mode édition se pose sur une vraie partie :
 > ouvrir une rencontre depuis la carte démarre réellement cette rencontre dans

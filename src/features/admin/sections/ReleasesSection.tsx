@@ -31,7 +31,13 @@ import { SecretField, TextField } from '../fields';
  * sauvegardes des enfants.
  */
 export function ReleasesSection() {
-  const { draft, validation, resetFromPublished, replaceDraft } = useAdminDraft();
+  const {
+    draft,
+    validation,
+    resetFromPublished,
+    replaceDraft,
+    publish: publishDraft,
+  } = useAdminDraft();
   const { meta, reload } = useContent();
   const [releases, setReleases] = useState<ContentRelease[]>([]);
   const [label, setLabel] = useState('');
@@ -58,20 +64,27 @@ export function ReleasesSection() {
   const voices = voiceDashboard(draft);
   const errors = validation?.issues.filter((issue) => issue.level === 'ERROR') ?? [];
 
+  /**
+   * Publier depuis les menus doit faire EXACTEMENT ce que fait le bandeau du
+   * mode edition : meme enregistrement du brouillon en attente, meme relecture
+   * du contenu servi, meme mise a jour de l'indicateur « non publie ». Cet
+   * ecran appelait `ReleaseService` directement — la release partait bien, mais
+   * la barre continuait d'afficher « Non publié », et l'adulte republiait.
+   */
   const publish = async (force: boolean): Promise<void> => {
     setBusy(true);
     setMessage(null);
     try {
-      const result = await ReleaseService.publish(draft, label || `Publication du ${new Date().toLocaleDateString('fr-FR')}`, { force });
-      setMessage(`Publié : ${result.release.id}`);
-      setConfirmForce(false);
-      await refresh();
-      await reload();
-    } catch (cause) {
-      const text = cause instanceof Error ? cause.message : 'Publication impossible.';
-      setMessage(text);
+      const result = await publishDraft({ force, label: label || undefined });
+      if (result.ok) {
+        setMessage(result.message);
+        setConfirmForce(false);
+        await refresh();
+        return;
+      }
+      setMessage(result.message);
       // §53 : voix manquantes -> on propose de publier quand meme.
-      if (text.includes('voix')) setConfirmForce(true);
+      if (result.message.includes('voix')) setConfirmForce(true);
     } finally {
       setBusy(false);
     }

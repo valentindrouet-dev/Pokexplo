@@ -200,15 +200,40 @@ class ContentServiceImpl {
    * servi aujourd'hui : publier ce brouillon ferait REVENIR l'ancienne carte,
    * les anciens noms — c'est exactement ce qu'un adulte doit savoir avant.
    */
-  async draftStatus(): Promise<{ outdated: boolean; basedOn: string | null; published: string }> {
+  /**
+   * Etat du brouillon vis-a-vis de ce que joue l'enfant.
+   *
+   * `unpublished` est LA question que se pose l'adulte : « mes modifications
+   * sont-elles arrivees jusqu'a mon enfant ? ». Elle vaut vrai des la premiere
+   * retouche, et redevient fausse a la publication.
+   */
+  async draftStatus(): Promise<{
+    unpublished: boolean;
+    outdated: boolean;
+    basedOn: string | null;
+    published: string;
+  }> {
     const backend = await getBackend();
     const [meta, published] = await Promise.all([backend.content.getDraftMeta(), this.load()]);
     const current = published.bundle.contentVersion;
     return {
+      unpublished: meta?.dirty === true,
       outdated: meta !== null && meta.basedOn !== current,
       basedOn: meta?.basedOn ?? null,
       published: current,
     };
+  }
+
+  /**
+   * Le brouillon vient d'etre publie : il n'a plus rien en attente.
+   *
+   * Sans cela, « modifications non publiees » restait allume pour toujours
+   * apres la premiere retouche, et l'avertissement perdait tout son sens.
+   */
+  async markDraftPublished(version: string): Promise<void> {
+    const backend = await getBackend();
+    if (!(await backend.content.getDraft())) return;
+    await backend.content.setDraftMeta({ basedOn: version, dirty: false });
   }
 
   invalidate(): void {
