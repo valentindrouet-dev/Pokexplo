@@ -1,198 +1,144 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { Creature } from '../../../types';
-import type { MediaRecordMeta } from '../../../services';
+import { useMemo } from 'react';
 import { AssetService } from '../../../services';
 import { CreatureSprite } from '../../../components/CreatureSprite';
-import {
-  IconTrash,
-  IconUpload,
-  IconWarning,
-  PrimaryButton,
-  SecondaryButton,
-  SoftPanel,
-} from '../../../ui';
-import { uid } from '../../../utils/id';
+import { IconTrash, IconWarning, SecondaryButton, SoftPanel } from '../../../ui';
+import { useNavigation } from '../../../app/router';
 import { useAdminDraft } from '../AdminDraftContext';
-import { EntityPane } from '../EntityPane';
-import { TextField } from '../fields';
+import { ORIGIN_LABELS, imageOrigin, useDeviceImages } from '../ImagePicker';
 
 /**
- * IMAGES ET MEDIAS (CONCEPTION §114-115).
+ * IMAGES — VÉRIFIER L'ENSEMBLE (UI_DESIGN §196).
  *
- * Trois manieres de donner une image a une creature, expliquees ici meme car
- * elles n'ont PAS les memes consequences (voir docs/MEDIA.md) :
+ * Cette page servait à ÉDITER : pour changer l'illustration d'une créature,
+ * il fallait quitter sa fiche, venir ici, l'y retrouver et saisir un chemin
+ * `media/creatures/…` à la main. C'est désormais dans la fiche elle-même.
  *
- *  1. `media/…` deposee dans le depot (`public/media/…`)  → visible partout ;
- *  2. `https://…`                                          → visible partout,
- *     mais dependante d'un site externe et indisponible hors connexion ;
- *  3. import depuis cet appareil                           → visible ICI seulement.
+ * Ce qu'une page globale sait faire et qu'une fiche ne peut pas : montrer
+ * **ce qui manque**, **ce qui ne voyagera pas** et **ce qui ne sert plus**.
  */
 export function ImagesSection() {
-  const { draft, update } = useAdminDraft();
-  const [items, setItems] = useState<MediaRecordMeta[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const input = useRef<HTMLInputElement | null>(null);
+  const { draft } = useAdminDraft();
+  const { navigate } = useNavigation();
+  const deviceImages = useDeviceImages();
 
-  const refresh = useCallback(async () => {
-    setItems(await AssetService.list('media/'));
-  }, []);
+  const report = useMemo(() => {
+    if (!draft) return null;
+    const used = new Set(
+      [
+        ...draft.creatures.map((creature) => creature.imagePath),
+        ...draft.biomes.map((biome) => biome.imagePath),
+      ].filter((path): path is string => path !== undefined),
+    );
 
-  useEffect(() => {
-    void refresh();
-  }, [refresh]);
-
-  const localPaths = useMemo(() => new Set(items.map((item) => item.path)), [items]);
-
-  if (!draft) return null;
-
-  const creature =
-    draft.creatures.find((item) => item.id === selectedId) ?? draft.creatures[0] ?? null;
-
-  const setImagePath = (value: string): void => {
-    if (!creature) return;
-    update((current) => ({
-      ...current,
-      creatures: current.creatures.map((item) =>
-        item.id === creature.id ? { ...item, imagePath: value.trim() || undefined } : item,
+    return {
+      /* Une image importée ici ne part pas avec le contenu (docs/MEDIA.md). */
+      deviceOnly: draft.creatures.filter(
+        (creature) => imageOrigin(creature.imagePath, deviceImages.paths) === 'device',
       ),
-    }));
-  };
+      external: draft.creatures.filter(
+        (creature) => imageOrigin(creature.imagePath, deviceImages.paths) === 'external',
+      ),
+      generated: draft.creatures.filter((creature) => creature.imagePath === undefined),
+      /* Un fichier qu'aucune entité n'utilise : il occupe de la place pour rien. */
+      orphans: deviceImages.items.filter((item) => !used.has(item.path)),
+    };
+  }, [draft, deviceImages.items, deviceImages.paths]);
 
-  /** Import depuis cet appareil : pratique pour essayer, local par nature. */
-  const upload = async (file: File): Promise<void> => {
-    if (!creature) return;
-    setBusy(true);
-    const extension = file.name.split('.').pop()?.toLowerCase() ?? 'png';
-    const path = `media/creatures/${uid('img')}.${extension}`;
-    await AssetService.put(path, file, { mimeType: file.type || `image/${extension}` });
-    setImagePath(path);
-    await refresh();
-    setBusy(false);
-  };
+  if (!draft || !report) return null;
 
-  const origin = (path: string | undefined): string => {
-    if (!path) return 'Dessin généré';
-    if (/^https?:/iu.test(path)) return 'Adresse externe';
-    if (localPaths.has(path)) return 'Cet appareil uniquement';
-    return 'Fichier du site';
-  };
+  const openCreature = (): void => navigate({ name: 'admin', section: 'creatures' });
 
   return (
     <>
-      <SoftPanel title="Trois façons d’ajouter une image" tone="soft" padding="tight">
-        <ul className="ds-list">
-          <li className="ds-list-row">
-            <strong>Fichier du site (recommandé)</strong> — déposez l’image dans
-            <code> public/media/creatures/</code> du dépôt, puis indiquez ici
-            <code> media/creatures/mon-image.png</code>. Elle apparaît sur tous les appareils, même
-            hors connexion.
-          </li>
-          <li className="ds-list-row">
-            <strong>Adresse externe</strong> — collez une adresse commençant par
-            <code> https://</code>. Visible partout, mais dépend d’un site tiers et ne fonctionne
-            pas hors connexion.
-          </li>
-          <li className="ds-list-row">
-            <strong>Import depuis cet appareil</strong> — pratique pour essayer, mais l’image reste
-            sur cet appareil : elle n’apparaîtra pas ailleurs.
-          </li>
-        </ul>
+      <SoftPanel title="Où en sont les images ?" tone="soft" padding="tight" className="ds-stack">
+        <p className="admin__status">
+          L’image d’une créature se change <strong>dans sa fiche</strong> (Contenu → Créatures) :
+          aperçu, remplacement et retour au dessin généré y sont réunis. Cette page sert à vérifier
+          l’ensemble.
+        </p>
+        <div className="ds-row">
+          <span className="ds-badge-chip">{report.generated.length} dessin(s) généré(s)</span>
+          <span className="ds-badge-chip">{report.deviceOnly.length} sur cet appareil seulement</span>
+          <span className="ds-badge-chip">{report.external.length} adresse(s) externe(s)</span>
+          <span className="ds-badge-chip">{report.orphans.length} fichier(s) inutilisé(s)</span>
+        </div>
       </SoftPanel>
 
-      <EntityPane
-        title="Créatures"
-        items={draft.creatures}
-        selectedId={creature?.id ?? null}
-        onSelect={setSelectedId}
-        idOf={(item: Creature) => item.id}
-        labelOf={(item: Creature) => item.name}
-        hintOf={(item: Creature) => origin(item.imagePath)}
-      >
-        {creature ? (
-          <>
-            <div className="ds-row">
-              <CreatureSprite creature={creature} size={140} />
-              <div className="ds-stack">
-                <span className="admin__status">{origin(creature.imagePath)}</span>
-                <span className="admin__status">
-                  Sans image, la créature garde son dessin généré : elle n’est jamais vide.
-                </span>
-              </div>
+      {report.deviceOnly.length > 0 ? (
+        <SoftPanel title="Ces images ne partiront pas sur l’iPad" padding="tight" className="ds-stack">
+          <p className="admin__issue">
+            <IconWarning size={22} />
+            <span>
+              Elles n’existent que sur cet appareil. Pour qu’elles voyagent, déposez les fichiers
+              dans <code>public/media/creatures/</code> du dépôt, puis indiquez ce chemin
+              (docs/MEDIA.md).
+            </span>
+          </p>
+          {report.deviceOnly.map((creature) => (
+            <div key={creature.id} className="ds-list-row">
+              <CreatureSprite creature={creature} size={56} />
+              <span className="ds-stack">
+                <span>{creature.name}</span>
+                <span className="admin__status">{creature.imagePath}</span>
+              </span>
+              <SecondaryButton onClick={openCreature}>Ouvrir sa fiche</SecondaryButton>
             </div>
+          ))}
+        </SoftPanel>
+      ) : null}
 
-            <TextField
-              label="Image de la créature"
-              value={creature.imagePath ?? ''}
-              onChange={setImagePath}
-              placeholder="media/creatures/mon-image.png"
-              hint="Chemin d’un fichier du site, ou adresse https://…. Laissez vide pour le dessin généré."
-            />
-
-            {creature.imagePath && localPaths.has(creature.imagePath) ? (
-              <p className="admin__issue">
-                <IconWarning size={22} />
-                Cette image n’existe que sur cet appareil. Pour qu’elle apparaisse partout, déposez
-                le fichier dans <code>public/media/creatures/</code> du dépôt et indiquez son chemin.
-              </p>
-            ) : null}
-
-            <div className="ds-row">
-              <SecondaryButton
-                icon={<IconUpload size={24} />}
-                disabled={busy}
-                onClick={() => input.current?.click()}
-              >
-                Importer depuis cet appareil
-              </SecondaryButton>
-              <input
-                ref={input}
-                type="file"
-                className="vte__hidden-input"
-                accept="image/*"
-                onChange={(event) => {
-                  const file = event.target.files?.[0];
-                  if (file) void upload(file);
-                  event.target.value = '';
-                }}
-              />
-              {creature.imagePath ? (
-                <SecondaryButton onClick={() => setImagePath('')}>
-                  Revenir au dessin généré
-                </SecondaryButton>
-              ) : null}
-            </div>
-          </>
-        ) : null}
-      </EntityPane>
-
-      <SoftPanel title={`Images importées sur cet appareil (${items.length})`} padding="tight">
-        {items.length === 0 ? (
+      {report.external.length > 0 ? (
+        <SoftPanel title="Ces images viennent d’un autre site" padding="tight" className="ds-stack">
           <p className="admin__status">
-            Aucune image importée. Les créatures utilisent leur dessin généré.
+            Elles s’affichent partout, mais dépendent d’un site tiers et ne fonctionnent pas hors
+            connexion — sur l’iPad de votre enfant, c’est fréquent.
+          </p>
+          {report.external.map((creature) => (
+            <div key={creature.id} className="ds-list-row">
+              <span className="ds-stack">
+                <span>{creature.name}</span>
+                <span className="admin__status">{creature.imagePath}</span>
+              </span>
+              <SecondaryButton onClick={openCreature}>Ouvrir sa fiche</SecondaryButton>
+            </div>
+          ))}
+        </SoftPanel>
+      ) : null}
+
+      <SoftPanel
+        title={`Fichiers importés sur cet appareil (${deviceImages.items.length})`}
+        padding="tight"
+        className="ds-stack"
+      >
+        {deviceImages.items.length === 0 ? (
+          <p className="admin__status">
+            Aucune image importée. Les créatures utilisent leur dessin généré : elles ne sont jamais
+            vides.
           </p>
         ) : (
-          <div className="ds-list">
-            {items.map((item) => (
+          deviceImages.items.map((item) => {
+            const orphan = report.orphans.some((entry) => entry.path === item.path);
+            return (
               <div key={item.path} className="ds-list-row">
                 <span className="ds-stack">
                   <span>{item.path}</span>
                   <span className="admin__status">
-                    {item.mimeType} · {(item.size / 1024).toFixed(0)} Ko
+                    {item.mimeType} · {(item.size / 1024).toFixed(0)} Ko ·{' '}
+                    {orphan ? 'plus utilisé' : ORIGIN_LABELS.device}
                   </span>
                 </span>
-                <PrimaryButton onClick={() => setImagePath(item.path)}>
-                  Utiliser pour {creature?.name}
-                </PrimaryButton>
-                <SecondaryButton
-                  icon={<IconTrash size={22} />}
-                  onClick={() => void AssetService.remove(item.path).then(refresh)}
-                >
-                  Supprimer
-                </SecondaryButton>
+                {/* On ne propose de retirer QUE ce qui ne sert plus à personne. */}
+                {orphan ? (
+                  <SecondaryButton
+                    icon={<IconTrash size={22} />}
+                    onClick={() => void AssetService.remove(item.path).then(deviceImages.refresh)}
+                  >
+                    Supprimer
+                  </SecondaryButton>
+                ) : null}
               </div>
-            ))}
-          </div>
+            );
+          })
         )}
       </SoftPanel>
     </>

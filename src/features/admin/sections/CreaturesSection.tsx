@@ -7,8 +7,11 @@ import { createVoiceMessage } from '../../../utils/voice';
 import { uid } from '../../../utils/id';
 import { useAdminDraft } from '../AdminDraftContext';
 import { EntityPane } from '../EntityPane';
+import { AdvancedPanel } from '../AdvancedPanel';
+import { ColorField } from '../ColorField';
+import { ImagePicker, useDeviceImages } from '../ImagePicker';
 import { creatureBlocker, duplicateCreature, removeCreature } from '../entityActions';
-import { NumberField, SelectField, TextAreaField, TextField } from '../fields';
+import { SelectField, TextAreaField, TextField } from '../fields';
 import { VoiceTextEditor } from '../VoiceTextEditor';
 
 const TYPES = Object.keys(TYPE_LABELS) as CreatureType[];
@@ -16,6 +19,7 @@ const RARITIES = Object.keys(RARITY_LABELS) as Rarity[];
 
 /** CONCEPTION §115 — creation et edition des creatures, sans toucher au code (§91). */
 export function CreaturesSection() {
+  const deviceImages = useDeviceImages();
   const { draft, update } = useAdminDraft();
   const [selectedId, setSelectedId] = useState<string | null>(draft?.creatures[0]?.id ?? null);
   if (!draft) return null;
@@ -94,25 +98,19 @@ export function CreaturesSection() {
     >
       {creature ? (
         <>
-          <div className="ds-row">
-            <CreatureSprite creature={creature} size={140} />
-            <div className="ds-stack">
-              <span className="admin__status">Identifiant : {creature.id}</span>
-              <span className="admin__status">
-                Illustration générée en SVG. Ajoutez une image depuis « Images » pour la remplacer.
-              </span>
-            </div>
-          </div>
+          {/*
+            Tout ce qui concerne cette créature est ICI (§196) : on ne quitte
+            plus sa fiche pour aller saisir un chemin `media/…` ailleurs.
+          */}
+          <ImagePicker
+            preview={<CreatureSprite creature={creature} size={140} />}
+            path={creature.imagePath}
+            onChange={(imagePath) => patch({ imagePath })}
+            folder="creatures"
+            deviceImages={deviceImages}
+          />
 
-          <div className="field__row">
-            <TextField label="Nom" value={creature.name} onChange={(name) => patch({ name })} />
-            <TextField
-              label="Nom anglais"
-              value={creature.nameEn ?? ''}
-              onChange={(nameEn) => patch({ nameEn })}
-              hint="Utilisé par les exercices ENGLISH_WORD"
-            />
-          </div>
+          <TextField label="Nom" value={creature.name} onChange={(name) => patch({ name })} />
 
           <div className="field__row">
             <SelectField
@@ -236,56 +234,26 @@ export function CreaturesSection() {
           </div>
 
           <div className="field__row">
-            <TextField
+            <ColorField
               label="Couleur principale"
               value={creature.visual.palette[0]}
               onChange={(value) =>
                 patch({ visual: { ...creature.visual, palette: [value, creature.visual.palette[1]] } })
               }
             />
-            <TextField
-              label="Couleur secondaire"
+            <ColorField
+              label="Couleur du ventre"
               value={creature.visual.palette[1]}
               onChange={(value) =>
                 patch({ visual: { ...creature.visual, palette: [creature.visual.palette[0], value] } })
               }
             />
-            <TextField
+            <ColorField
               label="Couleur d’accent"
               value={creature.visual.accent}
               onChange={(accent) => patch({ visual: { ...creature.visual, accent } })}
             />
-            <SelectField
-              label="Couleur dominante (anglais)"
-              value={creature.colorKey}
-              options={[
-                'rouge',
-                'bleu',
-                'vert',
-                'jaune',
-                'orange',
-                'rose',
-                'gris',
-                'marron',
-                'blanc',
-              ].map((value) => ({ value: value as Creature['colorKey'], label: value }))}
-              onChange={(colorKey) => patch({ colorKey })}
-            />
           </div>
-
-          <TextField
-            label="Chemin de l’image (facultatif)"
-            value={creature.imagePath ?? ''}
-            onChange={(imagePath) => patch({ imagePath: imagePath || undefined })}
-            hint="media/creatures/… — laissez vide pour garder l’illustration générée"
-          />
-
-          <NumberField
-            label="Poids de rencontre par défaut"
-            value={0}
-            onChange={() => undefined}
-            hint="Le poids se règle sur chaque nœud, dans « Biomes et nœuds »."
-          />
 
           {nameVoice ? (
             <VoiceTextEditor
@@ -319,6 +287,43 @@ export function CreaturesSection() {
               Ajouter une voix pour le nom
             </SecondaryButton>
           )}
+
+          {/*
+            Ce qui reste TECHNIQUE se replie (§196) : un identifiant, un chemin
+            de fichier, une clé d'énumération. Nécessaire de temps en temps,
+            jamais dans le parcours normal.
+          */}
+          <AdvancedPanel hint="identifiant, chemin d’image, mot anglais">
+            <p className="admin__status">Identifiant : {creature.id}</p>
+            <TextField
+              label="Nom anglais"
+              value={creature.nameEn ?? ''}
+              onChange={(nameEn) => patch({ nameEn: nameEn || undefined })}
+              hint="Utilisé par les exercices d’anglais."
+            />
+            <SelectField
+              label="Couleur dominante (exercices d’anglais)"
+              value={creature.colorKey}
+              options={[
+                'rouge',
+                'bleu',
+                'vert',
+                'jaune',
+                'orange',
+                'rose',
+                'gris',
+                'marron',
+                'blanc',
+              ].map((value) => ({ value: value as Creature['colorKey'], label: value }))}
+              onChange={(colorKey) => patch({ colorKey })}
+            />
+            <TextField
+              label="Chemin de l’image"
+              value={creature.imagePath ?? ''}
+              onChange={(imagePath) => patch({ imagePath: imagePath || undefined })}
+              hint="media/creatures/… ou https://…. Le bouton « Remplacer l’image » suffit d’ordinaire."
+            />
+          </AdvancedPanel>
         </>
       ) : null}
     </EntityPane>

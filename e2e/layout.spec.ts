@@ -476,3 +476,49 @@ test('l’Admin sait chercher, dupliquer et supprimer (§196)', async ({ page })
   await page.getByRole('dialog').getByRole('button', { name: 'Supprimer' }).click();
   await expect(page.locator('.ds-list-row')).toHaveCount(before);
 });
+
+test('l’image et les couleurs s’éditent dans la fiche, jamais par un chemin (§196)', async ({
+  page,
+}) => {
+  await page.goto('./#/admin/creatures');
+  await page.getByLabel('Code d’accès').fill('parent');
+  await page.getByRole('button', { name: 'Entrer' }).click();
+  await expect(page.getByRole('button', { name: 'Nouvelle créature' })).toBeVisible({
+    timeout: 20_000,
+  });
+
+  /*
+   * Régression : pour changer l'illustration, il fallait quitter la fiche,
+   * ouvrir « Images », y retrouver la créature et saisir `media/creatures/…`.
+   */
+  await expect(page.getByRole('button', { name: /ajouter une image/i })).toBeVisible();
+  await expect(page.locator('.image-picker__preview svg')).toBeVisible();
+  await expect(page.getByText('Dessin généré').first()).toBeVisible();
+
+  // Les couleurs se choisissent : plus aucun champ de texte hexadécimal.
+  await expect(page.getByRole('button', { name: 'Jaune', exact: true }).first()).toBeVisible();
+  await expect(page.getByLabel(/couleur principale — choisir librement/i)).toHaveAttribute(
+    'type',
+    'color',
+  );
+
+  // Ce qui reste technique est replié, et le dit.
+  const advanced = page.getByRole('button', { name: 'Réglages avancés' });
+  await expect(advanced).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.getByLabel('Chemin de l’image')).toHaveCount(0);
+  await advanced.click();
+  await expect(page.getByLabel('Chemin de l’image')).toBeVisible();
+});
+
+test('la page « Images » vérifie l’ensemble au lieu d’éditer (§196)', async ({ page }) => {
+  await page.goto('./#/admin/images');
+  await page.getByLabel('Code d’accès').fill('parent');
+  await page.getByRole('button', { name: 'Entrer' }).click();
+  await expect(page.getByText('Où en sont les images ?')).toBeVisible({ timeout: 20_000 });
+
+  // Elle répond à ce qu'une fiche ne peut pas voir : l'état de l'ensemble.
+  await expect(page.getByText(/20 dessin\(s\) généré\(s\)/)).toBeVisible();
+  await expect(page.getByText(/0 sur cet appareil seulement/)).toBeVisible();
+  // Et elle ne propose plus de saisir un chemin.
+  await expect(page.getByLabel('Image de la créature')).toHaveCount(0);
+});

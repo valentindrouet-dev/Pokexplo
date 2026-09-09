@@ -67,9 +67,19 @@ describe('VoiceTextEditor (CONCEPTION §38-42, §62-63)', () => {
     await user.click(await screen.findByRole('button', { name: /utiliser cette prise/iu }));
 
     expect(await screen.findByText('Voix valide')).toBeInTheDocument();
+
+    /*
+     * §196 — l'état « une voix existe » ne propose que DEUX gestes : l'écouter
+     * et la refaire. Tout était visible en même temps, sept possibilités pour
+     * un geste qui en demande une.
+     */
     expect(screen.getByRole('button', { name: /^écouter$/iu })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /recommencer/iu })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /supprimer/iu })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /réenregistrer/iu })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /supprimer la voix/iu })).not.toBeInTheDocument();
+
+    // Supprimer reste possible, sous « Options avancées ».
+    await user.click(screen.getByRole('button', { name: 'Options avancées' }));
+    expect(screen.getByRole('button', { name: /supprimer la voix/iu })).toBeInTheDocument();
   });
 
   it('conserve l’ancienne prise tant que la nouvelle n’est pas validée (§42)', async () => {
@@ -85,7 +95,7 @@ describe('VoiceTextEditor (CONCEPTION §38-42, §62-63)', () => {
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: /recommencer/iu }));
+    await user.click(screen.getByRole('button', { name: /réenregistrer/iu }));
     await user.click(await screen.findByRole('button', { name: /terminer/iu }));
 
     // Les deux options sont proposees : on ne detruit rien automatiquement.
@@ -143,14 +153,18 @@ describe('VoiceTextEditor (CONCEPTION §38-42, §62-63)', () => {
     expect(screen.getByText('Voix manquante')).toBeInTheDocument();
   });
 
-  it('propose les réglages de lecture du bloc (§49)', async () => {
+  it('propose les réglages de lecture, repliés (§49, §196)', async () => {
     const user = userEvent.setup();
     render(<Harness initial={createVoiceMessage('voice.p', 'Bravo !', 'professor')} />);
 
-    const autoPlay = screen.getByRole('button', { name: /lecture auto/iu });
+    // Ils ne disputent plus la place à l'action principale.
+    expect(screen.queryByRole('button', { name: 'Lecture automatique' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Options avancées' }));
+    const autoPlay = screen.getByRole('button', { name: 'Lecture automatique' });
     expect(autoPlay).toHaveAttribute('aria-pressed', 'true');
     await user.click(autoPlay);
-    expect(screen.getByRole('button', { name: /lecture auto/iu })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: 'Lecture automatique' })).toHaveAttribute(
       'aria-pressed',
       'false',
     );

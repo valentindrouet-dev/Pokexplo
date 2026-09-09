@@ -19,6 +19,7 @@ import {
   SecondaryButton,
 } from '../../ui';
 import { cn } from '../../utils/cn';
+import { AdvancedPanel } from './AdvancedPanel';
 
 export interface VoiceTextEditorProps {
   /** Le bloc « texte + voix » edite. */
@@ -255,22 +256,26 @@ export function VoiceTextEditor({ voice, onChange, title, readOnlyText = false }
         </p>
       ) : null}
 
-      {/* Prise existante */}
+      {/*
+        DEUX ÉTATS, ET RIEN D'AUTRE (UI_DESIGN §196).
+
+        Tout était visible en même temps : enregistrer, importer, supprimer,
+        restaurer, lecture auto, afficher le texte, voix de synthèse. Sept
+        possibilités pour un geste qui en demande une. Ce qui reste s'ouvre
+        sous « Options avancées ».
+      */}
       {voice.audioPath ? (
         <div className="vte__take">
-          <span className="admin__status">Voix enregistrée — {formatDuration(voice.duration ?? 0)}</span>
+          <span className="vte__done">
+            <IconCheck size={22} />
+            Voix enregistrée — {formatDuration(voice.duration ?? 0)}
+          </span>
           <SecondaryButton icon={<IconPlay size={24} />} onClick={playStored}>
             Écouter
           </SecondaryButton>
           <SecondaryButton icon={<IconRefresh size={24} />} onClick={() => void startRecording()}>
-            Recommencer
+            Réenregistrer
           </SecondaryButton>
-          <SecondaryButton icon={<IconTrash size={24} />} onClick={() => void deleteVoice()}>
-            Supprimer
-          </SecondaryButton>
-          {voice.previousTake ? (
-            <SecondaryButton onClick={restorePrevious}>Revenir à la prise précédente</SecondaryButton>
-          ) : null}
         </div>
       ) : null}
 
@@ -296,57 +301,87 @@ export function VoiceTextEditor({ voice, onChange, title, readOnlyText = false }
         </div>
       ) : null}
 
-      <div className="vte__actions">
-        {phase !== 'recording' ? (
+      {/* Aucune voix encore : une seule action évidente. */}
+      {!voice.audioPath && phase !== 'recording' && phase !== 'review' ? (
+        <div className="vte__actions">
           <PrimaryButton icon={<IconMic size={26} />} onClick={() => void startRecording()}>
             Enregistrer la voix
           </PrimaryButton>
-        ) : null}
+          <SecondaryButton
+            icon={<IconUpload size={24} />}
+            disabled={busy}
+            onClick={() => fileInput.current?.click()}
+          >
+            ou importer un fichier
+          </SecondaryButton>
+          {phase === 'denied' && permission === 'denied' ? (
+            <SecondaryButton onClick={() => void startRecording()}>Réessayer</SecondaryButton>
+          ) : null}
+        </div>
+      ) : null}
 
-        <SecondaryButton
-          icon={<IconUpload size={24} />}
-          disabled={busy}
-          onClick={() => fileInput.current?.click()}
-        >
-          Importer un fichier
-        </SecondaryButton>
-        <input
-          ref={fileInput}
-          type="file"
-          className="vte__hidden-input"
-          accept={IMPORT_ACCEPT}
-          onChange={(event) => {
-            const file = event.target.files?.[0];
-            if (file) void importFile(file);
-            event.target.value = '';
-          }}
-        />
+      <input
+        ref={fileInput}
+        type="file"
+        className="vte__hidden-input"
+        accept={IMPORT_ACCEPT}
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          if (file) void importFile(file);
+          event.target.value = '';
+        }}
+      />
 
-        {phase === 'denied' && permission === 'denied' ? (
-          <SecondaryButton onClick={() => void startRecording()}>Réessayer</SecondaryButton>
-        ) : null}
+      <AdvancedPanel
+        title="Options avancées"
+        hint="lecture automatique, voix de synthèse, prise précédente"
+      >
+        <div className="ds-row">
+          <PillButton
+            active={voice.autoPlay}
+            onClick={() => onChange({ ...voice, autoPlay: !voice.autoPlay })}
+          >
+            Lecture automatique
+          </PillButton>
+          <PillButton
+            active={voice.showText}
+            onClick={() => onChange({ ...voice, showText: !voice.showText })}
+          >
+            Afficher le texte à l’enfant
+          </PillButton>
+          <PillButton
+            active={voice.voiceMode === 'TTS'}
+            onClick={() =>
+              onChange({ ...voice, voiceMode: voice.voiceMode === 'TTS' ? 'RECORDED' : 'TTS' })
+            }
+          >
+            Voix de synthèse
+          </PillButton>
+        </div>
 
-        <PillButton
-          active={voice.autoPlay}
-          onClick={() => onChange({ ...voice, autoPlay: !voice.autoPlay })}
-        >
-          Lecture auto
-        </PillButton>
-        <PillButton
-          active={voice.showText}
-          onClick={() => onChange({ ...voice, showText: !voice.showText })}
-        >
-          Afficher le texte
-        </PillButton>
-        <PillButton
-          active={voice.voiceMode === 'TTS'}
-          onClick={() =>
-            onChange({ ...voice, voiceMode: voice.voiceMode === 'TTS' ? 'RECORDED' : 'TTS' })
-          }
-        >
-          Voix de synthèse
-        </PillButton>
-      </div>
+        <div className="ds-row">
+          {voice.audioPath ? (
+            <SecondaryButton
+              icon={<IconUpload size={24} />}
+              disabled={busy}
+              onClick={() => fileInput.current?.click()}
+            >
+              Importer un fichier
+            </SecondaryButton>
+          ) : null}
+          {/* §42 — la prise précédente est conservée tant qu'on n'a rien décidé. */}
+          {voice.previousTake ? (
+            <SecondaryButton onClick={restorePrevious}>
+              Revenir à la prise précédente
+            </SecondaryButton>
+          ) : null}
+          {voice.audioPath ? (
+            <SecondaryButton icon={<IconTrash size={24} />} onClick={() => void deleteVoice()}>
+              Supprimer la voix
+            </SecondaryButton>
+          ) : null}
+        </div>
+      </AdvancedPanel>
 
       {/* §41 — PROMPTEUR : le texte en très grand pendant l'enregistrement. */}
       {phase === 'recording' ? (

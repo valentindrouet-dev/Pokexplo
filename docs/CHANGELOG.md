@@ -4,6 +4,50 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 Trois versions sont suivies séparément (§112) : `APP_VERSION`, `CONTENT_VERSION`,
 `SAVE_SCHEMA_VERSION`.
 
+## [1.11.0] — Passe UX : l'Admin montre des intentions, pas la structure de données
+
+`APP_VERSION 1.11.0` · `CONTENT_VERSION bundled-5` · `SAVE_SCHEMA_VERSION 3`
+
+### Modifié — l'image s'édite dans l'entité
+
+- **Tout ce qui concerne une créature est dans sa fiche** (§196). Pour changer
+  son illustration, il fallait quitter la fiche, ouvrir « Images », y
+  retrouver la créature et saisir `media/creatures/…` à la main : trois écrans
+  et un chemin de fichier pour un geste. Aperçu, remplacement, retour au dessin
+  généré et mise en garde « cette image ne partira pas sur l'iPad » sont
+  réunis sur place.
+- **« Images » vérifie l'ensemble** au lieu d'éditer : ce qui n'a pas d'image,
+  ce qui ne voyagera pas, ce qui vient d'un site tiers, ce qui ne sert plus.
+  Seuls les fichiers **inutilisés** proposent d'être supprimés.
+
+### Modifié — plus de valeurs techniques dans le parcours normal
+
+- **Les couleurs se choisissent** : les douze teintes du jeu en grand, plus un
+  sélecteur système. On tapait `#FFD45C` dans un champ de texte, et une faute
+  de frappe cassait le dessin sans le dire.
+- **« Réglages avancés »**, replié et qui annonce ce qu'il contient :
+  identifiant, chemin d'image, mot anglais, clé de couleur pour les exercices
+  d'anglais. Pour un lieu : identifiant et coordonnées X/Y — la place se règle
+  au doigt sur la carte.
+- Un faux champ « Poids de rencontre par défaut », qui n'écrivait nulle part,
+  a disparu.
+
+### Modifié — le VoiceTextEditor tient en trois états
+
+- **Sans voix** : le texte, « Enregistrer la voix », « ou importer un fichier ».
+- **Avec voix** : ✅ la durée, « Écouter », « Réenregistrer ».
+- **« Options avancées »** : lecture automatique, afficher le texte, voix de
+  synthèse, prise précédente, supprimer. Sept possibilités étaient offertes en
+  même temps pour un geste qui en demande une.
+
+### Corrigé
+
+- `Field` enveloppait ses enfants dans un `<label>`. Un `<label>` qui contient
+  des boutons est du HTML invalide : le navigateur les réassocie au contrôle
+  du label et **ils quittent l'arbre d'accessibilité**. Le sélecteur d'image
+  n'avait donc plus de bouton du tout pour un lecteur d'écran. `FieldGroup`
+  sert désormais dès que le champ contient autre chose qu'un seul contrôle.
+
 ## [1.10.0] — Passe UX : l'Admin se range en quatre familles, et sait enfin dupliquer
 
 `APP_VERSION 1.10.0` · `CONTENT_VERSION bundled-5` · `SAVE_SCHEMA_VERSION 3`

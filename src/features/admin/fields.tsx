@@ -18,6 +18,24 @@ export function Field({ label, children, hint }: FieldProps) {
   );
 }
 
+/**
+ * Même apparence, mais ce n'est PAS un `<label>`.
+ *
+ * Un `<label>` qui enveloppe des boutons est du HTML invalide : le navigateur
+ * les réassocie au contrôle du label, et ils disparaissent de l'arbre
+ * d'accessibilité — le sélecteur d'image n'avait plus de bouton du tout. À
+ * utiliser dès que le contenu du champ est autre chose qu'un seul contrôle.
+ */
+export function FieldGroup({ label, children, hint }: FieldProps) {
+  return (
+    <div className="field" role="group" aria-label={label}>
+      <span className="field__label">{label}</span>
+      {children}
+      {hint ? <span className="admin__status">{hint}</span> : null}
+    </div>
+  );
+}
+
 export function TextField({
   label,
   value,

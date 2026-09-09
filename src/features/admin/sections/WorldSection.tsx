@@ -9,6 +9,8 @@ import { VoiceTextEditor } from '../VoiceTextEditor';
 import { uid } from '../../../utils/id';
 import { createNodeAfter, duplicateNode, removalBlocker, removeNode } from '../nodeFactory';
 import { PlaceIconPicker } from '../PlaceIconPicker';
+import { AdvancedPanel } from '../AdvancedPanel';
+import { ColorField } from '../ColorField';
 
 const NODE_KINDS: NodeKind[] = ['CENTER', 'PATH', 'ENCOUNTER', 'GYM', 'EVENT', 'REST'];
 
@@ -101,10 +103,6 @@ export function WorldSection() {
                 />
               </div>
 
-              <div className="field__row">
-                <NumberField label="Position X (%)" value={node.x} min={0} max={100} onChange={(x) => patchNode({ x })} />
-                <NumberField label="Position Y (%)" value={node.y} min={0} max={100} onChange={(y) => patchNode({ y })} />
-              </div>
 
               <PlaceIconPicker
                 node={node}
@@ -180,6 +178,34 @@ export function WorldSection() {
                 </div>
               </div>
 
+              {/*
+                X et Y sous « Avancé » : la place d'un lieu se règle AU DOIGT,
+                sur la carte (§196). Deux nombres restent utiles pour poser une
+                valeur exacte, jamais pour le geste courant.
+              */}
+              <AdvancedPanel hint="identifiant, coordonnées">
+                <p className="admin__status">Identifiant : {node.id}</p>
+                <div className="field__row">
+                  <NumberField
+                    label="Position X (%)"
+                    value={node.x}
+                    min={0}
+                    max={100}
+                    onChange={(x) => patchNode({ x })}
+                  />
+                  <NumberField
+                    label="Position Y (%)"
+                    value={node.y}
+                    min={0}
+                    max={100}
+                    onChange={(y) => patchNode({ y })}
+                  />
+                </div>
+                <SecondaryButton onClick={() => navigate({ name: 'admin', section: 'preview' })}>
+                  Ranger la carte au doigt
+                </SecondaryButton>
+              </AdvancedPanel>
+
               {arrivalVoice ? (
                 <VoiceTextEditor
                   title="Phrase d’arrivée"
@@ -210,21 +236,36 @@ export function WorldSection() {
           {biome ? (
             <>
               <TextField label="Nom" value={biome.name} onChange={(name) => patchBiome({ name })} />
+              <TextField
+                label="Nom sur la carte"
+                value={biome.shortName ?? ''}
+                onChange={(shortName) => patchBiome({ shortName: shortName || undefined })}
+                hint="Court, sinon il chevauche les noms des lieux voisins."
+              />
+
+              {/* Les couleurs se choisissent, elles ne se tapent plus (§196). */}
               <div className="field__row">
-                <TextField
+                <ColorField
                   label="Ciel (haut)"
                   value={biome.sky[0]}
                   onChange={(value) => patchBiome({ sky: [value, biome.sky[1]] })}
                 />
-                <TextField
+                <ColorField
                   label="Ciel (bas)"
                   value={biome.sky[1]}
                   onChange={(value) => patchBiome({ sky: [biome.sky[0], value] })}
                 />
-                <TextField label="Sol" value={biome.ground} onChange={(ground) => patchBiome({ ground })} />
-                <TextField label="Accent" value={biome.accent} onChange={(accent) => patchBiome({ accent })} />
+                <ColorField label="Sol" value={biome.ground} onChange={(ground) => patchBiome({ ground })} />
+                <ColorField
+                  label="Accent"
+                  value={biome.accent}
+                  onChange={(accent) => patchBiome({ accent })}
+                  hint="Le liseré de la région sur la carte."
+                />
               </div>
-              <div className="field__row">
+
+              <AdvancedPanel hint="identifiant, musique, ambiance">
+                <p className="admin__status">Identifiant : {biome.id}</p>
                 <TextField
                   label="Musique (chemin média)"
                   value={biome.musicPath ?? ''}
@@ -235,7 +276,7 @@ export function WorldSection() {
                   value={biome.ambiencePath ?? ''}
                   onChange={(ambiencePath) => patchBiome({ ambiencePath: ambiencePath || undefined })}
                 />
-              </div>
+              </AdvancedPanel>
               {introVoice ? (
                 <VoiceTextEditor
                   title="Présentation du biome"
