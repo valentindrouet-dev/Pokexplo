@@ -71,6 +71,7 @@ test('la scène d’exercice ne déborde jamais sur les réponses', async ({ pag
   await boot(page);
   await page.goto('./#/play/map');
   await page.getByRole('button', { name: /Prairie — à explorer/i }).click();
+  await page.getByRole('button', { name: 'Y aller !' }).click({ timeout: 20_000 });
   await page.getByRole('button', { name: 'Relever le défi !' }).click({ timeout: 20_000 });
   await expect(page.locator('.ds-choice').first()).toBeVisible();
 
@@ -254,17 +255,25 @@ test('la carte remplit son cadre dans les deux orientations', async ({ page }) =
   expect(fill.node).toBeGreaterThanOrEqual(56);
 });
 
-test('la consigne d’un exercice reste grande, dans les deux orientations', async ({ page }) => {
+test('la consigne d’un exercice reste lisible, dans les deux orientations', async ({ page }) => {
   await boot(page);
   await page.goto('./#/play/map');
   await page.locator('.map__node[aria-label*="Prairie"]').first().click();
+  await page.getByRole('button', { name: 'Y aller !' }).click({ timeout: 20_000 });
   await page.getByRole('button', { name: /relever le défi/i }).click({ timeout: 20_000 });
 
   const question = page.locator('.exercise__question');
   await expect(question).toBeVisible();
-  // Regression : indexee sur la largeur, la typographie tombait a 19 px en portrait.
+  /*
+   * Deux bornes, et les deux comptent :
+   *  - régression d'origine — indexée sur la largeur, la typographie tombait
+   *    à 19 px en portrait, illisible ;
+   *  - §194 — elle ne doit pas redevenir l'élément dominant de l'écran, ce
+   *    que vérifie `e2e/child-ux.spec.ts`.
+   */
   const size = await question.evaluate((el) => Number.parseFloat(getComputedStyle(el).fontSize));
-  expect(size).toBeGreaterThanOrEqual(28);
+  expect(size).toBeGreaterThanOrEqual(20);
+  expect(size).toBeLessThanOrEqual(26);
 
   // Les reponses restent des cibles enfant (§4).
   const answers = page.locator('.exercise__answers .ds-choice');

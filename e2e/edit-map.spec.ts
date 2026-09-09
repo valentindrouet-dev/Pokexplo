@@ -109,14 +109,19 @@ test('un lieu se déplace au doigt, et sa région suit', async ({ page }) => {
   expect(await bubble.boundingBox()).not.toEqual(bubbleBefore);
 });
 
-test('un simple appui reste un voyage, même en mode édition', async ({ page }) => {
+test('un simple appui choisit un lieu, il ne le déplace pas', async ({ page }) => {
   await openMapInEditMode(page);
   const before = await draftNode(page, 'prairie-1');
 
   await page.locator('.map__node[aria-label^="Prairie"] .map__node-ring').click();
 
-  // On part en voyage : l'adulte peut parcourir l'aventure tout en l'éditant.
+  // §193 — le premier geste choisit, le second part. L'adulte parcourt donc
+  // l'aventure exactement comme son enfant, tout en l'éditant.
+  await expect(page.locator('.map__pick')).toContainText('Prairie');
+  await page.getByRole('button', { name: 'Y aller !' }).click();
   await expect(page).toHaveURL(/#\/play\/encounter\/prairie-1/, { timeout: 20_000 });
+
+  // Et surtout : rien n'a bougé dans le brouillon.
   expect(await draftNode(page, 'prairie-1')).toEqual(before);
 });
 

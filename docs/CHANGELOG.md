@@ -4,6 +4,38 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 Trois versions sont suivies séparément (§112) : `APP_VERSION`, `CONTENT_VERSION`,
 `SAVE_SCHEMA_VERSION`.
 
+## [1.9.0] — Passe UX : la carte se choisit en deux temps, l'exercice remet la voix devant
+
+`APP_VERSION 1.9.0` · `CONTENT_VERSION bundled-5` · `SAVE_SCHEMA_VERSION 3`
+
+### Modifié — la carte
+
+- **Sélection en deux temps** (§193). Un simple toucher partait aussitôt en
+  voyage : un doigt qui effleurait l'écran suffisait à quitter le Centre. Le
+  premier geste **choisit** le lieu et **dit son nom** ; « Y aller ! » — ou un
+  second toucher sur le même lieu — lance le déplacement.
+- Un lieu **fermé se nomme aussi**, et dit qu'il n'est pas encore ouvert :
+  l'enfant apprend qu'il existe, au lieu de se demander pourquoi rien ne se
+  passe.
+- **Les destinations ouvertes respirent** : une pulsation très lente sur
+  l'anneau, coupée sous `prefers-reduced-motion`.
+- **Le dresseur est une silhouette** — tête, casquette, corps, ombre portée —
+  et non plus un petit rond corail qu'on ne repérait pas.
+- Les lieux sont **plus grands** (rayon 5,6 → 6,2 ; Arène 6,6 → 7,2). La boîte
+  utile se resserre d'autant pour que les étiquettes restent dans le cadre.
+
+### Modifié — les exercices
+
+- **🔊 · grande scène · réponses géantes** (§194). La consigne écrite était le
+  plus gros élément de l'écran, en taille de titre : pour un enfant qui ne lit
+  pas, c'était le seul élément inutile. Elle reste — pour l'adulte et pour
+  celui qui commence à lire — mais passe **sous** le haut-parleur, en second,
+  et la place rendue revient à la scène.
+- **L'indice est porté par l'animation et la voix.** Le gros bandeau jaune
+  devenait aussitôt le nouvel élément dominant ; il est maintenant discret.
+- Deux bornes tiennent la consigne : jamais sous 20 px (régression d'origine
+  en portrait), jamais au-dessus de 26 px (§194).
+
 ## [1.8.0] — Passe UX : le Pokédex et l'Équipe, une chose à la fois
 
 `APP_VERSION 1.8.0` · `CONTENT_VERSION bundled-5` · `SAVE_SCHEMA_VERSION 3`

@@ -14,6 +14,7 @@ import {
   SoftPanel,
   VoiceButton,
 } from '../../ui';
+import { spokenName } from '../../app/providers/useScreenVoice';
 import { useAudio } from '../../app/providers/AudioProvider';
 import { useContent } from '../../app/providers/ContentProvider';
 import { useGame } from '../../app/providers/GameProvider';
@@ -200,7 +201,7 @@ export function MapScreen() {
   const { editing, open: openEditor } = useEditMode();
   const { bundle, biome } = useContent();
   const { save, dispatch } = useGame();
-  const { speak, buttonState } = useAudio();
+  const { speak, speakMessage, buttonState } = useAudio();
   const [walking, setWalking] = useState<string[] | null>(null);
   const [step, setStep] = useState(0);
   const orientation = useOrientation();
@@ -229,6 +230,16 @@ export function MapScreen() {
    * apres le lacher, puis sautait a la nouvelle.
    */
   const [pending, setPending] = useState<{ id: string; at: Point } | null>(null);
+
+  /**
+   * SÉLECTION EN DEUX TEMPS (UI_DESIGN §193).
+   *
+   * Un simple toucher partait aussitôt en voyage : un doigt qui glisse sur
+   * l'écran suffisait à quitter le Centre. Le premier toucher SÉLECTIONNE et
+   * dit le nom du lieu ; « Y aller ! » — ou un second toucher sur le même
+   * lieu — lance le déplacement.
+   */
+  const [pickedId, setPickedId] = useState<string | null>(null);
 
   const positionOf = useCallback(
     (node: MapNode): Point => {
@@ -396,10 +407,26 @@ export function MapScreen() {
     );
   }
 
+  /** Départ effectif : c'est le second geste, jamais le premier. */
   const travelTo = (node: MapNode): void => {
     if (!canTravelTo(node.id, save, bundle) || walking) return;
+    setPickedId(null);
     setStep(0);
     setWalking(pathBetween(save.state.currentNode, node.id, save, bundle));
+  };
+
+  /**
+   * Premier geste : on sélectionne et on NOMME (§192). Un second geste sur le
+   * même lieu part — l'enfant qui a compris n'a pas à viser le bouton.
+   */
+  const pickNode = (node: MapNode): void => {
+    if (walking) return;
+    if (pickedId === node.id) {
+      travelTo(node);
+      return;
+    }
+    setPickedId(node.id);
+    speakMessage(spokenName(node.id, node.label));
   };
 
   const draggable = editing && drafting !== null;
@@ -488,7 +515,7 @@ export function MapScreen() {
     if (!node) return;
     if (dropped.moved) moveNodeTo(node, dropped.at);
     // Un appui reste un appui : l'adulte parcourt l'aventure tout en l'editant.
-    else if (event.isPrimary) travelTo(node);
+    else if (event.isPrimary) pickNode(node);
   };
 
   /** Clavier : les fleches suivent l'ECRAN, pas les donnees (§159). */
@@ -499,7 +526,7 @@ export function MapScreen() {
 
   const onNodeKeyDown = (node: MapNode, event: React.KeyboardEvent<SVGGElement>): void => {
     if (event.key === 'Enter' || event.key === ' ') {
-      travelTo(node);
+      pickNode(node);
       return;
     }
     if (!draggable) return;
@@ -548,6 +575,7 @@ export function MapScreen() {
     openEditor({ kind: 'node', id });
   };
 
+  const picked = bundle.nodes.find((node) => node.id === pickedId) ?? null;
   const strayNode = bundle.nodes.find((node) => node.id === strayNodeId) ?? null;
   const strayBiome = bundle.biomes.find((item) => item.id === strayBiomeId) ?? null;
   const strayHome = bundle.biomes.find((item) => item.id === strayNode?.biomeId) ?? null;
@@ -586,6 +614,7 @@ export function MapScreen() {
         <svg
           ref={svgRef}
           className="map__svg"
+          data-choice-group="lieux"
           data-editing={draggable}
           viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
           preserveAspectRatio="xMidYMid meet"
@@ -699,8 +728,12 @@ export function MapScreen() {
                 className={[
                   'map__node',
                   locked ? 'map__node--locked' : '',
+                  // Les destinations ouvertes respirent : c'est ce qui dit
+                  // « touche-moi » a un enfant qui ne lit pas (§193).
+                  state === 'AVAILABLE' || state === 'SPECIAL_EVENT' ? 'map__node--open' : '',
                   draggable ? 'map__node--draggable' : '',
                   drag?.id === node.id ? 'map__node--dragging' : '',
+                  pickedId === node.id ? 'map__node--picked' : '',
                 ]
                   .filter(Boolean)
                   .join(' ')}
@@ -713,7 +746,7 @@ export function MapScreen() {
                 }
                 // Hors edition, le clic natif suffit — et reste accessible.
                 onClick={() => {
-                  if (!draggable) travelTo(node);
+                  if (!draggable) pickNode(node);
                 }}
                 onKeyDown={(event) => onNodeKeyDown(node, event)}
                 onPointerDown={(event) => startDrag(node, event)}
@@ -813,9 +846,18 @@ export function MapScreen() {
 
           {/* --- Personnage ------------------------------------------------- */}
           {avatar ? (
-            <g className="map__avatar" transform={`translate(${avatar.x} ${avatar.y - 9.5})`}>
-              <circle r={3.2} />
-              <circle className="map__avatar-dot" r={1.3} cy={-0.5} />
+            /*
+              LE DRESSEUR (§193). C'etait un petit rond corail au-dessus du
+              lieu courant : on ne se reconnaissait pas dedans. C'est
+              maintenant une silhouette — tete, casquette, corps — assez
+              grande pour qu'un enfant sache tout de suite ou il se trouve.
+            */
+            <g className="map__avatar" transform={`translate(${avatar.x} ${avatar.y - 11.5})`}>
+              <ellipse className="map__avatar-shadow" cy={9.4} rx={3.4} ry={1.1} />
+              <path className="map__avatar-body" d="M-2.9 9.2v-3.4a2.9 2.9 0 0 1 5.8 0v3.4Z" />
+              <circle className="map__avatar-head" r={3.1} cy={2.2} />
+              <path className="map__avatar-cap" d="M-3.1 1.4a3.1 3.1 0 0 1 6.2 0Z" />
+              <path className="map__avatar-cap" d="M0.6 1.4h3.7a1 1 0 0 1-1 1H0.6Z" />
             </g>
           ) : null}
         </svg>
@@ -825,6 +867,31 @@ export function MapScreen() {
           chercher là-bas et traverserait la voisine. On le dit, et on propose —
           jamais de réaffectation dans le dos de l'administrateur.
         */}
+        {/*
+          CE QUE L'ON VIENT DE CHOISIR, ET CE QU'ON PEUT EN FAIRE (§193).
+          Un lieu fermé se dit aussi : l'enfant apprend qu'il existe, sans se
+          demander pourquoi rien ne se passe.
+        */}
+        {picked && !strayNode ? (
+          <div className="map__pick surface-dense" role="status">
+            <span className="map__pick-icon" aria-hidden="true">
+              <PlaceIcon node={picked} biome={biome(picked.biomeId)} />
+            </span>
+            <span className="map__pick-name">{picked.label}</span>
+            {canTravelTo(picked.id, save, bundle) ? (
+              <PrimaryButton large onClick={() => travelTo(picked)}>
+                Y aller !
+              </PrimaryButton>
+            ) : (
+              <span className="map__pick-locked">
+                <IconLock size={22} />
+                Pas encore ouvert
+              </span>
+            )}
+            <SecondaryButton onClick={() => setPickedId(null)}>Fermer</SecondaryButton>
+          </div>
+        ) : null}
+
         {strayNode && strayBiome ? (
           <div className="map__stray surface-dense" role="status">
             <span>

@@ -27,6 +27,15 @@ async function startAdventure(page: Page): Promise<void> {
   await expect(page.getByRole('button', { name: 'Partir !' })).toBeVisible();
 }
 
+/**
+ * Voyager : DEUX gestes (§193). Le premier choisit le lieu et dit son nom,
+ * le second part. C'est ce qui supprime les départs accidentels.
+ */
+async function travelTo(page: Page, label: RegExp | string): Promise<void> {
+  await page.getByRole('button', { name: label }).first().click();
+  await page.getByRole('button', { name: 'Y aller !' }).click({ timeout: 20_000 });
+}
+
 test('l’enfant peut lancer l’aventure sans savoir lire', async ({ page }) => {
   await page.goto('./');
 
@@ -66,8 +75,12 @@ test('la carte affiche les nœuds avec leur état et permet de voyager', async (
   await expect(page.getByRole('button', { name: /Prairie — à explorer/i })).toBeVisible();
   await expect(page.getByRole('button', { name: /^Arène — fermé/i })).toBeVisible();
 
+  // Un premier toucher choisit le lieu et le nomme ; il ne part pas encore.
   await page.getByRole('button', { name: /Prairie — à explorer/i }).click();
+  await expect(page.locator('.map__pick')).toContainText('Prairie');
+  await expect(page.getByRole('button', { name: 'Relever le défi !' })).toHaveCount(0);
 
+  await page.getByRole('button', { name: 'Y aller !' }).click();
   await expect(page.getByRole('button', { name: 'Relever le défi !' })).toBeVisible({
     timeout: 15_000,
   });
@@ -77,7 +90,7 @@ test('rencontre → exercice → capture → Pokédex', async ({ page }) => {
   test.setTimeout(90_000);
   await startAdventure(page);
   await page.getByRole('button', { name: 'Partir !' }).click();
-  await page.getByRole('button', { name: /Prairie — à explorer/i }).click();
+  await travelTo(page, /Prairie — à explorer/i);
   await page.getByRole('button', { name: 'Relever le défi !' }).click({ timeout: 15_000 });
 
   // L'exercice affiche une consigne, un bouton d'ecoute et de grandes reponses.

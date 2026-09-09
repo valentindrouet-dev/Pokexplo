@@ -287,6 +287,42 @@
   touch-action: none;
 }
 
+/*
+ * LES DESTINATIONS OUVERTES RESPIRENT (§193).
+ *
+ * Une pulsation tres lente, sur l'anneau seulement : c'est ce qui dit
+ * « touche-moi » a un enfant qui ne lit pas, sans transformer la carte en
+ * sapin de Noel (§163 : ne pas suranimer).
+ */
+@keyframes map-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.09);
+  }
+}
+
+.map__node--open .map__node-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: map-breathe 2600ms var(--ease-soft) infinite;
+}
+
+/* Le lieu choisi : anneau franc, et il ne respire plus — il attend. */
+.map__node--picked .map__node-ring {
+  animation: none;
+  stroke: var(--color-lavender);
+  stroke-width: 1.8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map__node--open .map__node-ring {
+    animation: none;
+  }
+}
+
 .map__node--draggable {
   cursor: grab;
 }
@@ -419,16 +455,82 @@
   stroke: var(--color-lavender);
 }
 
+/*
+ * LE DRESSEUR (§193).
+ *
+ * Un rond corail ne se reconnait pas. Une silhouette avec une casquette, si :
+ * l'enfant sait ou il est sans avoir a chercher.
+ */
 .map__avatar {
   transition: transform var(--duration-slow) var(--ease-soft);
 }
 
-.map__avatar circle {
+.map__avatar-head {
+  fill: var(--color-yellow);
+  stroke: var(--color-surface);
+  stroke-width: 0.6;
+}
+
+.map__avatar-body {
+  fill: var(--color-coral);
+  stroke: var(--color-surface);
+  stroke-width: 0.6;
+}
+
+.map__avatar-cap {
   fill: var(--color-coral);
 }
 
-.map__avatar .map__avatar-dot {
-  fill: var(--color-surface);
+.map__avatar-shadow {
+  fill: var(--color-text);
+  opacity: 0.12;
+}
+
+/*
+ * CE QUE L'ON VIENT DE CHOISIR (§193).
+ *
+ * Meme place et meme forme que la proposition de rattachement du mode
+ * edition : une seule grammaire pour tout ce qui se pose sur la carte.
+ */
+.map__pick {
+  position: absolute;
+  left: var(--space-4);
+  right: var(--space-4);
+  bottom: var(--space-4);
+  z-index: var(--z-bar);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-float);
+}
+
+.map__pick-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  border-radius: var(--radius-pill);
+  background: var(--color-aqua-soft);
+}
+
+.map__pick-name {
+  font-size: var(--text-large);
+  font-weight: var(--weight-heavy);
+  margin-right: auto;
+}
+
+.map__pick-locked {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-soft);
 }
 
 /* ----------------------------- RENCONTRE ----------------------------- */

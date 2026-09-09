@@ -12,6 +12,16 @@
   min-height: 0;
 }
 
+/*
+ * HIERARCHIE D'UN ECRAN D'EXERCICE (UI_DESIGN §194).
+ *
+ *      🔊  ·  GRANDE SCENE  ·  REPONSES GEANTES
+ *
+ * La consigne ECRITE etait le plus gros element de l'ecran, en taille de
+ * titre. Pour un enfant qui ne lit pas, c'etait le seul element inutile.
+ * Elle reste — pour l'adulte et pour celui qui commence a lire — mais elle
+ * passe SOUS le haut-parleur, en second.
+ */
 .exercise__prompt {
   display: flex;
   flex-direction: column;
@@ -21,12 +31,12 @@
   flex: 0 0 auto;
 }
 
-/* La consigne est LA chose a lire sur l'ecran (§144) : taille de titre. */
 .exercise__question {
-  font-size: var(--title);
-  font-weight: var(--weight-heavy);
+  font-size: var(--text-normal);
+  font-weight: var(--weight-bold);
   line-height: var(--line-tight);
-  max-width: 22ch;
+  color: var(--color-text-soft);
+  max-width: 30ch;
 }
 
 /*
@@ -39,6 +49,8 @@
   display: grid;
   place-items: center;
   width: 100%;
+  /* La place rendue par la consigne revient a la scene : c'est elle qu'on
+     regarde, et c'est elle qui porte l'aide quand l'indice arrive. */
   flex: 1 1 auto;
   min-height: var(--stage-min);
   overflow: hidden;
@@ -66,16 +78,24 @@
   flex-direction: column;
 }
 
+/*
+ * L'INDICE EST PORTE PAR L'ANIMATION ET LA VOIX (§194).
+ *
+ * Il apparaissait comme un gros bandeau jaune, qui devenait aussitot le
+ * nouvel element dominant de l'ecran — alors que l'aide vient de la scene qui
+ * s'anime et de la phrase qu'on entend. Le texte reste disponible, discret.
+ */
 .exercise__hint {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-3) var(--space-5);
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-pill);
-  background: var(--color-yellow-soft);
-  font-size: var(--text-normal);
+  background: var(--color-surface-soft);
+  font-size: var(--text-small);
   font-weight: var(--weight-bold);
+  color: var(--color-text-soft);
   animation: ds-pop-in var(--duration-panel) var(--ease-bounce) both;
 }
 

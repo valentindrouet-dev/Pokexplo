@@ -22,8 +22,15 @@ export interface ZoneLabel extends Point {
 /* ------------------------------------------------------------------ *
  * Tailles, en unités du repère : elles grandissent avec le panneau.
  * ------------------------------------------------------------------ */
-export const NODE_R = 5.6;
-export const NODE_R_GYM = 6.6;
+/*
+ * Un lieu est d'abord une ILLUSTRATION DE DESTINATION (§193), pas un point
+ * avec une etiquette. Ces rayons sont contraints par le bas par l'ecart le
+ * plus serre du contenu livre (16,08 en portrait, entre le Centre et la
+ * Prairie) : au-dela, `MIN_NODE_GAP` signalerait la carte livree comme trop
+ * dense. `tests/features/mapLabels.test.ts` tient cette promesse.
+ */
+export const NODE_R = 6.2;
+export const NODE_R_GYM = 7.2;
 export const HIT_R = 10;
 export const ZONE_R = 11;
 export const ZONE_LINK_W = 22;
@@ -41,7 +48,7 @@ export const GRID = 1;
  * cette promesse sur les deux projections : ces quatre nombres ne se règlent
  * pas au jugé.
  */
-export const NODE_BOUNDS = { minX: 7, maxX: 93, minY: 11, maxY: 87 } as const;
+export const NODE_BOUNDS = { minX: 7, maxX: 92, minY: 11, maxY: 86 } as const;
 
 /* ------------------------------------------------------------------ *
  * Projections
@@ -632,7 +639,7 @@ export function layoutLabels(
  * En deçà de cette distance (unités du repère, entre centres), deux lieux se
  * touchent et aucune disposition d'étiquettes ne peut plus être propre.
  */
-export const MIN_NODE_GAP = NODE_R * 2 + 3.3;
+export const MIN_NODE_GAP = NODE_R * 2 + 3;
 
 function tooClose(a: Point, b: Point, toView: Projection['toView']): boolean {
   const va = toView(a);

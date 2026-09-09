@@ -152,9 +152,14 @@ La carte se lit sans savoir lire :
   rocher, arène — et **jamais un cadenas à la place** : l'enfant doit d'abord
   reconnaître *où* il va. L'état « fermé » est porté par la couleur, la
   transparence et une petite pastille en coin (§142, §173) ;
-- les régions sont **espacées** pour que les titres ne se chevauchent jamais ;
-  le titre d'une région est ancré au-dessus de son lieu le plus à gauche, car
-  le milieu d'une bulle est souvent traversé par un chemin.
+- les régions sont **espacées** pour que les titres ne se chevauchent jamais :
+  chaque nom de lieu prend la première place libre autour de son lieu, les
+  titres de région prennent ce qui reste autour de leur bulle
+  (`mapGeometry.layoutLabels`) ;
+- les **destinations ouvertes respirent** (pulsation lente de l'anneau) et le
+  **dresseur** est une silhouette reconnaissable, pas une pastille ;
+- **on choisit avant de partir** (§193) : le premier toucher sélectionne et
+  nomme, le second — ou « Y aller ! » — déplace.
 
 Un biome peut définir un `shortName`, utilisé uniquement sur la carte.
 

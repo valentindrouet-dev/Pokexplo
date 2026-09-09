@@ -224,6 +224,7 @@ test('l’Équipe se compose d’un seul geste', async ({ page }) => {
   // On attrape une créature : sans collection, l'écran n'a rien à montrer.
   await go(page, '/play/map');
   await page.locator('.map__node[aria-label^="Prairie"]').first().click();
+  await page.getByRole('button', { name: 'Y aller !' }).click({ timeout: 20_000 });
   await page.getByRole('button', { name: 'Relever le défi !' }).click({ timeout: 20_000 });
   await page.locator('.ds-choice').first().waitFor({ timeout: 20_000 });
   // On répond jusqu'à la capture : la bonne réponse finit toujours par venir (§14).
@@ -262,4 +263,99 @@ test('l’Équipe se compose d’un seul geste', async ({ page }) => {
   await card.click();
   await expect(members).toHaveCount(before);
   await expect(card.locator('.team__mark')).toHaveCount(wasInTeam ? 1 : 0);
+});
+
+/**
+ * LA CARTE — sélection en deux temps, et un dresseur qu'on reconnaît (§193).
+ */
+test('un lieu se choisit, puis se rejoint', async ({ page }) => {
+  await boot(page);
+  await go(page, '/play/map');
+  await expect(page.locator('.map__node').first()).toBeVisible({ timeout: 20_000 });
+
+  // Régression : un doigt qui effleure la carte partait en voyage.
+  await page.getByRole('button', { name: /Prairie — à explorer/i }).click();
+  await expect(page).toHaveURL(/#\/play\/map$/);
+
+  // On voit ce qu'on vient de choisir, en toutes lettres et en pictogramme.
+  const pick = page.locator('.map__pick');
+  await expect(pick).toContainText('Prairie');
+  await expect(pick.locator('.map__pick-icon svg')).toBeVisible();
+
+  // Un second toucher sur LE MÊME lieu part : pas besoin de viser le bouton.
+  await page.getByRole('button', { name: /Prairie — à explorer/i }).click();
+  await expect(page).toHaveURL(/#\/play\/encounter\//, { timeout: 20_000 });
+});
+
+test('un lieu fermé se nomme quand même, sans faire semblant', async ({ page }) => {
+  await boot(page);
+  await go(page, '/play/map');
+  await page.getByRole('button', { name: /^Arène — fermé/i }).click({ timeout: 20_000 });
+
+  const pick = page.locator('.map__pick');
+  await expect(pick).toContainText('Arène');
+  await expect(pick).toContainText(/pas encore ouvert/i);
+  // On ne propose jamais un départ qui n'aurait pas lieu.
+  await expect(page.getByRole('button', { name: 'Y aller !' })).toHaveCount(0);
+  await expect(page).toHaveURL(/#\/play\/map$/);
+});
+
+test('le dresseur est visible sur la carte, et assez grand', async ({ page }) => {
+  await boot(page);
+  await go(page, '/play/map');
+  const avatar = page.locator('.map__avatar');
+  await expect(avatar).toBeVisible({ timeout: 20_000 });
+
+  // Régression : un petit rond corail, qu'on ne repérait pas.
+  const box = (await avatar.boundingBox())!;
+  expect(Math.min(box.width, box.height)).toBeGreaterThanOrEqual(24);
+  // Une tête, un corps, une casquette : plus qu'une pastille.
+  expect(await avatar.locator('path, circle, ellipse').count()).toBeGreaterThanOrEqual(4);
+});
+
+/**
+ * HIÉRARCHIE D'UN ÉCRAN D'EXERCICE (§194) : 🔊, la scène, les réponses.
+ */
+test('l’exercice met la voix et la scène devant la consigne écrite', async ({ page }) => {
+  await boot(page);
+  await go(page, '/play/map');
+  await page.locator('.map__node[aria-label^="Prairie"]').first().click();
+  await page.getByRole('button', { name: 'Y aller !' }).click({ timeout: 20_000 });
+  await page.getByRole('button', { name: 'Relever le défi !' }).click({ timeout: 20_000 });
+  await expect(page.locator('.ds-choice').first()).toBeVisible({ timeout: 20_000 });
+
+  const measured = await page.evaluate(() => {
+    const box = (selector: string): DOMRect =>
+      document.querySelector(selector)!.getBoundingClientRect();
+    const question = document.querySelector('.exercise__question')!;
+    return {
+      voice: box('.exercise__prompt .ds-voice'),
+      question: box('.exercise__question'),
+      stage: box('.exercise__stage'),
+      answer: box('.ds-choice'),
+      questionFont: parseFloat(getComputedStyle(question).fontSize),
+    };
+  });
+
+  // Le haut-parleur vient AVANT la consigne écrite, et reste une grande cible.
+  expect(measured.voice.top).toBeLessThan(measured.question.top);
+  expect(Math.min(measured.voice.width, measured.voice.height)).toBeGreaterThanOrEqual(56);
+
+  // Régression : la consigne écrite était l'élément le plus gros de l'écran.
+  expect(measured.questionFont).toBeLessThanOrEqual(26);
+  expect(measured.stage.height).toBeGreaterThan(measured.question.height * 2);
+
+  // Et les réponses restent immenses (§167).
+  expect(measured.answer.width).toBeGreaterThanOrEqual(100);
+  expect(measured.answer.height).toBeGreaterThanOrEqual(70);
+
+  // L'indice, quand il arrive, ne devient pas le nouvel élément dominant.
+  await page.locator('.ds-choice').first().click();
+  await page.locator('.ds-choice').nth(1).click();
+  const hint = page.locator('.exercise__hint');
+  if ((await hint.count()) > 0) {
+    const hintBox = (await hint.boundingBox())!;
+    const stage = (await page.locator('.exercise__stage').boundingBox())!;
+    expect(hintBox.height).toBeLessThan(stage.height);
+  }
 });
