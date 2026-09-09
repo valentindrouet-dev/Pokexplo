@@ -5,6 +5,7 @@ import { AssetService } from '../../services';
 import {
   BadgeChip,
   IconDownload,
+  IconHome,
   IconSettings,
   LoadingBall,
   PillButton,
@@ -110,6 +111,9 @@ export function ParentDashboard() {
         <div className="ds-row">
           <SecondaryButton onClick={() => navigate({ name: 'center' })}>
             Retour au jeu
+          </SecondaryButton>
+          <SecondaryButton icon={<IconHome size={26} />} onClick={() => navigate({ name: 'start' })}>
+            Accueil
           </SecondaryButton>
           <SecondaryButton
             icon={<IconSettings size={26} />}

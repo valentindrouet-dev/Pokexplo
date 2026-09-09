@@ -4,6 +4,47 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 Trois versions sont suivies séparément (§112) : `APP_VERSION`, `CONTENT_VERSION`,
 `SAVE_SCHEMA_VERSION`.
 
+## [1.1.0] — Mise à jour automatique de l'iPad
+
+`APP_VERSION 1.1.0` · `CONTENT_VERSION bundled-3` · `SAVE_SCHEMA_VERSION 3`
+
+### Ajouté
+
+- **Mise à jour automatique du contenu sur l'iPad** (`docs/SYNC.md`). Le contenu
+  publié depuis l'ordinateur arrive seul sur la tablette : vérification au
+  lancement, à chaque retour au premier plan, au retour du réseau et toutes les
+  dix minutes. La bascule attend toujours un moment sûr — **jamais** pendant un
+  exercice, un combat ou une capture (§111).
+- **`Admin → Releases → Envoyer sur le site`** : un bouton écrit
+  `public/content/bundle.json` dans le dépôt GitHub, la CI reconstruit, l'iPad
+  suit. Le jeton reste dans le navigateur de l'ordinateur qui publie et n'entre
+  jamais dans le dépôt ni dans un contenu exporté.
+- **`Admin → Tableau de bord → Stockage sur cet appareil`** : occupation et
+  quota réellement mesurés (`navigator.storage`), plus la demande de stockage
+  persistant — la réponse à « quelle est la limite ? » est celle de l'appareil
+  ouvert, pas un chiffre approximatif.
+- **Version installée affichée sous « Pokexplo — Admin »**, et **bouton
+  d'accueil** dans l'Admin comme dans l'espace parents.
+- **`docs/SYNC.md`** : la procédure complète ordinateur → iPad, les limites de
+  stockage et un tableau de dépannage.
+
+### Modifié
+
+- **Connexion administrateur avec Firebase** : e-mail et mot de passe, au lieu
+  d'un compte anonyme dont l'identifiant changeait à chaque effacement des
+  données du site — aucun rôle stable ne pouvait y être rattaché. Le rôle ADMIN
+  reste porté par Firestore et n'est jamais accordé depuis le client.
+- Le déploiement transmet les `VITE_FIREBASE_*` s'ils existent dans les secrets
+  du dépôt : la voie Firebase est désormais utilisable depuis la CI.
+- `content/bundle.json` est servi **réseau d'abord** par le Service Worker : il
+  ne peut plus rester figé dans le cache de l'application.
+- L'export du contenu estampille automatiquement un `contentVersion` neuf.
+
+### Corrigé
+
+- Avec Firebase, un administrateur déjà connecté était remplacé par un compte
+  anonyme au démarrage : on attend maintenant la restauration de la session.
+
 ## [1.0.4] — Images et portabilité du contenu
 
 `APP_VERSION 1.0.4` · `CONTENT_VERSION bundled-3` · `SAVE_SCHEMA_VERSION 3`

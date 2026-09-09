@@ -43,6 +43,37 @@ export function TextField({
   );
 }
 
+/** Champ masque : jeton, mot de passe. La valeur n'est jamais affichee en clair. */
+export function SecretField({
+  label,
+  value,
+  onChange,
+  hint,
+  placeholder,
+  autoComplete = 'off',
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  hint?: string;
+  placeholder?: string;
+  autoComplete?: string;
+}) {
+  return (
+    <Field label={label} hint={hint}>
+      <input
+        className="field__input"
+        type="password"
+        value={value}
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+        spellCheck={false}
+        onChange={(event: ChangeEvent<HTMLInputElement>) => onChange(event.target.value)}
+      />
+    </Field>
+  );
+}
+
 export function TextAreaField({
   label,
   value,

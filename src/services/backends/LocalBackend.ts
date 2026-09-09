@@ -42,7 +42,7 @@ const auth: AuthPort = {
     const role = readRole();
     return { uid: 'local', role, displayName: role === 'ADMIN' ? 'Administrateur' : 'Joueur' };
   },
-  async elevate(secret: string): Promise<SessionUser> {
+  async elevate({ secret }): Promise<SessionUser> {
     if (secret.trim().toLowerCase() !== LOCAL_ADMIN_CODE) {
       throw new Error('Code incorrect');
     }

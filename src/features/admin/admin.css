@@ -46,9 +46,14 @@
   -webkit-overflow-scrolling: touch;
 }
 
-/* Sur une seule ligne : les treize sections tiennent alors sans defilement. */
+/*
+ * Les sorties sont epinglees en bas : elles restent atteignables quel que soit
+ * le defilement de la liste. Elles se repartissent sur une ou deux lignes selon
+ * la largeur, plutot que de se comprimer jusqu'a l'illisible.
+ */
 .admin__nav-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
   flex: 0 0 auto;
   padding-top: var(--space-3);
@@ -56,15 +61,37 @@
 }
 
 .admin__nav-actions > button {
-  flex: 1 1 0;
+  flex: 1 1 84px;
   min-width: 0;
-  padding: 0 var(--space-3);
+  padding: 0 var(--space-2);
+}
+
+/*
+ * En-tete de la colonne. La version installee vit juste sous le nom : c'est le
+ * premier endroit ou on la cherche apres un deploiement. Le nom occupe toute
+ * la largeur pour ne jamais etre tronque.
+ */
+.admin__head {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  margin-bottom: var(--space-3);
+  min-width: 0;
 }
 
 .admin__brand {
   font-size: var(--text-large);
   font-weight: var(--weight-heavy);
-  margin-bottom: var(--space-3);
+  line-height: var(--line-tight);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin__version {
+  font-size: var(--text-small);
+  color: var(--color-text-soft);
+  line-height: var(--line-tight);
 }
 
 .admin__nav-item {
@@ -105,6 +132,16 @@
   min-height: 0;
 }
 
+/*
+ * Colonne qui defile : ses enfants ne doivent JAMAIS se comprimer.
+ * Sans cette regle, un panneau plus haut que l'ecran etait ecrase par le
+ * navigateur et son contenu passait sous le panneau suivant — c'est ce qui
+ * masquait la fin des textes dans « Releases ».
+ */
+.admin__main > * {
+  flex-shrink: 0;
+}
+
 .admin__gate {
   display: grid;
   place-items: center;
@@ -130,6 +167,13 @@
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: var(--space-3);
   flex: 0 0 auto;
+}
+
+/* Deux champs par ligne sur iPad paysage, un seul en portrait. */
+.admin__grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-3);
 }
 
 .admin__metric {

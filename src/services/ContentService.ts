@@ -61,7 +61,16 @@ class ContentServiceImpl {
   private async bundledContent(): Promise<BundledSource> {
     const url = `${import.meta.env.BASE_URL || '/'}${BUNDLE_OVERRIDE_PATH}`;
     try {
-      const response = await failAfter(fetch(url), BUNDLE_FETCH_TIMEOUT_MS, 'Le contenu du site');
+      /*
+       * `no-cache` : on revalide toujours aupres du serveur. Sans cela, un
+       * contenu publie depuis l'ordinateur pouvait rester invisible sur l'iPad
+       * tant que le cache HTTP n'avait pas expire.
+       */
+      const response = await failAfter(
+        fetch(url, { cache: 'no-cache' }),
+        BUNDLE_FETCH_TIMEOUT_MS,
+        'Le contenu du site',
+      );
       // 404 : aucun contenu n'a ete depose, on utilise celui de l'application.
       if (response.status === 404) return { bundle: defaultContentBundle(), reachable: true };
       if (!response.ok) return { bundle: defaultContentBundle(), reachable: false };
@@ -156,6 +165,39 @@ class ContentServiceImpl {
 
   invalidate(): void {
     this.cache = null;
+  }
+
+  /** Version de contenu actuellement servie a l'enfant, si elle est chargee. */
+  installedVersion(): string | null {
+    return this.cache?.bundle.contentVersion ?? null;
+  }
+
+  /**
+   * Existe-t-il un contenu plus recent que celui installe ?
+   *
+   * C'est ce qui permet a l'iPad de suivre seul les modifications faites
+   * depuis l'ordinateur, par les deux chemins possibles :
+   *  - avec Firebase, le pointeur `meta/app` designe une autre release ;
+   *  - sans Firebase, le site sert un `content/bundle.json` d'une autre
+   *    version.
+   *
+   * Dans le second cas, on ne regarde que la release `bundled` : une release
+   * publiee depuis l'Admin de CET appareil est immuable et n'est jamais
+   * remplacee automatiquement (§97).
+   */
+  async updateAvailable(): Promise<boolean> {
+    if (!this.cache) return false;
+
+    const backend = await getBackend();
+    if (backend.kind === 'firebase') {
+      const meta = await backend.content.getMeta();
+      return meta !== null && meta.currentReleaseId !== this.cache.meta.currentReleaseId;
+    }
+
+    if (!this.cache.fromDefaults) return false;
+    const bundled = await this.bundledContent();
+    if (!bundled.reachable) return false;
+    return bundled.bundle.contentVersion !== this.cache.bundle.contentVersion;
   }
 
   /**

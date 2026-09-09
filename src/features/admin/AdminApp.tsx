@@ -4,6 +4,7 @@ import { LOCAL_ADMIN_CODE } from '../../services';
 import {
   IconBadge,
   IconChart,
+  IconHome,
   IconImage,
   IconMap,
   IconMic,
@@ -37,6 +38,9 @@ import { ProgressSection } from './sections/ProgressSection';
 import { PreviewSection } from './sections/PreviewSection';
 import './admin.css';
 
+/** Version installee : elle doit etre lisible sans ouvrir les reglages. */
+const APP_VERSION = typeof __APP_VERSION__ === 'string' ? __APP_VERSION__ : 'dev';
+
 const NAV: Array<{ id: AdminSection; label: string; icon: React.ReactNode }> = [
   { id: 'dashboard', label: 'Tableau de bord', icon: <IconChart size={24} /> },
   { id: 'creatures', label: 'Créatures', icon: <IconPokedex size={24} /> },
@@ -66,34 +70,62 @@ export function AdminApp({ section }: { section: AdminSection }) {
 
 /** Barriere d'acces : un enfant ne doit pas ouvrir l'Admin par hasard (§93). */
 function AdminGate() {
-  const { elevate, error } = useAuth();
+  const { elevate, error, mode } = useAuth();
   const { navigate } = useNavigation();
   const [code, setCode] = useState('');
+  const [email, setEmail] = useState('');
+
+  // Avec Firebase, le role ADMIN vit dans Firestore : il faut une identite
+  // stable, donc un vrai compte. En local, un code suffit a tenir un enfant
+  // a l'ecart (§93).
+  const submit = (): void => void elevate(mode === 'firebase' ? { email, secret: code } : { secret: code });
 
   return (
     <div className="admin__gate surface-dense">
       <SoftPanel title="Espace administrateur" padding="roomy">
         <p>Cet espace est réservé aux adultes.</p>
+        {mode === 'firebase' ? (
+          <label className="field">
+            <span className="field__label">E-mail du compte administrateur</span>
+            <input
+              className="field__input"
+              type="email"
+              autoComplete="username"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') submit();
+              }}
+            />
+          </label>
+        ) : null}
         <label className="field">
-          <span className="field__label">Code d’accès</span>
+          <span className="field__label">
+            {mode === 'firebase' ? 'Mot de passe' : 'Code d’accès'}
+          </span>
           <input
             className="field__input"
             type="password"
+            autoComplete="current-password"
             value={code}
             onChange={(event) => setCode(event.target.value)}
             onKeyDown={(event) => {
-              if (event.key === 'Enter') void elevate(code);
+              if (event.key === 'Enter') submit();
             }}
           />
         </label>
         {error ? <p className="vte__warning">{error}</p> : null}
         <div className="ds-row">
-          <PrimaryButton onClick={() => void elevate(code)}>Entrer</PrimaryButton>
+          <PrimaryButton onClick={submit}>Entrer</PrimaryButton>
           <SecondaryButton onClick={() => navigate({ name: 'center' })}>Retour au jeu</SecondaryButton>
+          <SecondaryButton icon={<IconHome size={24} />} onClick={() => navigate({ name: 'start' })}>
+            Accueil
+          </SecondaryButton>
         </div>
         <p className="admin__status">
-          Code par défaut en mode local : « {LOCAL_ADMIN_CODE} ». Avec Firebase, le rôle ADMIN vient
-          de Firestore et n’est jamais accordé depuis le client.
+          {mode === 'firebase'
+            ? 'Le rôle ADMIN vient de Firestore (playerAccounts/{uid}.role) et n’est jamais accordé depuis le client.'
+            : `Code par défaut sur cet appareil : « ${LOCAL_ADMIN_CODE} ».`}
         </p>
       </SoftPanel>
     </div>
@@ -108,8 +140,12 @@ function AdminShell({ section }: { section: AdminSection }) {
   return (
     <div className="admin surface-dense">
       <nav className="admin__nav" aria-label="Sections de l’administration">
-        <p className="admin__brand">Pokexplo — Admin</p>
-        {/* Seule la liste défile : les deux actions restent toujours visibles. */}
+        <div className="admin__head">
+          <span className="admin__brand">Pokexplo — Admin</span>
+          {/* Version installee : c'est elle qu'on compare apres un deploiement. */}
+          <span className="admin__version">Version {APP_VERSION}</span>
+        </div>
+        {/* Seule la liste défile : les sorties restent toujours visibles. */}
         <div className="admin__nav-list">
           {NAV.map((item) => (
             <button
@@ -124,7 +160,11 @@ function AdminShell({ section }: { section: AdminSection }) {
             </button>
           ))}
         </div>
+        {/* Trois sorties toujours visibles : la liste seule defile. */}
         <div className="admin__nav-actions">
+          <SecondaryButton icon={<IconHome size={22} />} onClick={() => navigate({ name: 'start' })}>
+            Accueil
+          </SecondaryButton>
           <SecondaryButton onClick={() => navigate({ name: 'center' })}>Voir le jeu</SecondaryButton>
           <SecondaryButton onClick={() => void signOutAdmin()}>Quitter l’admin</SecondaryButton>
         </div>

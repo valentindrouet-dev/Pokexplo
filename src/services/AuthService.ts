@@ -1,5 +1,5 @@
 import { getBackend } from './backends';
-import type { SessionUser } from './backends';
+import type { AdminCredentials, SessionUser } from './backends';
 
 type Listener = (user: SessionUser) => void;
 
@@ -27,9 +27,9 @@ class AuthServiceImpl {
     return (await this.current()).role === 'ADMIN';
   }
 
-  async elevate(secret: string): Promise<SessionUser> {
+  async elevate(credentials: AdminCredentials): Promise<SessionUser> {
     const backend = await getBackend();
-    this.user = await backend.auth.elevate(secret);
+    this.user = await backend.auth.elevate(credentials);
     this.emit();
     return this.user;
   }

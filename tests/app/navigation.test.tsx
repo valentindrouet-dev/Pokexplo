@@ -2,7 +2,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { App } from '../../src/app/App';
-import { AudioService, localBackend, SaveService, setBackend, ContentService } from '../../src/services';
+import {
+  AudioService,
+  ContentService,
+  localBackend,
+  LOCAL_ADMIN_CODE,
+  SaveService,
+  setBackend,
+} from '../../src/services';
 import { resetDb } from '../../src/services/db';
 
 /**
@@ -94,5 +101,69 @@ describe('Espace parents (CONCEPTION §77, §175)', () => {
     });
 
     expect(await screen.findByText(/espace parents — lucie/iu)).toBeInTheDocument();
+  });
+});
+
+describe('Retour à l’accueil et version installée', () => {
+  /**
+   * Ouvre l'Admin. La barrière d'accès (§93) n'apparaît qu'une fois par
+   * session : une fois franchie, l'adulte y revient sans ressaisir son code.
+   */
+  async function openAdmin(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+    act(() => {
+      window.location.hash = '#/admin';
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
+    });
+    await screen.findByText(/espace administrateur|Pokexplo — Admin/iu, undefined, {
+      timeout: 5000,
+    });
+
+    const code = screen.queryByLabelText(/code d’accès/iu);
+    if (code) {
+      await user.type(code, LOCAL_ADMIN_CODE);
+      await user.click(screen.getByRole('button', { name: 'Entrer' }));
+    }
+    await screen.findByText('Pokexplo — Admin', undefined, { timeout: 5000 });
+  }
+
+  it('affiche la version installée sous « Pokexplo — Admin »', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await openAdmin(user);
+
+    const brand = await screen.findByText('Pokexplo — Admin', undefined, { timeout: 5000 });
+    const identity = brand.parentElement!;
+    // La version est juste dessous, dans le même bloc d'identité.
+    expect(identity).toHaveTextContent(/Version\s+\S+/u);
+  });
+
+  it('ramène à l’accueil depuis l’Admin', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await openAdmin(user);
+
+    await user.click(
+      await screen.findByRole('button', { name: 'Accueil' }, { timeout: 5000 }),
+    );
+    expect(window.location.hash).toBe('#/');
+  });
+
+  it('ramène à l’accueil depuis l’espace parents', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const nickname = await screen.findByPlaceholderText('Ton prénom', undefined, { timeout: 5000 });
+    await user.type(nickname, 'Lucie');
+    await user.click(screen.getByRole('button', { name: /commencer l’aventure/iu }));
+    await screen.findByRole('button', { name: 'Partir !' });
+
+    act(() => {
+      window.location.hash = '#/parents';
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
+    });
+    await screen.findByText(/espace parents — lucie/iu);
+
+    await user.click(screen.getByRole('button', { name: /accueil/iu }));
+    expect(window.location.hash).toBe('#/');
   });
 });

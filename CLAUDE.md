@@ -21,6 +21,7 @@ exercices, les Arènes, les quêtes et l'histoire.
 | `docs/TECHNICAL_SPEC.md` | Architecture technique, services, PWA, déploiement. |
 | `docs/DATA_MODEL.md` | Schémas Firestore / Storage / sauvegardes / migrations. |
 | `docs/MEDIA.md` | Origines des médias (dépôt, adresse externe, appareil) et portabilité du contenu. |
+| `docs/SYNC.md` | Modifier depuis l'ordinateur, mise à jour automatique sur l'iPad, limites de stockage. |
 | `docs/CHANGELOG.md` | Historique des versions. |
 
 ---

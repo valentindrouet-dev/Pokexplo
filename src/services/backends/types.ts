@@ -16,10 +16,23 @@ export interface SessionUser {
   displayName: string;
 }
 
+/**
+ * Identifiants du passage en mode administrateur (§93).
+ *
+ * En local, `secret` est le code d'acces qui empeche un enfant d'ouvrir
+ * l'Admin par hasard. Avec Firebase, c'est le mot de passe du compte
+ * administrateur et `email` est obligatoire : le role ADMIN vit dans Firestore
+ * et n'est jamais accorde depuis le client.
+ */
+export interface AdminCredentials {
+  secret: string;
+  email?: string;
+}
+
 export interface AuthPort {
   currentUser(): Promise<SessionUser>;
   /** Passage en mode administrateur (§93). */
-  elevate(secret: string): Promise<SessionUser>;
+  elevate(credentials: AdminCredentials): Promise<SessionUser>;
   signOutAdmin(): Promise<SessionUser>;
 }
 

@@ -1,6 +1,7 @@
 import { IconWarning, SoftPanel } from '../../../ui';
 import { voiceDashboard } from '../../../utils/voice';
 import { useAdminDraft } from '../AdminDraftContext';
+import { StoragePanel } from './StoragePanel';
 
 /** CONCEPTION §115-116 — tableau de bord de l'Admin. */
 export function DashboardSection() {
@@ -57,6 +58,8 @@ export function DashboardSection() {
           </div>
         )}
       </SoftPanel>
+
+      <StoragePanel />
     </>
   );
 }

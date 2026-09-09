@@ -30,3 +30,22 @@ export function formatTimer(seconds: number): string {
 export function percent(value: number): string {
   return `${Math.round(Math.max(0, Math.min(1, value)) * 100)} %`;
 }
+
+/**
+ * Taille de fichier lisible : « 12,4 Mo ».
+ *
+ * On utilise les unites decimales (Mo = 10^6) : ce sont celles qu'affichent
+ * iPadOS et les navigateurs, donc celles que l'administrateur verra ailleurs.
+ */
+export function formatBytes(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes < 0) return '—';
+  const units = ['o', 'ko', 'Mo', 'Go', 'To'];
+  let value = bytes;
+  let unit = 0;
+  while (value >= 1000 && unit < units.length - 1) {
+    value /= 1000;
+    unit += 1;
+  }
+  const rounded = unit === 0 || value >= 100 ? Math.round(value) : Number(value.toFixed(1));
+  return `${String(rounded).replace('.', ',')} ${units[unit]}`;
+}

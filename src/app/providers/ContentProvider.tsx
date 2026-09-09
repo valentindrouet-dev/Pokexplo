@@ -8,7 +8,7 @@ import type {
   MapNode,
   VoiceMessage,
 } from '../../types';
-import { ContentService } from '../../services';
+import { ContentService, ContentUpdateService } from '../../services';
 import { failAfter } from '../../utils/async';
 
 /**
@@ -59,6 +59,13 @@ export function ContentProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     void reload();
   }, [reload]);
+
+  /*
+   * §111 — l'iPad suit tout seul le contenu publie depuis l'ordinateur.
+   * La verification est silencieuse et la bascule attend un moment sur :
+   * jamais pendant un exercice, un combat ou une capture.
+   */
+  useEffect(() => ContentUpdateService.start(reload), [reload]);
 
   const active = previewBundle ?? bundle;
 

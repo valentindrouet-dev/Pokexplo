@@ -109,6 +109,68 @@ test('toutes les sections de l’admin sont atteignables sans défilement caché
   await expect(last).toBeInViewport();
 });
 
+test('l’Admin affiche sa version et ramène à l’accueil', async ({ page }) => {
+  await page.goto('./#/admin');
+  await page.getByLabel('Code d’accès').fill('parent');
+  await page.getByRole('button', { name: 'Entrer' }).click();
+  await expect(page.getByText('Pokexplo — Admin')).toBeVisible({ timeout: 20_000 });
+
+  // La version installée est lisible sous le nom, sans ouvrir de menu.
+  const version = page.locator('.admin__version');
+  await expect(version).toHaveText(/^Version \S+/);
+  await expect(version).toBeInViewport();
+
+  // L'en-tête ne recouvre pas la première section de la liste.
+  await expectNoOverlap(page, '.admin__head, .admin__nav-list');
+
+  await page.getByRole('button', { name: 'Accueil' }).click();
+  await expect(page.getByPlaceholder('Ton prénom')).toBeVisible();
+});
+
+test('le panneau d’envoi vers le site tient dans la colonne de l’Admin', async ({ page }) => {
+  await page.goto('./#/admin/releases');
+  await page.getByLabel('Code d’accès').fill('parent');
+  await page.getByRole('button', { name: 'Entrer' }).click();
+  await expect(page.getByRole('button', { name: 'Envoyer sur le site' })).toBeVisible({
+    timeout: 20_000,
+  });
+
+  // Les quatre champs de configuration ne se chevauchent pas.
+  await expectNoOverlap(page, '.admin__grid-2 > .field', 4);
+
+  // Le jeton n'est jamais affiché en clair.
+  await expect(page.getByLabel('Jeton GitHub')).toHaveAttribute('type', 'password');
+
+  // Aucun défilement horizontal, jamais (§159).
+  const scrollsX = await page.evaluate(
+    () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+  );
+  expect(scrollsX).toBe(false);
+});
+
+test('aucun panneau de l’Admin n’est écrasé par la colonne qui défile', async ({ page }) => {
+  await page.goto('./#/admin/releases');
+  await page.getByLabel('Code d’accès').fill('parent');
+  await page.getByRole('button', { name: 'Entrer' }).click();
+  await expect(page.getByRole('button', { name: 'Envoyer sur le site' })).toBeVisible({
+    timeout: 20_000,
+  });
+
+  /*
+   * Régression réelle : dans une colonne `overflow: auto`, un panneau plus
+   * haut que l'écran était comprimé par le navigateur et son texte passait
+   * sous le panneau suivant. On vérifie que chacun occupe bien sa hauteur.
+   */
+  const squashed = await page.evaluate(() => {
+    const main = document.querySelector('.admin__main');
+    if (!main) return ['.admin__main introuvable'];
+    return Array.from(main.children)
+      .filter((child) => child.scrollHeight > child.clientHeight + 2)
+      .map((child) => `${child.className} (${child.clientHeight} < ${child.scrollHeight} px)`);
+  });
+  expect(squashed, 'des panneaux de l’Admin sont écrasés').toEqual([]);
+});
+
 test('l’espace parents tient sur un écran d’iPad', async ({ page }) => {
   await boot(page);
   await page.goto('./#/parents');
@@ -116,6 +178,7 @@ test('l’espace parents tient sur un écran d’iPad', async ({ page }) => {
 
   // L'en-tête et ses actions restent visibles sans défiler.
   await expect(page.getByRole('button', { name: 'Retour au jeu' })).toBeInViewport();
+  await expect(page.getByRole('button', { name: 'Accueil' })).toBeInViewport();
 
   // Les panneaux d'information ne se recouvrent pas.
   await expectNoOverlap(page, '.parent__grid > .ds-panel', 4);

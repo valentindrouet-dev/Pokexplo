@@ -9,6 +9,7 @@ import type {
 } from '../../types';
 import { readFirebaseConfig } from '../../firebase/config';
 import type {
+  AdminCredentials,
   AuthPort,
   Backend,
   ContentPort,
@@ -85,10 +86,32 @@ function fb(): Promise<FirebaseApp> {
   return instance;
 }
 
+/**
+ * Attend que Firebase ait fini de restaurer la session avant de conclure.
+ *
+ * `auth.currentUser` vaut `null` pendant les premieres millisecondes qui
+ * suivent l'initialisation : sans cette attente, un administrateur deja
+ * connecte etait aussitot remplace par un compte anonyme, et perdait son role
+ * a chaque ouverture de l'application.
+ */
+async function signedInUser(): Promise<{ uid: string }> {
+  const { auth, authApi } = await fb();
+  if (auth.currentUser) return auth.currentUser;
+
+  const restored = await new Promise<{ uid: string } | null>((resolve) => {
+    const unsubscribe = authApi.onAuthStateChanged(auth, (user) => {
+      unsubscribe();
+      resolve(user);
+    });
+  });
+  // Aucun compte : l'enfant joue avec un compte anonyme, cree a la volee.
+  return restored ?? (await authApi.signInAnonymously(auth)).user;
+}
+
 const authPort: AuthPort = {
   async currentUser(): Promise<SessionUser> {
-    const { auth, authApi, firestore, db } = await fb();
-    const user = auth.currentUser ?? (await authApi.signInAnonymously(auth)).user;
+    const { firestore, db } = await fb();
+    const user = await signedInUser();
     const snapshot = await firestore.getDoc(firestore.doc(db, 'playerAccounts', user.uid));
     const data = snapshot.data() as { role?: UserRole; displayName?: string } | undefined;
     return {
@@ -97,18 +120,41 @@ const authPort: AuthPort = {
       displayName: data?.displayName ?? 'Joueur',
     };
   },
-  async elevate(secret: string): Promise<SessionUser> {
-    // Le role ADMIN est porte par Firestore et protege par les regles :
-    // il ne s'obtient jamais depuis le client (CLAUDE.md : deny by default).
+
+  /**
+   * Le role ADMIN est porte par Firestore et protege par les regles : il ne
+   * s'obtient JAMAIS depuis le client (CLAUDE.md — deny by default). On se
+   * contente d'identifier la personne ; c'est le document
+   * `playerAccounts/{uid}.role` qui decide.
+   *
+   * Un compte anonyme ne convient pas : son identifiant change des que les
+   * donnees du site sont effacees, donc aucun role stable ne peut y etre
+   * rattache. D'ou la connexion par e-mail et mot de passe.
+   */
+  async elevate({ email, secret }: AdminCredentials): Promise<SessionUser> {
     const { auth, authApi } = await fb();
-    if (secret.includes('@')) {
+    const address = email?.trim() ?? '';
+    if (address === '') {
       throw new Error(
-        "Connexion par e-mail requise : utilisez le compte administrateur du projet Firebase.",
+        'Avec Firebase, entrez l’e-mail et le mot de passe du compte administrateur du projet.',
       );
     }
-    await authApi.signInAnonymously(auth);
-    return authPort.currentUser();
+
+    try {
+      await authApi.signInWithEmailAndPassword(auth, address, secret);
+    } catch {
+      throw new Error('E-mail ou mot de passe incorrect.');
+    }
+
+    const user = await authPort.currentUser();
+    if (user.role !== 'ADMIN') {
+      throw new Error(
+        `Ce compte n’a pas le rôle ADMIN. Dans Firestore, écrivez { role: "ADMIN" } dans playerAccounts/${user.uid}.`,
+      );
+    }
+    return user;
   },
+
   async signOutAdmin(): Promise<SessionUser> {
     const { auth, authApi } = await fb();
     await authApi.signOut(auth);

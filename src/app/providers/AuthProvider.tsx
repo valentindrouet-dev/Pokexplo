@@ -1,12 +1,18 @@
 import { createContext, use, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { AuthService, type SessionUser } from '../../services';
+import { AuthService, type AdminCredentials, type SessionUser } from '../../services';
+import { hasFirebaseConfig } from '../../firebase/config';
 
 export interface AuthContextValue {
   user: SessionUser | null;
   isAdmin: boolean;
-  elevate: (secret: string) => Promise<void>;
+  elevate: (credentials: AdminCredentials) => Promise<void>;
   signOutAdmin: () => Promise<void>;
   error: string | null;
+  /**
+   * Comment on entre dans l'Admin : un simple code sur cet appareil, ou le
+   * compte administrateur du projet Firebase. L'ecran de connexion s'y adapte.
+   */
+  mode: 'local' | 'firebase';
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -18,9 +24,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => AuthService.subscribe(setUser), []);
 
-  const elevate = useCallback(async (secret: string) => {
+  const elevate = useCallback(async (credentials: AdminCredentials) => {
     try {
-      setUser(await AuthService.elevate(secret));
+      setUser(await AuthService.elevate(credentials));
       setError(null);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Accès refusé');
@@ -31,9 +37,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(await AuthService.signOutAdmin());
   }, []);
 
+  const mode: 'local' | 'firebase' = hasFirebaseConfig() ? 'firebase' : 'local';
+
   const value = useMemo<AuthContextValue>(
-    () => ({ user, isAdmin: user?.role === 'ADMIN', elevate, signOutAdmin, error }),
-    [user, elevate, signOutAdmin, error],
+    () => ({ user, isAdmin: user?.role === 'ADMIN', elevate, signOutAdmin, error, mode }),
+    [user, elevate, signOutAdmin, error, mode],
   );
 
   return <AuthContext value={value}>{children}</AuthContext>;

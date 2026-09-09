@@ -2,7 +2,7 @@ import { hasFirebaseConfig } from '../../firebase/config';
 import { localBackend } from './LocalBackend';
 import type { Backend } from './types';
 
-export type { Backend, AuthPort, ContentPort, SavePort, MediaPort, MediaRecordMeta, SessionUser, UserRole } from './types';
+export type { Backend, AuthPort, AdminCredentials, ContentPort, SavePort, MediaPort, MediaRecordMeta, SessionUser, UserRole } from './types';
 export { localBackend, LOCAL_ADMIN_CODE } from './LocalBackend';
 
 let cached: Backend | null = null;

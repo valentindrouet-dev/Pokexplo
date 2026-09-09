@@ -1,6 +1,9 @@
 /** Les neuf services de CONCEPTION §87. */
 export { ContentService } from './ContentService';
 export type { LoadedContent } from './ContentService';
+export { ContentUpdateService } from './ContentUpdateService';
+export { StorageService } from './StorageService';
+export type { StorageReport } from './StorageService';
 export { SaveService } from './SaveService';
 export { SyncService } from './SyncService';
 export { AssetService } from './AssetService';
@@ -11,7 +14,9 @@ export type { MicPermission, RecordingTake, StoredTake } from './VoiceRecorderSe
 export { AuthService } from './AuthService';
 export { MigrationService } from './MigrationService';
 export type { MigrationResult } from './MigrationService';
+export { SitePublishService, SITE_BUNDLE_PATH } from './SitePublishService';
+export type { GitHubTarget, SitePublishResult } from './SitePublishService';
 export { ReleaseService } from './ReleaseService';
 export type { PublishResult } from './ReleaseService';
 export { getBackend, setBackend, localBackend, LOCAL_ADMIN_CODE } from './backends';
-export type { Backend, SessionUser, UserRole, MediaRecordMeta } from './backends';
+export type { Backend, AdminCredentials, SessionUser, UserRole, MediaRecordMeta } from './backends';

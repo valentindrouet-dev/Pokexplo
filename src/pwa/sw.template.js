@@ -76,6 +76,30 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  /*
+   * Contenu du site (`content/bundle.json`) : RESEAU D'ABORD.
+   *
+   * C'est le fichier que l'administrateur republie depuis son ordinateur pour
+   * modifier creatures, exercices et aventures. S'il etait servi depuis le
+   * cache, l'iPad garderait l'ancien contenu jusqu'a la prochaine mise a jour
+   * du code. Le cache ne sert que de filet hors ligne.
+   */
+  if (sameOrigin && url.pathname.startsWith(`${BASE}content/`)) {
+    event.respondWith(
+      (async () => {
+        const cache = await caches.open(RUNTIME_CACHE);
+        try {
+          const response = await fetch(request);
+          if (response.ok) void cache.put(request, response.clone());
+          return response;
+        } catch {
+          return (await cache.match(request)) || Response.error();
+        }
+      })(),
+    );
+    return;
+  }
+
   // Medias (images, voix, musiques) : stale-while-revalidate, y compris
   // depuis Cloud Storage. C'est ce qui rend l'aventure jouable hors ligne (§69).
   if (MEDIA_PATTERN.test(url.pathname)) {

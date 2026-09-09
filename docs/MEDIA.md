@@ -98,9 +98,13 @@ Deux garde-fous :
 - hors connexion, l'application ne remplace rien : elle garde ce qui est
   installé.
 
-Pensez à changer `contentVersion` dans le fichier exporté à chaque nouvelle
-version — c'est ce champ que l'application compare pour savoir s'il faut
-adopter le nouveau contenu.
+L'export estampille automatiquement un `contentVersion` neuf : c'est ce champ,
+et lui seul, que l'application compare pour savoir s'il faut adopter le nouveau
+contenu. Ne le modifiez pas à la main.
+
+Depuis l'Admin, le bouton **« Envoyer sur le site »** fait ce dépôt pour vous,
+directement dans le dépôt GitHub. La procédure complète — jeton, mise à jour
+automatique sur l'iPad, limites de stockage — est dans **`docs/SYNC.md`**.
 
 ### B. Activer Firebase
 

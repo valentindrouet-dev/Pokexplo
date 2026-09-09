@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ContentBundle, ContentRelease } from '../../../types';
-import { AssetService, ReleaseService } from '../../../services';
+import {
+  AssetService,
+  ReleaseService,
+  SITE_BUNDLE_PATH,
+  SitePublishService,
+  type GitHubTarget,
+} from '../../../services';
 import { voiceDashboard } from '../../../utils/voice';
 import {
   IconDownload,
@@ -14,7 +20,7 @@ import {
 } from '../../../ui';
 import { useContent } from '../../../app/providers/ContentProvider';
 import { useAdminDraft } from '../AdminDraftContext';
-import { TextField } from '../fields';
+import { SecretField, TextField } from '../fields';
 
 /**
  * RELEASES (CONCEPTION §99-100).
@@ -35,6 +41,9 @@ export function ReleasesSection() {
   const [transfer, setTransfer] = useState<string | null>(null);
   const [deviceOnly, setDeviceOnly] = useState<string[]>([]);
   const importInput = useRef<HTMLInputElement | null>(null);
+  const [target, setTarget] = useState<GitHubTarget>(() => SitePublishService.guessTarget());
+  const [token, setToken] = useState(() => SitePublishService.readToken());
+  const [sitePublish, setSitePublish] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     setReleases(await ReleaseService.list());
@@ -88,7 +97,11 @@ export function ReleasesSection() {
         .filter((path): path is string => path !== undefined && local.has(path));
       setDeviceOnly([...new Set(used)]);
 
-      const blob = new Blob([JSON.stringify(draft, null, 2)], { type: 'application/json' });
+      // Un `contentVersion` neuf : sans lui, l'iPad ne verrait pas la difference.
+      const stamped = SitePublishService.stamp(draft);
+      const blob = new Blob([SitePublishService.serialize(stamped)], {
+        type: 'application/json',
+      });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -96,6 +109,30 @@ export function ReleasesSection() {
       link.click();
       URL.revokeObjectURL(url);
       setTransfer('Contenu exporté. Déposez « bundle.json » dans public/content/ du dépôt.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  /**
+   * CONCEPTION §91 — un bouton, et le contenu part sur TOUS les appareils.
+   *
+   * On ecrit `public/content/bundle.json` dans le depot ; la CI reconstruit le
+   * site, et l'iPad de l'enfant le recupere seul (docs/SYNC.md).
+   */
+  const publishToSite = async (): Promise<void> => {
+    if (!draft) return;
+    setBusy(true);
+    setSitePublish(null);
+    try {
+      SitePublishService.saveTarget(target);
+      SitePublishService.saveToken(token);
+      const result = await SitePublishService.publishToGitHub(draft, target, token);
+      setSitePublish(
+        `Contenu envoyé (${result.contentVersion}). Le site se reconstruit : l’iPad se mettra à jour tout seul d’ici quelques minutes.`,
+      );
+    } catch (cause) {
+      setSitePublish(cause instanceof Error ? cause.message : 'Publication impossible.');
     } finally {
       setBusy(false);
     }
@@ -167,11 +204,74 @@ export function ReleasesSection() {
         {message ? <p className="admin__status">{message}</p> : null}
       </SoftPanel>
 
-      <SoftPanel title="Emporter le contenu sur tous les appareils" className="ds-stack">
+      <SoftPanel title="Envoyer le contenu sur l’iPad et tous les appareils" className="ds-stack">
         <p>
-          Sans Firebase, le contenu que vous saisissez reste sur cet appareil. Pour qu’il apparaisse
-          partout, exportez-le et déposez le fichier dans <code>public/content/bundle.json</code> du
-          dépôt : au prochain déploiement, il devient le contenu de référence du site.
+          Le contenu que vous saisissez reste sur cet appareil tant qu’il n’est pas déposé dans le
+          dépôt, sous <code>{SITE_BUNDLE_PATH}</code>. Une fois déposé, le site se reconstruit et
+          <strong> l’iPad de l’enfant se met à jour tout seul</strong> : il vérifie à chaque retour
+          au premier plan, puis toutes les dix minutes. La bascule attend toujours la fin d’un
+          exercice ou d’un combat.
+        </p>
+        <p className="admin__status">
+          Un jeton GitHub à portée restreinte permet de faire ce dépôt d’un seul bouton, depuis cet
+          ordinateur. Il est enregistré uniquement dans ce navigateur, jamais dans le dépôt ni dans
+          une publication. Procédure détaillée : <code>docs/SYNC.md</code>.
+        </p>
+
+        <div className="admin__grid-2">
+          <TextField
+            label="Propriétaire du dépôt"
+            value={target.owner}
+            onChange={(owner) => setTarget({ ...target, owner })}
+            placeholder="mon-compte-github"
+          />
+          <TextField
+            label="Nom du dépôt"
+            value={target.repo}
+            onChange={(repo) => setTarget({ ...target, repo })}
+            placeholder="Pokexplo"
+          />
+          <TextField
+            label="Branche"
+            value={target.branch}
+            onChange={(branch) => setTarget({ ...target, branch })}
+            hint="Vide = branche par défaut du dépôt."
+          />
+          <SecretField
+            label="Jeton GitHub"
+            value={token}
+            onChange={setToken}
+            hint="Jeton « fine-grained », limité à ce dépôt, permission « Contents : Read and write »."
+          />
+        </div>
+
+        <div className="ds-row">
+          <PrimaryButton
+            icon={<IconUpload size={24} />}
+            disabled={busy || errors.length > 0}
+            onClick={() => void publishToSite()}
+          >
+            Envoyer sur le site
+          </PrimaryButton>
+          <SecondaryButton
+            disabled={busy || token === ''}
+            onClick={() => {
+              SitePublishService.forgetToken();
+              setToken('');
+              setSitePublish('Jeton oublié sur cet ordinateur.');
+            }}
+          >
+            Oublier le jeton
+          </SecondaryButton>
+        </div>
+        {sitePublish ? <p className="admin__status">{sitePublish}</p> : null}
+      </SoftPanel>
+
+      <SoftPanel title="Déposer le fichier soi-même" className="ds-stack">
+        <p>
+          Sans jeton, exportez le contenu et déposez <code>bundle.json</code> dans{' '}
+          <code>public/content/</code> du dépôt (glisser-déposer depuis github.com convient). Le
+          résultat est exactement le même.
         </p>
         <div className="ds-row">
           <PrimaryButton

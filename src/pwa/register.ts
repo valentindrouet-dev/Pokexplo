@@ -16,6 +16,11 @@ class UpdateControllerImpl {
 
   private readonly listeners = new Set<UpdateListener>();
 
+  /** Taches en attente d'un moment sur : elles ne s'executent jamais pendant §111. */
+  private readonly idleTasks: Array<() => void> = [];
+
+  private registration: ServiceWorkerRegistration | null = null;
+
   private reloading = false;
 
   subscribe(listener: UpdateListener): () => void {
@@ -27,7 +32,27 @@ class UpdateControllerImpl {
   /** Marque une sequence pendant laquelle aucune mise a jour ne doit s'appliquer. */
   setBusy(busy: boolean): void {
     this.busy = busy;
-    if (!busy) this.applyIfPossible();
+    if (!busy) {
+      this.applyIfPossible();
+      this.drainIdleTasks();
+    }
+  }
+
+  isBusy(): boolean {
+    return this.busy;
+  }
+
+  /**
+   * Execute une tache maintenant si l'ecran s'y prete, sinon des que l'enfant
+   * quitte l'exercice ou le combat en cours. C'est le point unique qui applique
+   * la regle §111 : contenu comme code passent par ici.
+   */
+  runWhenIdle(task: () => void): void {
+    if (!this.busy) {
+      task();
+      return;
+    }
+    this.idleTasks.push(task);
   }
 
   isUpdateReady(): boolean {
@@ -38,6 +63,27 @@ class UpdateControllerImpl {
     this.waiting = worker;
     for (const listener of this.listeners) listener(worker !== null);
     this.applyIfPossible();
+  }
+
+  setRegistration(registration: ServiceWorkerRegistration | null): void {
+    this.registration = registration;
+  }
+
+  /**
+   * Demande au navigateur s'il existe une nouvelle version du site.
+   *
+   * Sans cet appel, une application ajoutee a l'ecran d'accueil peut rester
+   * des jours sur son ancienne version : iPadOS ne verifie de lui-meme qu'au
+   * demarrage complet. C'est ce qui permet a une mise a jour publiee depuis
+   * l'ordinateur d'arriver seule sur l'iPad.
+   */
+  async checkForAppUpdate(): Promise<void> {
+    if (!this.registration) return;
+    try {
+      await this.registration.update();
+    } catch {
+      // Hors ligne ou serveur injoignable : on reessaiera au prochain reveil.
+    }
   }
 
   /** Applique la mise a jour maintenant (appele depuis le Centre Pokemon). */
@@ -54,6 +100,13 @@ class UpdateControllerImpl {
     if (this.reloading) return false;
     this.reloading = true;
     return true;
+  }
+
+  private drainIdleTasks(): void {
+    while (this.idleTasks.length > 0) {
+      const task = this.idleTasks.shift();
+      task?.();
+    }
   }
 }
 
@@ -75,6 +128,7 @@ export function registerServiceWorker(): void {
     void navigator.serviceWorker
       .register(url, { scope: import.meta.env.BASE_URL })
       .then((registration) => {
+        UpdateController.setRegistration(registration);
         if (registration.waiting) UpdateController.setWaiting(registration.waiting);
 
         registration.addEventListener('updatefound', () => {
