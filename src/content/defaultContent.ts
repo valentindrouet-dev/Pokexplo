@@ -10,6 +10,16 @@ import { defaultChapters, defaultQuests } from './quests';
 import { creatureNameVoiceId, creatureNameVoices, exerciseVoices, narrativeVoices } from './voices';
 
 /**
+ * Version du contenu livre avec l'application.
+ *
+ * A INCREMENTER des que le contenu par defaut change (carte, creatures,
+ * textes...). `ContentService` compare cette valeur a celle du contenu deja
+ * installe : sans cela, un appareil qui a deja joue garderait indefiniment
+ * l'ancienne version, meme apres une mise a jour de l'application.
+ */
+export const BUNDLED_CONTENT_VERSION = 'bundled-3';
+
+/**
  * CONTENU LIVRE AVEC L'APPLICATION (release_0001).
  *
  * Il est publie automatiquement au premier lancement (ContentService) pour que
@@ -27,7 +37,7 @@ export function defaultContentBundle(): ContentBundle {
 
   const bundle: ContentBundle = {
     releaseId: 'release_0001',
-    contentVersion: 'release_0001',
+    contentVersion: BUNDLED_CONTENT_VERSION,
     createdAt: Date.UTC(2026, 0, 1),
     creatures,
     biomes: defaultBiomes,

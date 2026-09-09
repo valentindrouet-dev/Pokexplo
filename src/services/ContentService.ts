@@ -7,7 +7,7 @@ import type {
   ValidationReport,
 } from '../types';
 import { SAVE_SCHEMA_VERSION } from '../types/save';
-import { defaultContentBundle } from '../content/defaultContent';
+import { BUNDLED_CONTENT_VERSION, defaultContentBundle } from '../content/defaultContent';
 import { voiceStatus } from '../utils/voice';
 import { deepClone } from '../utils/clone';
 import { getBackend } from './backends';
@@ -40,7 +40,15 @@ class ContentServiceImpl {
       ? await backend.content.getRelease(meta.currentReleaseId)
       : null;
 
-    if (!release) {
+    /*
+     * Le contenu livre avec l'application a evolue : on le remplace.
+     * On ne touche JAMAIS a une release publiee depuis l'Admin (§97) — seule
+     * la release `bundled` suit les mises a jour de l'application.
+     */
+    const bundledOutdated =
+      release?.source === 'bundled' && release.bundle.contentVersion !== BUNDLED_CONTENT_VERSION;
+
+    if (!release || bundledOutdated) {
       const seeded = this.seedRelease();
       await backend.content.putRelease(seeded);
       meta = {
@@ -55,7 +63,7 @@ class ContentServiceImpl {
     this.cache = {
       bundle: release.bundle,
       meta: meta as AppMeta,
-      fromDefaults: release.id === 'release_0001',
+      fromDefaults: release.source === 'bundled',
     };
     return this.cache;
   }
@@ -64,10 +72,11 @@ class ContentServiceImpl {
     const bundle = defaultContentBundle();
     return {
       id: 'release_0001' as ReleaseId,
-      label: 'Contenu initial',
+      label: 'Contenu livré avec l’application',
       createdAt: Date.now(),
       publishedAt: Date.now(),
       status: 'PUBLISHED',
+      source: 'bundled',
       bundle,
     };
   }

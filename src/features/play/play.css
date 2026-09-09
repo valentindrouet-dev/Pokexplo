@@ -124,37 +124,108 @@
   height: 100%;
 }
 
-.map__link {
-  stroke: var(--color-surface);
-  stroke-width: 1.4;
-  stroke-linecap: round;
-  opacity: 0.9;
+/*
+ * Bulle de region (§12).
+ *
+ * Elle est composee de cercles et de liaisons epaisses de la MEME couleur :
+ * leur union forme une forme souple et organique, sans coutures. L'opacite est
+ * portee par le groupe, sinon les recouvrements s'assombriraient.
+ */
+.map__zone {
+  opacity: 0.32;
 }
 
-.map__link--locked {
-  opacity: 0.3;
+/* Liseré de region : il separe deux regions de couleurs proches. */
+.map__zone-edge {
+  opacity: 0.5;
+}
+
+.map__zone-label {
+  font-family: var(--font-rounded);
+  font-size: 3.4px;
+  font-weight: var(--weight-heavy);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-anchor: middle;
+  fill: var(--color-text-soft);
+  stroke: var(--color-surface);
+  stroke-width: 1;
+  paint-order: stroke fill;
+  stroke-linejoin: round;
+}
+
+/* Chemins : ils rendent la progression possible visible d'un coup d'œil. */
+.map__path-shadow {
+  stroke: var(--color-surface);
+  stroke-width: 3.8;
+  stroke-linecap: round;
+}
+
+.map__path {
+  stroke: var(--color-aqua);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.map__path--done {
+  stroke: var(--color-green);
+}
+
+.map__path--locked {
+  stroke: var(--color-locked);
+  stroke-dasharray: 1.6 3.2;
 }
 
 .map__node {
   cursor: pointer;
 }
 
+.map__node-ring {
+  fill: var(--color-surface);
+}
+
+.map__node--locked {
+  opacity: 0.72;
+}
+
 .map__node-label {
   font-family: var(--font-rounded);
-  font-size: 3.2px;
+  font-size: 3.6px;
   font-weight: var(--weight-bold);
   fill: var(--color-text);
   text-anchor: middle;
+  /* Halo clair : le libelle reste lisible par-dessus une bulle de region. */
+  stroke: var(--color-surface);
+  stroke-width: 1.1;
+  paint-order: stroke fill;
+  stroke-linejoin: round;
+}
+
+/* Pastille d'etat posee en coin : le pictogramme du lieu reste visible (§142). */
+.map__badge circle {
+  fill: var(--color-surface);
+  stroke: var(--border-color-badge);
+  stroke-width: 0.4;
+}
+
+.map__badge {
+  color: var(--color-text-soft);
+}
+
+.map__badge--event {
+  color: var(--color-lavender);
 }
 
 .map__avatar {
   transition: transform var(--duration-slow) var(--ease-soft);
 }
 
-.map__legend {
-  display: flex;
-  gap: var(--space-4);
-  flex-wrap: wrap;
+.map__avatar circle {
+  fill: var(--color-coral);
+}
+
+.map__avatar .map__avatar-dot {
+  fill: var(--color-surface);
 }
 
 /* ----------------------------- RENCONTRE ----------------------------- */

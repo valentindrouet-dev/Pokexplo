@@ -300,3 +300,71 @@ export const IconRelease = (p: IconProps) => (
     <path d="M12 12.2 20 8M12 12.2v8.3M12 12.2 4 8" />
   </IconBase>
 );
+
+/* ------------------------------------------------------------------ *
+ * Pictogrammes de lieux (carte du monde, §11-12).
+ * Ils remplacent le cadenas : l'enfant reconnait le TYPE de lieu avant
+ * de savoir s'il est ouvert ou non.
+ * ------------------------------------------------------------------ */
+
+/** Prairie. */
+export const IconFlower = (p: IconProps) => (
+  <IconBase {...p}>
+    <circle cx="12" cy="11" r="2.6" />
+    <path d="M12 8.4c0-2.6 1-4 2.6-4s2.4 1.6 1.5 3.1" />
+    <path d="M14.6 11c2.6 0 4 1 4 2.6s-1.6 2.4-3.1 1.5" />
+    <path d="M12 13.6c0 2.6-1 4-2.6 4s-2.4-1.6-1.5-3.1" />
+    <path d="M9.4 11c-2.6 0-4-1-4-2.6S7 6 8.5 6.9" />
+    <path d="M12 17.6V21" />
+  </IconBase>
+);
+
+/** Foret. */
+export const IconLeaf = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M19 5c1 7-3.5 12-9 12a5.5 5.5 0 0 1 0-11c4 0 6-.4 9-1Z" />
+    <path d="M14.5 9.5 5 19" />
+  </IconBase>
+);
+
+/** Riviere. */
+export const IconDroplet = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M12 3.5c4 5 6.5 8 6.5 11a6.5 6.5 0 0 1-13 0c0-3 2.5-6 6.5-11Z" />
+    <path d="M9.5 14.5a2.6 2.6 0 0 0 2.5 2.6" />
+  </IconBase>
+);
+
+/** Montagne et chemins rocheux. */
+export const IconRock = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M3 19.5 9 8l4.5 7.5" />
+    <path d="M10.5 19.5 15.5 10l5.5 9.5Z" />
+    <path d="M3 19.5h18" />
+  </IconBase>
+);
+
+/** Plage et bord de mer. */
+export const IconWave = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M3 9c2-2 4-2 6 0s4 2 6 0 4-2 6 0" />
+    <path d="M3 14c2-2 4-2 6 0s4 2 6 0 4-2 6 0" />
+    <path d="M3 19c2-2 4-2 6 0s4 2 6 0 4-2 6 0" />
+  </IconBase>
+);
+
+/** Neige. */
+export const IconSnow = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M12 3v18M4.2 7.5l15.6 9M19.8 7.5l-15.6 9" />
+  </IconBase>
+);
+
+/** Volcan. */
+export const IconVolcano = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M9.5 10 3 19.5h18L14.5 10Z" />
+    <path d="M9.5 10V6.5M14.5 10V6.5" />
+    <path d="M12 3.5v2" />
+  </IconBase>
+);

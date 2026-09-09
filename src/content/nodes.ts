@@ -3,17 +3,20 @@ import type { MapNode, SpecialEncounter } from '../types';
 /**
  * CARTE DE LA V1 (CONCEPTION §10, §121).
  *
- *          🌲 FORET
- *          ●──●──●
- *         /
- * 🏥 ●──●──●──● 💧 RIVIERE
- * CENTRE          │
- *                 ●
- *                 │
- *                🏆 ARENE
+ *              🍃 FORET
+ *           ●────●────●
+ *          /
+ * 🏥 ●──●──●──●        🪨 ROCHERS
+ *        \      \        ●
+ *         ●      ● 💧     \
+ *      PRAIRIE  RIVIERE    🏆 ARENE
  *
- * Les coordonnees sont en pourcentage : la carte s'adapte a toutes les tailles
- * d'iPad sans position codee en dur (§159).
+ * Les coordonnees sont en POURCENTAGE de la carte : elle s'adapte a toutes
+ * les tailles d'iPad sans position codee en dur (§159).
+ *
+ * Les nœuds d'un meme biome sont volontairement REGROUPES : la carte dessine
+ * une bulle autour de chaque groupe, et l'espace laisse entre les groupes
+ * evite que les etiquettes se chevauchent.
  */
 export const defaultNodes: MapNode[] = [
   {
@@ -21,8 +24,8 @@ export const defaultNodes: MapNode[] = [
     biomeId: 'centre',
     label: 'Centre',
     kind: 'CENTER',
-    x: 8,
-    y: 52,
+    x: 6,
+    y: 50,
     connections: ['prairie-1'],
     arrivalVoiceId: 'voice.node.centre',
   },
@@ -31,8 +34,8 @@ export const defaultNodes: MapNode[] = [
     biomeId: 'prairie',
     label: 'Prairie',
     kind: 'ENCOUNTER',
-    x: 21,
-    y: 52,
+    x: 19,
+    y: 50,
     connections: ['prairie-2'],
     encounters: [
       { creatureId: 'piloupi', weight: 3 },
@@ -47,8 +50,8 @@ export const defaultNodes: MapNode[] = [
     biomeId: 'prairie',
     label: 'Grand pré',
     kind: 'ENCOUNTER',
-    x: 33,
-    y: 52,
+    x: 29,
+    y: 63,
     connections: ['prairie-3', 'foret-1'],
     encounters: [
       { creatureId: 'piloupi', weight: 2 },
@@ -62,10 +65,10 @@ export const defaultNodes: MapNode[] = [
   {
     id: 'prairie-3',
     biomeId: 'prairie',
-    label: 'Chemin fleuri',
+    label: 'Sentier',
     kind: 'ENCOUNTER',
-    x: 45,
-    y: 52,
+    x: 40,
+    y: 51,
     connections: ['riviere-1'],
     requires: { nodes: ['prairie-2'] },
     encounters: [
@@ -82,8 +85,8 @@ export const defaultNodes: MapNode[] = [
     biomeId: 'foret',
     label: 'Lisière',
     kind: 'ENCOUNTER',
-    x: 30,
-    y: 26,
+    x: 31,
+    y: 20,
     connections: ['foret-2'],
     requires: { nodes: ['prairie-2'] },
     encounters: [
@@ -99,8 +102,8 @@ export const defaultNodes: MapNode[] = [
     biomeId: 'foret',
     label: 'Sous-bois',
     kind: 'ENCOUNTER',
-    x: 42,
-    y: 20,
+    x: 43,
+    y: 11,
     connections: ['foret-3'],
     encounters: [
       { creatureId: 'feuillou', weight: 3 },
@@ -116,8 +119,8 @@ export const defaultNodes: MapNode[] = [
     biomeId: 'foret',
     label: 'Clairière',
     kind: 'EVENT',
-    x: 54,
-    y: 24,
+    x: 55,
+    y: 20,
     connections: [],
     encounters: [
       { creatureId: 'papilune', weight: 2 },
@@ -133,8 +136,8 @@ export const defaultNodes: MapNode[] = [
     biomeId: 'riviere',
     label: 'Rivière',
     kind: 'ENCOUNTER',
-    x: 58,
-    y: 52,
+    x: 53,
+    y: 60,
     connections: ['riviere-2'],
     requires: { nodes: ['prairie-3'] },
     encounters: [
@@ -153,8 +156,8 @@ export const defaultNodes: MapNode[] = [
     biomeId: 'riviere',
     label: 'Cascade',
     kind: 'ENCOUNTER',
-    x: 70,
-    y: 50,
+    x: 64,
+    y: 72,
     connections: ['chemin-roche'],
     encounters: [
       { creatureId: 'cascadin', weight: 3 },
@@ -169,10 +172,10 @@ export const defaultNodes: MapNode[] = [
   {
     id: 'chemin-roche',
     biomeId: 'grotte',
-    label: 'Chemin des Pierres',
+    label: 'Rochers',
     kind: 'ENCOUNTER',
-    x: 71,
-    y: 70,
+    x: 79,
+    y: 56,
     connections: ['arene-pierre'],
     requires: { nodes: ['riviere-2'] },
     encounters: [
@@ -187,10 +190,10 @@ export const defaultNodes: MapNode[] = [
   {
     id: 'arene-pierre',
     biomeId: 'grotte',
-    label: 'Arène de Pierre',
+    label: 'Arène',
     kind: 'GYM',
-    x: 72,
-    y: 88,
+    x: 91,
+    y: 76,
     connections: [],
     gymId: 'gym-pierre',
     requires: {

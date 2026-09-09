@@ -127,6 +127,44 @@ test('l’espace parents tient sur un écran d’iPad', async ({ page }) => {
   expect(scrollsX).toBe(false);
 });
 
+test('la carte regroupe les lieux en régions lisibles', async ({ page }) => {
+  await boot(page);
+  await page.getByRole('button', { name: 'Partir !' }).click();
+  await expect(page.getByRole('button', { name: /Prairie — à explorer/ })).toBeVisible();
+
+  const map = await page.evaluate(() => {
+    const nodes = Array.from(document.querySelectorAll<SVGGElement>('.map__node'));
+    return {
+      zones: document.querySelectorAll('.map__zone').length,
+      zoneLabels: Array.from(document.querySelectorAll('.map__zone-label')).map(
+        (el) => el.textContent ?? '',
+      ),
+      paths: document.querySelectorAll('.map__path').length,
+      // Chaque lieu porte un pictogramme : un cadenas ne remplace jamais l'icone.
+      nodesWithIcon: nodes.filter((node) => node.querySelectorAll('path').length > 0).length,
+      nodes: nodes.length,
+    };
+  });
+
+  // Une bulle par région, avec son titre (§12).
+  expect(map.zones).toBeGreaterThanOrEqual(4);
+  expect(map.zoneLabels).toEqual(expect.arrayContaining(['Prairie', 'Forêt', 'Rivière']));
+  // Des chemins visibles entre les lieux (§10).
+  expect(map.paths).toBeGreaterThanOrEqual(map.nodes - 1);
+  // Un pictogramme thématique sur chaque lieu, ouvert ou non (§147).
+  expect(map.nodesWithIcon).toBe(map.nodes);
+});
+
+test('les titres de la carte ne se chevauchent jamais', async ({ page }) => {
+  await boot(page);
+  await page.getByRole('button', { name: 'Partir !' }).click();
+  await expect(page.getByRole('button', { name: /Prairie — à explorer/ })).toBeVisible();
+
+  // Regression : « Grand pré », « Chemin fleuri » et « Rivière » se
+  // superposaient au point d'être illisibles.
+  await expectNoOverlap(page, '.map__node-label, .map__zone-label', 10);
+});
+
 test('le Centre donne accès à l’espace parents', async ({ page }) => {
   await boot(page);
 

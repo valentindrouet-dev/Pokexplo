@@ -138,6 +138,26 @@ cohérents** (`src/ui/icons/`), pas des emoji : formes simples, coins arrondis, 
 aplats pastel, contour sombre fin, même épaisseur de trait. **Pas d'icônes venant de cinq
 bibliothèques différentes.**
 
+## 148 bis. Carte du monde
+
+La carte se lit sans savoir lire :
+
+- une **bulle souple** regroupe les lieux d'une même région (union de cercles et
+  de liaisons épaisses de la même couleur, opacité portée par le groupe pour
+  éviter les coutures) ; un liseré plus large dans la couleur d'accent sépare
+  deux régions de teintes proches ;
+- un **chemin** épais et arrondi relie les lieux : plein quand il est ouvert,
+  vert quand il est déjà parcouru, pointillé gris quand il est fermé ;
+- chaque lieu porte un **pictogramme de son type** — fleur, feuille, goutte,
+  rocher, arène — et **jamais un cadenas à la place** : l'enfant doit d'abord
+  reconnaître *où* il va. L'état « fermé » est porté par la couleur, la
+  transparence et une petite pastille en coin (§142, §173) ;
+- les régions sont **espacées** pour que les titres ne se chevauchent jamais ;
+  le titre d'une région est ancré au-dessus de son lieu le plus à gauche, car
+  le milieu d'une bulle est souvent traversé par un chemin.
+
+Un biome peut définir un `shortName`, utilisé uniquement sur la carte.
+
 ## 149–150. Navigation
 
 Barre d'onglets grands, carrés arrondis, espacés, principalement iconographiques ; onglet actif en

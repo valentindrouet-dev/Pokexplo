@@ -1,13 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { MapNode, NodeState } from '../../types';
+import type { Biome, BiomeKind, MapNode, NodeState } from '../../types';
 import { canTravelTo, nodeState, pathBetween } from '../../game-engine';
 import {
   BadgeChip,
   IconBadge,
-  IconBall,
   IconCenter,
+  IconDroplet,
+  IconFlower,
+  IconLeaf,
   IconLock,
+  IconRock,
+  IconSnow,
   IconSparkle,
+  IconVolcano,
+  IconWave,
   LoadingBall,
   SoftPanel,
   VoiceButton,
@@ -18,7 +24,23 @@ import { useGame } from '../../app/providers/GameProvider';
 import { useNavigation } from '../../app/router';
 import { PlayScreen } from '../play/PlayScreen';
 
-/** Couleur d'etat d'un nœud (§11). La forme et l'icone completent la couleur (§142). */
+/**
+ * La carte est dessinee dans un repere 160 x 100 (paysage), alors que les
+ * positions du contenu sont en pourcentage (§159). `SCALE_X` fait le pont :
+ * l'administrateur continue de raisonner en pourcentages.
+ */
+const VIEW_W = 160;
+const VIEW_H = 100;
+const SCALE_X = VIEW_W / 100;
+
+const NODE_R = 5.6;
+const NODE_R_GYM = 6.6;
+const HIT_R = 10;
+const ZONE_R = 11;
+const ZONE_LINK_W = 22;
+const TRAVEL_STEP_MS = 320;
+
+/** Couleur de fond du nœud selon son etat (§11). */
 const STATE_FILL: Record<NodeState, string> = {
   LOCKED: 'var(--color-locked)',
   AVAILABLE: 'var(--color-aqua)',
@@ -27,13 +49,104 @@ const STATE_FILL: Record<NodeState, string> = {
   SPECIAL_EVENT: 'var(--color-lavender)',
 };
 
-const TRAVEL_STEP_MS = 340;
+/**
+ * Pictogramme de lieu (§147).
+ *
+ * On n'affiche PLUS un cadenas a la place du lieu : l'enfant doit reconnaitre
+ * d'abord OU il va (une fleur, une feuille, un rocher…). L'etat « ferme » est
+ * porte par la couleur, la transparence et une petite pastille en coin (§142).
+ */
+function PlaceIcon({ node, biome }: { node: MapNode; biome: Biome | null }) {
+  const size = 24;
+  if (node.kind === 'CENTER') return <IconCenter size={size} />;
+  if (node.kind === 'GYM') return <IconBadge size={size} />;
+
+  const kind: BiomeKind = biome?.kind ?? 'PRAIRIE';
+  switch (kind) {
+    case 'FOREST':
+      return <IconLeaf size={size} />;
+    case 'RIVER':
+      return <IconDroplet size={size} />;
+    case 'BEACH':
+      return <IconWave size={size} />;
+    case 'CAVE':
+    case 'MOUNTAIN':
+      return <IconRock size={size} />;
+    case 'SNOW':
+      return <IconSnow size={size} />;
+    case 'VOLCANO':
+      return <IconVolcano size={size} />;
+    case 'CENTER':
+      return <IconCenter size={size} />;
+    case 'PRAIRIE':
+    case 'SWAMP':
+    case 'CITY':
+    default:
+      return <IconFlower size={size} />;
+  }
+}
+
+interface Point {
+  x: number;
+  y: number;
+}
+
+interface Zone {
+  points: Point[];
+  inner: Array<{ a: Point; b: Point }>;
+}
+
+/**
+ * Forme souple d'une region : l'union de cercles poses sur les lieux et de
+ * liaisons epaisses entre eux. L'opacite est portee par le groupe, sinon les
+ * recouvrements s'assombriraient et laisseraient voir les coutures.
+ */
+function ZoneShape({
+  zone,
+  color,
+  grow,
+  className,
+}: {
+  zone: Zone;
+  color: string;
+  grow: number;
+  className: string;
+}) {
+  return (
+    <g className={className} style={{ color }}>
+      {zone.inner.map((segment, index) => (
+        <line
+          key={index}
+          x1={segment.a.x}
+          y1={segment.a.y}
+          x2={segment.b.x}
+          y2={segment.b.y}
+          strokeWidth={ZONE_LINK_W + grow * 2}
+          strokeLinecap="round"
+          stroke="currentColor"
+        />
+      ))}
+      {zone.points.map((point, index) => (
+        <circle key={index} cx={point.x} cy={point.y} r={ZONE_R + grow} fill="currentColor" />
+      ))}
+    </g>
+  );
+}
+
+function toView(node: MapNode): Point {
+  return { x: node.x * SCALE_X, y: node.y };
+}
 
 /**
  * CARTE DU MONDE (CONCEPTION §10-11).
  *
- * Pas de monde ouvert ni de joystick : l'enfant touche une destination et son
- * personnage s'y rend automatiquement, en suivant les chemins ouverts.
+ * Pas de monde ouvert : l'enfant touche une destination et son personnage s'y
+ * rend automatiquement, en suivant les chemins ouverts.
+ *
+ * Lecture de la carte :
+ *  - une BULLE souple regroupe les lieux d'une meme region ;
+ *  - un CHEMIN epais relie les lieux et montre la progression possible ;
+ *  - un PICTOGRAMME dit de quel type de lieu il s'agit.
  */
 export function MapScreen() {
   const { navigate } = useNavigation();
@@ -48,10 +161,55 @@ export function MapScreen() {
     return new Map(bundle.nodes.map((node) => [node.id, nodeState(node, save, bundle)]));
   }, [bundle, save]);
 
+  /** Les liens sont dedupliques : un chemin A→B et B→A n'est trace qu'une fois. */
+  const links = useMemo(() => {
+    if (!bundle) return [];
+    const byId = new Map(bundle.nodes.map((node) => [node.id, node]));
+    const seen = new Set<string>();
+    const result: Array<{ key: string; from: MapNode; to: MapNode }> = [];
+    for (const node of bundle.nodes) {
+      for (const targetId of node.connections) {
+        const target = byId.get(targetId);
+        if (!target) continue;
+        const key = [node.id, targetId].sort().join('~');
+        if (seen.has(key)) continue;
+        seen.add(key);
+        result.push({ key, from: node, to: target });
+      }
+    }
+    return result;
+  }, [bundle]);
+
+  /** Une bulle par region : cercles et liaisons epaisses fusionnes visuellement. */
+  const zones = useMemo(() => {
+    if (!bundle) return [];
+    return bundle.biomes
+      .map((item) => {
+        const nodes = bundle.nodes.filter((node) => node.biomeId === item.id);
+        if (nodes.length === 0) return null;
+        const points = nodes.map(toView);
+        const inner = links
+          .filter((link) => link.from.biomeId === item.id && link.to.biomeId === item.id)
+          .map((link) => ({ a: toView(link.from), b: toView(link.to) }));
+        // On ancre l'etiquette sur le lieu le plus a gauche : le milieu d'une
+        // bulle est souvent traverse par un chemin, qui couperait le titre.
+        const anchor = points.reduce((left, point) => (point.x < left.x ? point : left), points[0]!);
+        return {
+          biome: item,
+          points,
+          inner,
+          // Une region d'un seul lieu n'a pas besoin d'etiquette : le nom du
+          // lieu, juste en dessous, suffit et evite un chevauchement.
+          showLabel: nodes.length > 1,
+          label: { x: anchor.x, y: Math.max(4, anchor.y - ZONE_R - 3) },
+        };
+      })
+      .filter((zone): zone is NonNullable<typeof zone> => zone !== null);
+  }, [bundle, links]);
+
   const currentNode = bundle?.nodes.find((node) => node.id === save?.state.currentNode) ?? null;
   const currentBiome = biome(currentNode?.biomeId);
 
-  /** Arrivee sur un nœud : dialogue, puis Arene / Centre / rencontre. */
   const arrive = useCallback(
     async (nodeId: string): Promise<void> => {
       if (!bundle) return;
@@ -73,7 +231,6 @@ export function MapScreen() {
     [bundle, dispatch, navigate, speak],
   );
 
-  // Animation de deplacement : le personnage traverse les nœuds un par un.
   useEffect(() => {
     if (!walking) return undefined;
     if (step >= walking.length - 1) {
@@ -99,13 +256,13 @@ export function MapScreen() {
 
   const travelTo = (node: MapNode): void => {
     if (!canTravelTo(node.id, save, bundle) || walking) return;
-    const path = pathBetween(save.state.currentNode, node.id, save, bundle);
     setStep(0);
-    setWalking(path);
+    setWalking(pathBetween(save.state.currentNode, node.id, save, bundle));
   };
 
   const walkingNodeId = walking?.[step] ?? save.state.currentNode;
   const avatarNode = bundle.nodes.find((node) => node.id === walkingNodeId) ?? currentNode;
+  const avatar = avatarNode ? toView(avatarNode) : null;
 
   return (
     <PlayScreen
@@ -126,32 +283,78 @@ export function MapScreen() {
       }
     >
       <SoftPanel padding="tight" tone="soft" className="map">
-        <svg className="map__svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
-          {bundle.nodes.flatMap((node) =>
-            node.connections.map((targetId) => {
-              const target = bundle.nodes.find((item) => item.id === targetId);
-              if (!target) return null;
-              const locked =
-                states.get(node.id) === 'LOCKED' || states.get(target.id) === 'LOCKED';
-              return (
-                <line
-                  key={`${node.id}-${targetId}`}
-                  x1={node.x}
-                  y1={node.y}
-                  x2={target.x}
-                  y2={target.y}
-                  className={`map__link${locked ? ' map__link--locked' : ''}`}
-                />
-              );
-            }),
-          )}
+        <svg
+          className="map__svg"
+          viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
+          preserveAspectRatio="xMidYMid meet"
+          role="presentation"
+        >
+          {/* --- Bulles de region : elles regroupent les lieux voisins ------ */}
+          {/*
+            Chaque region est dessinee DEUX fois : un contour legerement plus
+            large, puis le remplissage par-dessus. Il ne reste qu'un liseré,
+            ce qui separe nettement deux regions de couleurs proches — sans les
+            coutures qu'un vrai contour laisserait sur une union de cercles.
+          */}
+          {zones.map((zone) => (
+            <g key={zone.biome.id}>
+              <ZoneShape zone={zone} color={zone.biome.accent} grow={1.5} className="map__zone-edge" />
+              <ZoneShape zone={zone} color={zone.biome.ground} grow={0} className="map__zone" />
+            </g>
+          ))}
 
+          {/* --- Chemins : ils montrent la progression possible ------------- */}
+          {links.map((link) => {
+            const from = toView(link.from);
+            const to = toView(link.to);
+            const open =
+              states.get(link.from.id) !== 'LOCKED' && states.get(link.to.id) !== 'LOCKED';
+            const done =
+              save.state.completedNodes.includes(link.from.id) &&
+              save.state.completedNodes.includes(link.to.id);
+            return (
+              <g key={link.key}>
+                <line
+                  className="map__path-shadow"
+                  x1={from.x}
+                  y1={from.y}
+                  x2={to.x}
+                  y2={to.y}
+                />
+                <line
+                  className={`map__path${done ? ' map__path--done' : open ? '' : ' map__path--locked'}`}
+                  x1={from.x}
+                  y1={from.y}
+                  x2={to.x}
+                  y2={to.y}
+                />
+              </g>
+            );
+          })}
+
+          {zones
+            .filter((zone) => zone.showLabel)
+            .map((zone) => (
+              <text
+                key={`${zone.biome.id}-label`}
+                className="map__zone-label"
+                x={zone.label.x}
+                y={zone.label.y}
+              >
+                {zone.biome.shortName ?? zone.biome.name}
+              </text>
+            ))}
+
+          {/* --- Lieux ------------------------------------------------------ */}
           {bundle.nodes.map((node) => {
             const state = states.get(node.id) ?? 'LOCKED';
+            const point = toView(node);
+            const radius = node.kind === 'GYM' ? NODE_R_GYM : NODE_R;
+            const locked = state === 'LOCKED';
             return (
               <g
                 key={node.id}
-                className="map__node"
+                className={`map__node${locked ? ' map__node--locked' : ''}`}
                 role="button"
                 tabIndex={0}
                 aria-label={`${node.label} — ${describeState(state)}`}
@@ -160,65 +363,67 @@ export function MapScreen() {
                   if (event.key === 'Enter' || event.key === ' ') travelTo(node);
                 }}
               >
-                {/* Zone tactile large : bien au-dela du dessin (§4). */}
-                <circle cx={node.x} cy={node.y} r={7.5} fill="transparent" />
+                {/* Zone tactile large, bien au-dela du dessin (§4). */}
+                <circle cx={point.x} cy={point.y} r={HIT_R} fill="transparent" />
                 <circle
-                  cx={node.x}
-                  cy={node.y}
-                  r={node.kind === 'GYM' ? 5.2 : 4.2}
-                  fill={STATE_FILL[state]}
-                  stroke="var(--color-surface)"
-                  strokeWidth={1}
+                  className="map__node-ring"
+                  cx={point.x}
+                  cy={point.y}
+                  r={radius + 1.4}
                 />
-                <NodeGlyph node={node} state={state} />
-                <text className="map__node-label" x={node.x} y={node.y + 9}>
+                <circle cx={point.x} cy={point.y} r={radius} fill={STATE_FILL[state]} />
+                <g
+                  transform={`translate(${point.x - radius * 0.72} ${point.y - radius * 0.72}) scale(${(radius * 1.44) / 24})`}
+                  pointerEvents="none"
+                >
+                  <PlaceIcon node={node} biome={biome(node.biomeId)} />
+                </g>
+                {/*
+                  Le pictogramme du lieu reste ENTIEREMENT visible : la petite
+                  pastille est posee en coin, elle indique seulement que
+                  l'endroit n'est pas encore ouvert (§173).
+                */}
+                {locked ? (
+                  <g
+                    className="map__badge"
+                    transform={`translate(${point.x + radius * 0.85} ${point.y + radius * 0.85})`}
+                    pointerEvents="none"
+                  >
+                    <circle r={2.4} />
+                    <g transform="translate(-1.5 -1.5) scale(0.125)">
+                      <IconLock size={24} />
+                    </g>
+                  </g>
+                ) : null}
+                {state === 'SPECIAL_EVENT' ? (
+                  <g
+                    className="map__badge map__badge--event"
+                    transform={`translate(${point.x + radius * 0.85} ${point.y - radius * 0.85})`}
+                    pointerEvents="none"
+                  >
+                    <circle r={3.1} />
+                    <g transform="translate(-2.1 -2.1) scale(0.175)">
+                      <IconSparkle size={24} />
+                    </g>
+                  </g>
+                ) : null}
+                <text className="map__node-label" x={point.x} y={point.y + radius + 5.2}>
                   {node.label}
                 </text>
               </g>
             );
           })}
 
-          {avatarNode ? (
-            <g className="map__avatar" transform={`translate(${avatarNode.x} ${avatarNode.y - 7})`}>
-              <circle r={2.6} fill="var(--color-coral)" />
-              <circle r={1.1} cy={-0.4} fill="var(--color-surface)" />
+          {/* --- Personnage ------------------------------------------------- */}
+          {avatar ? (
+            <g className="map__avatar" transform={`translate(${avatar.x} ${avatar.y - 9.5})`}>
+              <circle r={3.2} />
+              <circle className="map__avatar-dot" r={1.3} cy={-0.5} />
             </g>
           ) : null}
         </svg>
       </SoftPanel>
-
-      <div className="map__legend">
-        <BadgeChip icon={<IconBall size={20} />}>À explorer</BadgeChip>
-        <BadgeChip icon={<IconSparkle size={20} />}>Événement</BadgeChip>
-        <BadgeChip icon={<IconLock size={20} />}>Fermé</BadgeChip>
-      </div>
     </PlayScreen>
-  );
-}
-
-/**
- * Pictogramme pose sur le nœud.
- * §142 : l'etat n'est jamais porte par la seule couleur — il y a toujours une
- * forme ou une icone qui le rend comprehensible.
- */
-function NodeGlyph({ node, state }: { node: MapNode; state: NodeState }) {
-  const icon =
-    state === 'LOCKED' ? (
-      <IconLock size={24} />
-    ) : state === 'SPECIAL_EVENT' ? (
-      <IconSparkle size={24} />
-    ) : node.kind === 'CENTER' ? (
-      <IconCenter size={24} />
-    ) : node.kind === 'GYM' ? (
-      <IconBadge size={24} />
-    ) : null;
-
-  if (!icon) return null;
-  // L'icone fait 24 unites : on la ramene a 6 unites de la carte.
-  return (
-    <g transform={`translate(${node.x - 3} ${node.y - 3}) scale(0.25)`} pointerEvents="none">
-      {icon}
-    </g>
   );
 }
 

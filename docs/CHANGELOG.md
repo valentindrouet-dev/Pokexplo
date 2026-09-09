@@ -4,6 +4,31 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 Trois versions sont suivies séparément (§112) : `APP_VERSION`, `CONTENT_VERSION`,
 `SAVE_SCHEMA_VERSION`.
 
+## [1.0.3] — Carte du monde
+
+`APP_VERSION 1.0.3` · `CONTENT_VERSION bundled-3` · `SAVE_SCHEMA_VERSION 3`
+
+### Modifié
+
+- **Carte redessinée** (§10-12, §147) : chaque lieu porte le pictogramme de son
+  type — fleur, feuille, goutte, rocher, arène — au lieu d'un cadenas ; une
+  bulle souple regroupe les lieux d'une même région, avec son nom ; des chemins
+  épais montrent la progression possible ; les lieux ont été réespacés pour que
+  les étiquettes ne se chevauchent plus.
+- Noms de lieux raccourcis pour rester lisibles sur la carte ; les biomes
+  peuvent définir un `shortName` affiché uniquement là.
+
+### Ajouté
+
+- **Mise à jour du contenu livré avec l'application.** Le contenu par défaut
+  porte désormais une version (`BUNDLED_CONTENT_VERSION`) : un appareil qui a
+  déjà joué reçoit la nouvelle carte à la mise à jour, au lieu de conserver
+  indéfiniment l'ancienne. Seule la release `bundled` est remplacée — les
+  releases publiées depuis l'Admin restent immuables (§97).
+- Pictogrammes de lieux : fleur, feuille, goutte, rocher, vague, flocon, volcan.
+- `e2e/layout.spec.ts` : la carte doit présenter des régions nommées, des
+  chemins, un pictogramme par lieu, et aucun titre qui se chevauche.
+
 ## [1.0.2] — Ergonomie iPad
 
 `APP_VERSION 1.0.2` · `CONTENT_VERSION release_0001` · `SAVE_SCHEMA_VERSION 3`

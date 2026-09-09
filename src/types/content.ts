@@ -121,6 +121,12 @@ export interface Creature {
 export interface Biome {
   id: BiomeId;
   name: string;
+  /**
+   * Nom affiche sur la carte, au-dessus de la bulle de region.
+   * Un nom complet comme « Prairie des Premiers Pas » y chevaucherait les
+   * lieux voisins : on garde le nom long partout ailleurs.
+   */
+  shortName?: string;
   kind: BiomeKind;
   /** Deux couleurs de degrade pour le decor procedural. */
   sky: [string, string];
@@ -311,6 +317,12 @@ export interface ContentRelease {
   createdAt: number;
   publishedAt?: number;
   status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+  /**
+   * `bundled` designe le contenu livre avec l'application : c'est le SEUL
+   * qu'une mise a jour de l'application a le droit de remplacer. Les releases
+   * publiees depuis l'Admin (`admin`) restent immuables (§97).
+   */
+  source?: 'bundled' | 'admin';
   bundle: ContentBundle;
   /** Rapport de validation au moment de la publication. */
   validation?: ValidationReport;

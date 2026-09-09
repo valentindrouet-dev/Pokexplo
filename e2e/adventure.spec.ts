@@ -55,7 +55,7 @@ test('la carte affiche les nœuds avec leur état et permet de voyager', async (
 
   await expect(page.getByRole('button', { name: /Centre — tu es ici/i })).toBeVisible();
   await expect(page.getByRole('button', { name: /Prairie — à explorer/i })).toBeVisible();
-  await expect(page.getByRole('button', { name: /Arène de Pierre — fermé/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Arène — fermé/i })).toBeVisible();
 
   await page.getByRole('button', { name: /Prairie — à explorer/i }).click();
 

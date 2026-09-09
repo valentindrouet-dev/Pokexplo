@@ -80,6 +80,7 @@ class ReleaseServiceImpl {
       createdAt: Date.now(),
       publishedAt: Date.now(),
       status: 'PUBLISHED',
+      source: 'admin',
       bundle,
       validation,
     };

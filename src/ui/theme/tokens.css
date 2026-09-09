@@ -48,6 +48,8 @@
   /* ---------------- BORDURES ET OMBRES (§136-137) ---------------- */
   --border-hairline: 1px solid rgba(70, 60, 55, 0.08);
   --border-hairline-strong: 1px solid rgba(70, 60, 55, 0.16);
+  /* Couleur seule (sans la syntaxe `border`), pour les contours SVG. */
+  --border-color-badge: rgba(70, 60, 55, 0.16);
   --shadow-soft: 0 6px 18px rgba(65, 53, 40, 0.12);
   --shadow-float: 0 12px 32px rgba(50, 45, 40, 0.16);
   --shadow-inset-soft: inset 0 -3px 0 rgba(70, 60, 55, 0.08);

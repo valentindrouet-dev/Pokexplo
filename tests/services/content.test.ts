@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ContentService, localBackend, ReleaseService, setBackend } from '../../src/services';
 import { resetDb } from '../../src/services/db';
-import { defaultContentBundle } from '../../src/content/defaultContent';
+import { BUNDLED_CONTENT_VERSION, defaultContentBundle } from '../../src/content/defaultContent';
 import { voiceDashboard, voicesToRecord } from '../../src/utils/voice';
 
 beforeEach(() => {
@@ -175,5 +175,38 @@ describe('Jouabilité de la V1 (CONCEPTION §130)', () => {
   it('mène à une vraie fin : le chapitre final passe par l’Arène', () => {
     const final = bundle.chapters.find((chapter) => chapter.isFinal)!;
     expect(final.goals.some((goal) => goal.kind === 'GYM')).toBe(true);
+  });
+});
+
+describe('Mise à jour du contenu livré avec l’application', () => {
+  it('remplace le contenu livré quand sa version change', async () => {
+    const backend = localBackend;
+    const first = await ContentService.load(true);
+    expect(first.fromDefaults).toBe(true);
+
+    // On simule un appareil resté sur une version antérieure du contenu.
+    const stored = await backend.content.getRelease(first.meta.currentReleaseId);
+    await backend.content.putRelease({
+      ...stored!,
+      bundle: { ...stored!.bundle, contentVersion: 'bundled-0' },
+    });
+    ContentService.invalidate();
+
+    const refreshed = await ContentService.load(true);
+    expect(refreshed.bundle.contentVersion).toBe(BUNDLED_CONTENT_VERSION);
+    // La carte redessinée est bien celle qui est servie.
+    expect(refreshed.bundle.nodes.find((node) => node.id === 'prairie-3')?.label).toBe('Sentier');
+  });
+
+  it('ne remplace JAMAIS une release publiée depuis l’Admin (§97)', async () => {
+    await ContentService.load(true);
+    const draft = await ContentService.getDraft();
+    const published = await ReleaseService.publish(draft, 'Contenu du Master', { force: true });
+    expect(published.release.source).toBe('admin');
+
+    ContentService.invalidate();
+    const loaded = await ContentService.load(true);
+    expect(loaded.meta.currentReleaseId).toBe(published.release.id);
+    expect(loaded.fromDefaults).toBe(false);
   });
 });

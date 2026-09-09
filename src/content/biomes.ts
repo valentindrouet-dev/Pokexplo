@@ -19,6 +19,7 @@ export const defaultBiomes: Biome[] = [
   {
     id: 'prairie',
     name: 'Prairie des Premiers Pas',
+    shortName: 'Prairie',
     kind: 'PRAIRIE',
     sky: ['#BDEDEA', '#FFF8EC'],
     ground: '#A8D86E',
@@ -28,6 +29,7 @@ export const defaultBiomes: Biome[] = [
   {
     id: 'foret',
     name: 'Forêt de Jade',
+    shortName: 'Forêt',
     kind: 'FOREST',
     sky: ['#D6EDB6', '#FFF8EC'],
     ground: '#7FB85A',
@@ -38,6 +40,7 @@ export const defaultBiomes: Biome[] = [
   {
     id: 'riviere',
     name: 'Rivière Claire',
+    shortName: 'Rivière',
     kind: 'RIVER',
     sky: ['#BDEDEA', '#D7D9FF'],
     ground: '#7FC4F5',
@@ -48,6 +51,7 @@ export const defaultBiomes: Biome[] = [
   {
     id: 'grotte',
     name: 'Chemin des Pierres',
+    shortName: 'Rochers',
     kind: 'CAVE',
     sky: ['#E0C48C', '#FFF8EC'],
     ground: '#C9B79C',
