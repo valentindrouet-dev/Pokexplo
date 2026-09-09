@@ -2,6 +2,8 @@ import type {
   ContentBundle,
   ExerciseTemplate,
   ExerciseType,
+  HintType,
+  PedagogyCategory,
   Skill,
   VoiceMessage,
 } from '../../types';
@@ -30,6 +32,76 @@ export const EXERCISE_TYPE_LABELS: Record<ExerciseType, string> = {
   GRID_MOVE: 'Suivre un chemin sur une grille',
   ENGLISH_WORD: 'Un mot en anglais',
 };
+
+/**
+ * Ce que l'exercice fait travailler, dit simplement (UI_DESIGN §196).
+ *
+ * L'éditeur affichait `READING`, `SPATIAL`, `highlightOneByOne`. Ce sont des
+ * valeurs du modèle, pas des mots que quiconque emploie.
+ */
+export const CATEGORY_LABELS: Record<PedagogyCategory, string> = {
+  MATH: 'Nombres',
+  READING: 'Lecture',
+  SPATIAL: 'Repérage',
+  ENGLISH: 'Anglais',
+  LOGIC: 'Logique',
+  MEMORY: 'Mémoire',
+};
+
+/** L'aide donnée après une erreur (§35), en français. */
+export const HINT_TYPE_LABELS: Record<HintType, string> = {
+  highlightOneByOne: 'Les compter un par un',
+  splitSyllables: 'Séparer les syllabes',
+  showObjects: 'Montrer les objets',
+  highlightDirection: 'Montrer la direction',
+  removeWrongAnswer: 'Retirer une mauvaise réponse',
+};
+
+/** Trois niveaux, et rien entre les deux : c'est ainsi qu'on choisit. */
+export type ExerciseLevel = 'easy' | 'medium' | 'hard';
+
+export const LEVEL_LABELS: Record<ExerciseLevel, string> = {
+  easy: 'Facile',
+  medium: 'Moyen',
+  hard: 'Difficile',
+};
+
+const LEVEL_DIFFICULTY: Record<ExerciseLevel, number> = { easy: 1, medium: 3, hard: 5 };
+
+/**
+ * Ce que « plus difficile » veut dire, PAR TYPE.
+ *
+ * Un nombre de 1 à 5 ne change rien tout seul : c'est le moteur pédagogique
+ * qui s'en sert pour doser. Ce qui rend un exercice réellement plus dur, ce
+ * sont ses bornes — compter jusqu'à 12 plutôt que jusqu'à 5.
+ */
+function scaleFor(type: ExerciseType, level: ExerciseLevel): Record<string, unknown> {
+  const pick = <T,>(easy: T, medium: T, hard: T): T =>
+    level === 'easy' ? easy : level === 'medium' ? medium : hard;
+
+  switch (type) {
+    case 'COUNT':
+      return { minValue: pick(2, 4, 7), maxValue: pick(5, 8, 12) };
+    case 'ADDITION':
+      return { maxTerm: pick(3, 5, 8), maxSum: pick(5, 10, 15) };
+    case 'SUBTRACTION':
+      return { maxValue: pick(5, 8, 12) };
+    case 'COMPARE':
+      return { maxValue: pick(5, 8, 12) };
+    case 'NUMBER_SEQUENCE':
+      return { maxValue: pick(10, 20, 50), length: pick(3, 4, 5) };
+    case 'GRID_MOVE':
+      return { gridSize: pick(3, 4, 5), steps: pick(1, 2, 3) };
+    case 'MISSING_LETTER':
+      return { position: pick('first', 'last', 'any') };
+    case 'SYLLABLE':
+      return { mode: pick('countSyllables', 'countSyllables', 'pickFirstSyllable') };
+    default:
+      // Les autres types ne se dosent pas par des bornes : seul le nombre de
+      // réponses proposées change vraiment la difficulté (§167).
+      return {};
+  }
+}
 
 /** La compétence la plus naturelle pour chaque type, si elle existe. */
 const PREFERRED_SKILL: Record<ExerciseType, string> = {
@@ -190,7 +262,11 @@ export interface CreatedTemplate {
 }
 
 /** Fabrique une matrice du type demandé, prête à jouer, et ses quatre voix. */
-export function createTemplate(type: ExerciseType, skills: Skill[]): CreatedTemplate {
+export function createTemplate(
+  type: ExerciseType,
+  skills: Skill[],
+  level: ExerciseLevel = 'easy',
+): CreatedTemplate {
   const id = uid('ex');
   const skill = pickSkill(type, skills);
   const spec = specifics(type);
@@ -200,11 +276,13 @@ export function createTemplate(type: ExerciseType, skills: Skill[]): CreatedTemp
   const template = {
     id,
     type,
-    label: EXERCISE_TYPE_LABELS[type],
+    label: `${EXERCISE_TYPE_LABELS[type]} — ${LEVEL_LABELS[level]}`,
     category: skill?.category ?? 'MATH',
     skillId: skill?.id ?? '',
-    difficulty: 1,
-    answerCount: spec.answerCount,
+    difficulty: LEVEL_DIFFICULTY[level],
+    // Plus de réponses proposées = plus difficile, dans la limite de quatre
+    // au-delà de laquelle l'écran devient illisible pour un CP (§167).
+    answerCount: Math.min(4, spec.answerCount + (level === 'hard' ? 1 : 0)),
     hintType: spec.hintType,
     creaturePool: { kind: 'random' },
     prompt: spec.prompt,
@@ -219,6 +297,7 @@ export function createTemplate(type: ExerciseType, skills: Skill[]): CreatedTemp
     },
     ...(spec.locale ? { locale: spec.locale } : {}),
     ...spec.fields,
+    ...scaleFor(type, level),
   } as ExerciseTemplate;
 
   const voices = [

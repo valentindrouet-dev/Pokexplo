@@ -7,7 +7,7 @@ import type {
   VoiceMessage,
 } from '../../../types';
 import type { TemplateTextField } from '../exerciseText';
-import { EXERCISE_TYPES, generateExercise } from '../../../exercise-engine';
+import { generateExercise } from '../../../exercise-engine';
 import { randomSeed } from '../../../utils/rng';
 import { createVoiceMessage } from '../../../utils/voice';
 import { IconRefresh, PillButton, SecondaryButton, SoftPanel } from '../../../ui';
@@ -17,7 +17,15 @@ import { EntityPane } from '../EntityPane';
 import { duplicateTemplate, removeTemplate, templateBlocker } from '../entityActions';
 import { NumberField, SelectField, TextField } from '../fields';
 import { applyTemplateVoice, templateTextBlocks } from '../exerciseText';
-import { EXERCISE_TYPE_LABELS, addTemplate, createTemplate } from '../templateFactory';
+import {
+  CATEGORY_LABELS,
+  HINT_TYPE_LABELS,
+  addTemplate,
+  createTemplate,
+  type ExerciseLevel,
+} from '../templateFactory';
+import { AdvancedPanel } from '../AdvancedPanel';
+import { NewExerciseWizard } from '../NewExerciseWizard';
 import { VoiceTextEditor } from '../VoiceTextEditor';
 import { PacksSection } from './PacksSection';
 
@@ -64,7 +72,7 @@ function TemplatesPane() {
     draft?.exerciseTemplates[0]?.id ?? null,
   );
   const [seed, setSeed] = useState(() => randomSeed());
-  const [newType, setNewType] = useState<ExerciseType>('COUNT');
+  const [wizard, setWizard] = useState(false);
 
   const template =
     draft?.exerciseTemplates.find((item) => item.id === selectedId) ??
@@ -83,10 +91,11 @@ function TemplatesPane() {
   if (!draft) return null;
 
   /** Même fabrique que le « + » du mode édition : une matrice jouable d'emblée. */
-  const create = (): void => {
-    const created = createTemplate(newType, draft.skills);
+  const create = (type: ExerciseType, level: ExerciseLevel): void => {
+    const created = createTemplate(type, draft.skills, level);
     update((current) => addTemplate(current, created));
     setSelectedId(created.template.id);
+    setWizard(false);
   };
 
   const patch = (changes: Partial<ExerciseTemplate>): void => {
@@ -127,16 +136,8 @@ function TemplatesPane() {
       onSelect={setSelectedId}
       idOf={(item) => item.id}
       labelOf={(item) => item.label}
-      hintOf={(item) => `${item.type} · niveau ${item.difficulty}`}
-      createExtra={
-        <SelectField
-          label="Type de la nouvelle matrice"
-          value={newType}
-          options={EXERCISE_TYPES.map((type) => ({ value: type, label: EXERCISE_TYPE_LABELS[type] }))}
-          onChange={setNewType}
-        />
-      }
-      onCreate={create}
+      hintOf={(item) => `${CATEGORY_LABELS[item.category]} · niveau ${item.difficulty}`}
+      onCreate={() => setWizard(true)}
       onDuplicate={(id) => {
         const copy = duplicateTemplate(draft, id);
         if (!copy) return;
@@ -148,20 +149,23 @@ function TemplatesPane() {
         setSelectedId(null);
       }}
       deleteBlocker={(id) => templateBlocker(draft, id)}
-      createLabel="Nouvelle matrice"
+      createLabel="Nouvel exercice"
     >
       {template ? (
         <>
           <div className="field__row">
-            <TextField label="Libellé" value={template.label} onChange={(label) => patch({ label })} />
+            <TextField label="Nom" value={template.label} onChange={(label) => patch({ label })} />
             <SelectField
               label="Domaine"
               value={template.category}
-              options={CATEGORIES.map((category) => ({ value: category, label: category }))}
+              options={CATEGORIES.map((category) => ({
+                value: category,
+                label: CATEGORY_LABELS[category],
+              }))}
               onChange={(category) => patch({ category })}
             />
             <SelectField
-              label="Compétence"
+              label="Compétence travaillée"
               value={template.skillId}
               options={draft.skills.map((skill) => ({ value: skill.id, label: skill.label }))}
               onChange={(skillId) => patch({ skillId })}
@@ -185,9 +189,9 @@ function TemplatesPane() {
               hint="2 à 4 : au-delà, l’écran devient illisible pour un enfant de CP."
             />
             <SelectField
-              label="Type d’indice"
+              label="Aide après une erreur"
               value={template.hintType}
-              options={HINT_TYPES.map((hint) => ({ value: hint, label: hint }))}
+              options={HINT_TYPES.map((hint) => ({ value: hint, label: HINT_TYPE_LABELS[hint] }))}
               onChange={(hintType) => patch({ hintType })}
             />
           </div>
@@ -214,9 +218,8 @@ function TemplatesPane() {
           <SoftPanel title="Aperçu" tone="soft" padding="tight" className="ds-stack">
             <div className="ds-row">
               <SecondaryButton icon={<IconRefresh size={24} />} onClick={() => setSeed(randomSeed())}>
-                Tirer une autre instance
+                Tirer un autre exercice
               </SecondaryButton>
-              <span className="admin__status">seed {seed}</span>
             </div>
             {preview ? (
               <ExerciseView instance={preview} onSolved={() => setSeed(randomSeed())} />
@@ -226,8 +229,16 @@ function TemplatesPane() {
               </p>
             )}
           </SoftPanel>
+          {/* Identifiant et tirage : utiles pour un diagnostic, jamais dans le
+              parcours normal (§196). */}
+          <AdvancedPanel hint="identifiant, tirage de l’aperçu">
+            <p className="admin__status">Identifiant : {template.id}</p>
+            <p className="admin__status">Tirage de l’aperçu (seed) : {seed}</p>
+          </AdvancedPanel>
         </>
       ) : null}
+
+      <NewExerciseWizard open={wizard} onCancel={() => setWizard(false)} onCreate={create} />
     </EntityPane>
   );
 }

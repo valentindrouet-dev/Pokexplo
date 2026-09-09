@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { defaultContentBundle } from '../../src/content/defaultContent';
 import { EXERCISE_TYPES, generateExercise } from '../../src/exercise-engine';
-import { addTemplate, createTemplate } from '../../src/features/admin/templateFactory';
+import {
+  addTemplate,
+  createTemplate,
+  type ExerciseLevel,
+} from '../../src/features/admin/templateFactory';
 import { createNodeAfter, removalBlocker, removeNode } from '../../src/features/admin/nodeFactory';
 import { isCrowded } from '../../src/features/world-map/mapGeometry';
 import { ContentService } from '../../src/services';
@@ -106,5 +110,55 @@ describe('Validation : lieux trop proches', () => {
       (i) => i.code === 'NODE_CROWDED',
     );
     expect(warnings).toEqual([]);
+  });
+});
+
+describe('Trois niveaux de difficulté', () => {
+  /*
+   * « Facile / Moyen / Difficile » ne doit pas être qu'une étiquette : ce qui
+   * rend un exercice réellement plus dur, ce sont ses BORNES — compter
+   * jusqu'à 5 plutôt que jusqu'à 12.
+   */
+  const LEVELS: ExerciseLevel[] = ['easy', 'medium', 'hard'];
+
+  it('fait vraiment monter les bornes, pas seulement le chiffre', () => {
+    const skills = defaultContentBundle().skills;
+    const counts = LEVELS.map((level) => createTemplate('COUNT', skills, level).template);
+    const maxima = counts.map((template) =>
+      template.type === 'COUNT' ? template.maxValue : 0,
+    );
+    expect(maxima[0]!).toBeLessThan(maxima[1]!);
+    expect(maxima[1]!).toBeLessThan(maxima[2]!);
+    expect(counts.map((template) => template.difficulty)).toEqual([1, 3, 5]);
+  });
+
+  it('ne dépasse jamais quatre réponses, même au niveau le plus dur (§167)', () => {
+    const skills = defaultContentBundle().skills;
+    for (const type of EXERCISE_TYPES) {
+      for (const level of LEVELS) {
+        const { template } = createTemplate(type, skills, level);
+        expect(template.answerCount, `${type}/${level}`).toBeGreaterThanOrEqual(2);
+        expect(template.answerCount, `${type}/${level}`).toBeLessThanOrEqual(4);
+      }
+    }
+  });
+
+  it('reste jouable à tous les niveaux', () => {
+    const bundle = defaultContentBundle();
+    for (const type of EXERCISE_TYPES) {
+      for (const level of LEVELS) {
+        const created = createTemplate(type, bundle.skills, level);
+        const next = addTemplate(bundle, created);
+        expect(
+          ContentService.validate(next).issues.filter((issue) => issue.level === 'ERROR'),
+          `${type}/${level}`,
+        ).toEqual([]);
+        const instance = generateExercise(created.template, 12, {
+          creatures: bundle.creatures,
+          capturedIds: [],
+        });
+        expect(instance.choices.some((choice) => choice.id === instance.correctChoiceId)).toBe(true);
+      }
+    }
   });
 });

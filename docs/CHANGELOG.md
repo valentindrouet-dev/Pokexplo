@@ -4,6 +4,38 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 Trois versions sont suivies séparément (§112) : `APP_VERSION`, `CONTENT_VERSION`,
 `SAVE_SCHEMA_VERSION`.
 
+## [1.12.0] — Passe UX : créer un exercice en deux questions, relier deux lieux au doigt
+
+`APP_VERSION 1.12.0` · `CONTENT_VERSION bundled-5` · `SAVE_SCHEMA_VERSION 3`
+
+### Ajouté — l'assistant de création d'exercice
+
+- **Deux questions, en français** (§196) : « Que voulez-vous faire
+  travailler ? », rangé par domaine — Nombres, Lecture, Repérage, Anglais —
+  puis « À quel point est-ce difficile ? » — Facile, Moyen, Difficile. On
+  choisissait auparavant dans une liste de douze valeurs (`COUNT`,
+  `GRID_MOVE`, `ENGLISH_WORD`…) avant d'obtenir quoi que ce soit de jouable.
+- **La difficulté change les bornes, pas seulement l'étiquette** : compter
+  jusqu'à 5, 8 ou 12 ; additionner jusqu'à 5, 10 ou 15 ; une grille de 3, 4 ou
+  5 cases. Jamais plus de quatre réponses proposées (§167).
+- Les valeurs techniques deviennent des phrases : `highlightOneByOne` devient
+  « Les compter un par un », `READING` devient « Lecture ». Identifiant et
+  tirage de l'aperçu passent sous « Réglages avancés ».
+
+### Ajouté — relier deux lieux au doigt
+
+- **« Relier à… » sur la carte** : on touche un lieu, puis celui qu'on veut
+  relier. Retoucher un lieu déjà relié retire le chemin — **des deux côtés**,
+  sans quoi il réapparaissait, dessiné depuis l'autre extrémité. Les chemins
+  se réglaient jusqu'ici par une rangée de pastilles au fond d'un menu, loin
+  de la carte : on ne voyait pas ce qu'on reliait.
+
+### Corrigé
+
+- Une modale n'avait **aucun nom accessible** : son titre vivait à
+  l'intérieur, jamais rattaché au `role="dialog"`. Un lecteur d'écran
+  annonçait « dialogue », et rien de plus.
+
 ## [1.11.0] — Passe UX : l'Admin montre des intentions, pas la structure de données
 
 `APP_VERSION 1.11.0` · `CONTENT_VERSION bundled-5` · `SAVE_SCHEMA_VERSION 3`

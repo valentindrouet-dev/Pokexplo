@@ -80,7 +80,18 @@ export function ModalPanel({ open, title, children, actions, onDismiss, labelled
         if (event.target === event.currentTarget) onDismiss?.();
       }}
     >
-      <div className="ds-modal" role="dialog" aria-modal="true" aria-labelledby={labelledBy}>
+      {/*
+        Une modale sans nom accessible est annoncee « dialogue » et rien de
+        plus : son titre etait a l'interieur, jamais rattache. Faute d'un
+        `labelledBy` fourni, le titre affiche sert de nom.
+      */}
+      <div
+        className="ds-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={labelledBy}
+        aria-label={labelledBy ? undefined : title}
+      >
         <SoftPanel title={title} padding="roomy">
           {children}
           {actions ? <div className="ds-modal__actions">{actions}</div> : null}

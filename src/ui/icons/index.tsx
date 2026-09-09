@@ -547,3 +547,12 @@ export const IconCopy = (p: IconProps) => (
     <path d="M15 6.5A2.5 2.5 0 0 0 12.5 4h-6A2.5 2.5 0 0 0 4 6.5v6A2.5 2.5 0 0 0 6.5 15" />
   </IconBase>
 );
+
+/** Chemin entre deux points — relier deux lieux. */
+export const IconPath = (p: IconProps) => (
+  <IconBase {...p}>
+    <circle cx="5.5" cy="18.5" r="2.5" />
+    <circle cx="18.5" cy="5.5" r="2.5" />
+    <path d="M7.6 16.6c1.4-1.4 1.4-3.6 2.9-5s3.6-1.4 5-2.9" strokeDasharray="2.4 2.4" />
+  </IconBase>
+);

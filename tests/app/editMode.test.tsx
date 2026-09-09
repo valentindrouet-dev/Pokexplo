@@ -199,10 +199,17 @@ describe('Ajouter depuis l’éditeur visuel', () => {
     await user.click(within(drawer).getByRole('button', { name: 'Champignon' }));
     expect(within(drawer).getByRole('button', { name: 'Champignon', pressed: true })).toBeInTheDocument();
 
-    // Un nouvel exercice, du type choisi, attaché à ce lieu et ouvert aussitôt.
-    await user.selectOptions(within(drawer).getByLabelText('Nouvel exercice'), 'SYLLABLE');
-    await user.click(within(drawer).getByRole('button', { name: /créer et ajouter ici/iu }));
-    expect(await screen.findByText(/Exercice — Syllabes/u)).toBeInTheDocument();
+    /*
+     * Un nouvel exercice : deux questions en français — ce qu'on fait
+     * travailler, à quel point c'est difficile (§196) — et il est attaché à ce
+     * lieu puis ouvert aussitôt. Plus de liste de valeurs d'énumération.
+     */
+    await user.click(within(drawer).getByRole('button', { name: /créer un exercice pour ce lieu/iu }));
+    const wizard = await screen.findByRole('dialog', { name: /que voulez-vous faire travailler/iu });
+    await user.click(within(wizard).getByRole('button', { name: 'Syllabes' }));
+    await user.click(await screen.findByRole('button', { name: 'Moyen' }));
+    await user.click(screen.getByRole('button', { name: /créer l’exercice/iu }));
+    expect(await screen.findByText(/Exercice — Syllabes — Moyen/u)).toBeInTheDocument();
 
     // L'écriture du brouillon est différée : on l'attend.
     await waitFor(
@@ -214,6 +221,8 @@ describe('Ajouter depuis l’éditeur visuel', () => {
           (template) => template.type === 'SYLLABLE' && template.id.startsWith('ex_'),
         );
         expect(created).toBeDefined();
+        // « Moyen » se traduit en réglages réels, pas seulement en étiquette.
+        expect(created!.difficulty).toBe(3);
         expect(node.exerciseTemplateIds).toContain(created!.id);
       },
       { timeout: 4000 },

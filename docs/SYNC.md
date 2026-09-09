@@ -156,11 +156,13 @@ le doigt, les chemins suivent : vous voyez tout de suite ce que l'enfant verra.
   tiroir défait l'opération (jamais le Centre, ni un lieu qui porte une Arène).
 - **Les créatures que l'on peut y rencontrer** : dans le tiroir du lieu, une
   pastille par créature — on active, on désactive.
-- **Un nouvel exercice** : dans le tiroir du lieu, choisissez un type
-  (compter, additionner, lettre manquante, syllabes…) puis **« Créer et
-  ajouter ici »**. Une matrice prête à jouer est créée, attachée à ce lieu, et
-  s'ouvre pour reformuler consigne, indices et félicitations. Les menus
-  `Admin → Exercices` proposent la même création (« Nouvelle matrice »).
+- **Un nouvel exercice** : dans le tiroir du lieu, **« Créer un exercice pour
+  ce lieu »**. Deux questions suffisent — *que voulez-vous faire travailler ?*
+  puis *à quel point est-ce difficile ?* — et l'exercice est créé, attaché à ce
+  lieu, prêt à jouer, puis ouvert pour reformuler consigne, indices et
+  félicitations. Les menus `Admin → Exercices` proposent le même assistant.
+- **Relier deux lieux** : touchez un lieu sur la carte, puis **« Relier à… »**,
+  puis le lieu à relier. Le même geste retire un chemin existant.
 
 ### Changer le pictogramme d'un lieu
 

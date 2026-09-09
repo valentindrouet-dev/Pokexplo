@@ -196,3 +196,45 @@ test('l’enfant ne peut jamais déplacer un lieu', async ({ page }) => {
   expect((await node.boundingBox())?.x).toBeCloseTo(before?.x ?? 0, 0);
   await expect(page).toHaveURL(/#\/play\/map$/);
 });
+
+test('deux lieux se relient au doigt, sur la carte', async ({ page }) => {
+  await openMapInEditMode(page);
+
+  /** Les chemins dessinés entre deux lieux, dans les deux sens. */
+  const linked = async (a: string, b: string): Promise<boolean> =>
+    page.evaluate(
+      async ([from, to]) =>
+        new Promise<boolean>((resolve, reject) => {
+          const request = indexedDB.open('pokexplo');
+          request.onerror = () => reject(new Error('IndexedDB indisponible'));
+          request.onsuccess = () => {
+            const read = request.result.transaction('kv', 'readonly').objectStore('kv').get('draft');
+            read.onsuccess = () => {
+              const draft = read.result as { nodes: Array<{ id: string; connections: string[] }> };
+              const source = draft?.nodes.find((node) => node.id === from);
+              resolve(source?.connections.includes(to!) ?? false);
+            };
+            read.onerror = () => reject(new Error('brouillon illisible'));
+          };
+        }),
+      [a, b],
+    );
+
+  // Régression : les chemins se réglaient au fond d'un menu, loin de la carte.
+  expect(await linked('prairie-1', 'foret-1')).toBe(false);
+
+  await page.locator('.map__node[aria-label^="Prairie"] .map__node-ring').click();
+  await page.getByRole('button', { name: 'Relier à…' }).click();
+  // Le mode se voit : sinon un toucher qui ne fait pas voyager reste un mystère.
+  await expect(page.getByText(/touchez le lieu à relier à/i)).toBeVisible();
+
+  await page.locator('.map__node[aria-label^="Lisière"] .map__node-ring').click();
+  await expect.poll(() => linked('prairie-1', 'foret-1'), { timeout: 10_000 }).toBe(true);
+
+  // Le même geste retire le chemin — et des DEUX côtés.
+  await page.locator('.map__node[aria-label^="Prairie"] .map__node-ring').click();
+  await page.getByRole('button', { name: 'Relier à…' }).click();
+  await page.locator('.map__node[aria-label^="Lisière"] .map__node-ring').click();
+  await expect.poll(() => linked('prairie-1', 'foret-1'), { timeout: 10_000 }).toBe(false);
+  expect(await linked('foret-1', 'prairie-1')).toBe(false);
+});

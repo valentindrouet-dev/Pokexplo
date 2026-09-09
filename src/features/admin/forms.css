@@ -438,3 +438,22 @@
   font-weight: var(--weight-bold);
   color: var(--color-text);
 }
+
+/* ------------------- Assistant de création d'exercice ------------------- */
+
+/*
+ * Deux questions, chacune en grandes tuiles : « qu'est-ce que ca fait
+ * travailler » puis « a quel point c'est difficile » (§196). On ne choisit
+ * plus dans une liste de douze valeurs d'enumeration.
+ */
+.wizard__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-3);
+}
+
+.wizard {
+  max-height: 60vh;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}

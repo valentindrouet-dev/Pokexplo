@@ -12,7 +12,6 @@ import type {
 } from '../../types';
 import type { AdminSection } from '../../app/routes';
 import { CreatureSprite } from '../../components/CreatureSprite';
-import { EXERCISE_TYPES } from '../../exercise-engine';
 import {
   IconClose,
   IconButton,
@@ -30,7 +29,8 @@ import { SelectField, TextAreaField, TextField } from '../admin/fields';
 import { applyTemplateVoice, templateTextBlocks } from '../admin/exerciseText';
 import { removalBlocker, removeNode } from '../admin/nodeFactory';
 import { PlaceIconPicker } from '../admin/PlaceIconPicker';
-import { EXERCISE_TYPE_LABELS, addTemplate, createTemplate } from '../admin/templateFactory';
+import { addTemplate, createTemplate, type ExerciseLevel } from '../admin/templateFactory';
+import { NewExerciseWizard } from '../admin/NewExerciseWizard';
 import { VoiceTextEditor } from '../admin/VoiceTextEditor';
 import '../admin/forms.css';
 import './edit-mode.css';
@@ -211,7 +211,7 @@ function NodeForm({
   open: (target: EditTarget) => void;
   close: () => void;
 }) {
-  const [newType, setNewType] = useState<ExerciseType>('COUNT');
+  const [wizard, setWizard] = useState(false);
   const [confirmRemove, setConfirmRemove] = useState(false);
   const biome = bundle.biomes.find((entry) => entry.id === node.biomeId) ?? null;
 
@@ -230,9 +230,10 @@ function NodeForm({
    * ouverte aussitôt pour en reformuler les textes. On ne code jamais un
    * exercice : on crée une matrice (CLAUDE.md §2), ici comme dans les menus.
    */
-  const addExercise = (): void => {
-    const created = createTemplate(newType, bundle.skills);
+  const addExercise = (type: ExerciseType, level: ExerciseLevel): void => {
+    const created = createTemplate(type, bundle.skills, level);
     update((current) => addTemplate(current, created, node.id));
+    setWizard(false);
     open({ kind: 'template', id: created.template.id });
   };
 
@@ -301,17 +302,14 @@ function NodeForm({
             </PillButton>
           ))}
         </div>
-        <div className="ds-row">
-          <SelectField
-            label="Nouvel exercice"
-            value={newType}
-            options={EXERCISE_TYPES.map((type) => ({ value: type, label: EXERCISE_TYPE_LABELS[type] }))}
-            onChange={setNewType}
-          />
-          <PrimaryButton icon={<IconPlus size={22} />} onClick={addExercise}>
-            Créer et ajouter ici
-          </PrimaryButton>
-        </div>
+        <PrimaryButton icon={<IconPlus size={22} />} onClick={() => setWizard(true)}>
+          Créer un exercice pour ce lieu
+        </PrimaryButton>
+        <NewExerciseWizard
+          open={wizard}
+          onCancel={() => setWizard(false)}
+          onCreate={addExercise}
+        />
       </div>
 
       <VoiceBlock

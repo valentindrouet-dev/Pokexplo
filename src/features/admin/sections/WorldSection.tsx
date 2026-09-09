@@ -112,6 +112,10 @@ export function WorldSection() {
 
               <div className="field">
                 <span className="field__label">Chemins vers…</span>
+                <span className="admin__status">
+                  Plus simple : sur la carte, touchez le lieu puis « Relier à… ». On voit ce qu’on
+                  relie.
+                </span>
                 <div className="ds-row">
                   {draft.nodes
                     .filter((item) => item.id !== node.id)

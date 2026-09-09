@@ -5,6 +5,7 @@ import {
   BadgeChip,
   IconBadge,
   IconLock,
+  IconPath,
   IconPencil,
   IconPlus,
   IconSparkle,
@@ -240,6 +241,14 @@ export function MapScreen() {
    * lieu — lance le déplacement.
    */
   const [pickedId, setPickedId] = useState<string | null>(null);
+  /**
+   * RELIER DEUX LIEUX AU DOIGT (UI_DESIGN §196).
+   *
+   * Les chemins se réglaient par une rangée de pastilles au fond d'un menu,
+   * loin de la carte : on ne voyait pas ce qu'on reliait. On touche « Relier
+   * à… », puis le lieu voulu. Retoucher un lieu déjà relié retire le chemin.
+   */
+  const [linkingId, setLinkingId] = useState<string | null>(null);
 
   const positionOf = useCallback(
     (node: MapNode): Point => {
@@ -421,12 +430,53 @@ export function MapScreen() {
    */
   const pickNode = (node: MapNode): void => {
     if (walking) return;
+
+    // On est en train de relier : ce toucher désigne l'autre bout du chemin.
+    if (linkingId && linkingId !== node.id) {
+      toggleLink(linkingId, node.id);
+      setLinkingId(null);
+      /*
+       * Le geste est terminé : on referme la sélection. Sans cela, le lieu de
+       * départ restait « choisi », et le toucher suivant partait en voyage au
+       * lieu de le choisir à nouveau.
+       */
+      setPickedId(null);
+      return;
+    }
+
     if (pickedId === node.id) {
       travelTo(node);
       return;
     }
     setPickedId(node.id);
     speakMessage(spokenName(node.id, node.label));
+  };
+
+  /** Ajoute ou retire un chemin entre deux lieux, dans les deux sens. */
+  const toggleLink = (fromId: string, toId: string): void => {
+    if (!drafting) return;
+    drafting.update((current) => {
+      const from = current.nodes.find((node) => node.id === fromId);
+      const linked = from?.connections.includes(toId) ?? false;
+      return {
+        ...current,
+        nodes: current.nodes.map((node) => {
+          if (node.id !== fromId) {
+            // Un chemin retiré doit l'être des DEUX côtés : sinon il
+            // réapparaît, dessiné depuis l'autre extrémité.
+            return linked
+              ? { ...node, connections: node.connections.filter((id) => id !== fromId) }
+              : node;
+          }
+          return {
+            ...node,
+            connections: linked
+              ? node.connections.filter((id) => id !== toId)
+              : [...node.connections, toId],
+          };
+        }),
+      };
+    });
   };
 
   const draggable = editing && drafting !== null;
@@ -576,6 +626,7 @@ export function MapScreen() {
   };
 
   const picked = bundle.nodes.find((node) => node.id === pickedId) ?? null;
+  const linkingNode = bundle.nodes.find((node) => node.id === linkingId) ?? null;
   const strayNode = bundle.nodes.find((node) => node.id === strayNodeId) ?? null;
   const strayBiome = bundle.biomes.find((item) => item.id === strayBiomeId) ?? null;
   const strayHome = bundle.biomes.find((item) => item.id === strayNode?.biomeId) ?? null;
@@ -872,7 +923,7 @@ export function MapScreen() {
           Un lieu fermé se dit aussi : l'enfant apprend qu'il existe, sans se
           demander pourquoi rien ne se passe.
         */}
-        {picked && !strayNode ? (
+        {picked && !strayNode && !linkingNode ? (
           <div className="map__pick surface-dense" role="status">
             <span className="map__pick-icon" aria-hidden="true">
               <PlaceIcon node={picked} biome={biome(picked.biomeId)} />
@@ -888,7 +939,32 @@ export function MapScreen() {
                 Pas encore ouvert
               </span>
             )}
+            {/* Les chemins se dessinent ICI, sur la carte (§196). */}
+            {draggable ? (
+              <SecondaryButton
+                icon={<IconPath size={22} />}
+                onClick={() => setLinkingId(linkingId === picked.id ? null : picked.id)}
+              >
+                {linkingId === picked.id ? 'Annuler le chemin' : 'Relier à…'}
+              </SecondaryButton>
+            ) : null}
             <SecondaryButton onClick={() => setPickedId(null)}>Fermer</SecondaryButton>
+          </div>
+        ) : null}
+
+        {/*
+          On dit ce qu'on attend, plutôt que de laisser un mode invisible :
+          l'adulte sait pourquoi son prochain toucher ne fait pas voyager.
+        */}
+        {linkingNode ? (
+          <div className="map__pick surface-dense" role="status">
+            <span className="map__pick-icon" aria-hidden="true">
+              <IconPath size={26} />
+            </span>
+            <span className="map__pick-name">
+              Touchez le lieu à relier à « {linkingNode.label} »
+            </span>
+            <SecondaryButton onClick={() => setLinkingId(null)}>Annuler</SecondaryButton>
           </div>
         ) : null}
 
