@@ -493,6 +493,12 @@
 /* ------------------------------ POKEDEX ------------------------------ */
 
 /* La barre de filtres ne doit jamais etre compressee par la grille. */
+.pokedex {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .pokedex__filters {
   flex: 0 0 auto;
   margin-bottom: var(--space-3);
@@ -511,54 +517,45 @@
   -webkit-overflow-scrolling: touch;
 }
 
-.pokedex__detail {
+/*
+ * FICHE PAR-DESSUS LA COLLECTION (§191).
+ *
+ * Une seule chose a l'ecran a la fois : la grille, puis la fiche posee
+ * dessus. Le fond attenue garde le contexte — l'enfant voit d'ou elle vient.
+ */
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: grid;
+  place-items: center;
+  padding: var(--space-5);
+  padding-top: calc(var(--space-5) + var(--safe-top));
+  padding-bottom: calc(var(--space-5) + var(--safe-bottom));
+  background: var(--scrim-dark);
+}
+
+.sheet__panel {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--space-4);
   text-align: center;
-  /* Jamais comprime par le compteur qui suit : il passait par-dessus. */
-  flex: 0 0 auto;
+  width: min(560px, 100%);
+  max-height: 100%;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
-.pokedex__count {
-  flex: 0 0 auto;
-  margin-top: auto;
-  padding-top: var(--space-3);
+/* Fermer est toujours au meme endroit, et toujours grand. */
+.sheet__close {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
 }
 
-/*
- * PORTRAIT : la grille prend le haut, le detail devient une fiche en ligne
- * (dessin a gauche, texte a droite) pour ne pas voler la place de la grille.
- */
-@media (orientation: portrait) {
-  .pokedex {
-    grid-template-rows: minmax(0, 3fr) minmax(0, 2fr);
-  }
-
-  .pokedex__detail {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    text-align: left;
-    gap: var(--space-4) var(--space-5);
-  }
-
-  .pokedex__detail > .creature-sprite {
-    width: clamp(120px, 22vmin, 180px);
-    height: clamp(120px, 22vmin, 180px);
-  }
-
-  .pokedex__detail-text {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-    flex: 1 1 240px;
-    min-width: 0;
-  }
-}
-
-.pokedex__name {
+.sheet__name {
   font-size: var(--title);
   font-weight: var(--weight-heavy);
 }
@@ -582,21 +579,82 @@
 
 /* ------------------------------- EQUIPE ------------------------------ */
 
-.team__slots {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  align-content: start;
+/*
+ * Collection vide : ce n'est pas une erreur, c'est un debut. On centre le
+ * message et une Ball, plutot que de laisser un grand panneau blanc avec une
+ * ligne de texte en haut a gauche (§175).
+ */
+.collection-empty {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: var(--space-4);
-  flex: 0 0 auto;
+  text-align: center;
+  color: var(--color-text-soft);
 }
 
-.team__empty {
+/*
+ * L'EQUIPE EN HAUT, TOUJOURS VISIBLE (§190).
+ *
+ * Six places cote a cote : l'enfant voit d'un coup d'œil qui l'accompagne et
+ * combien il peut encore en prendre. Les places libres sont des Balls vides,
+ * pas des « + » : c'est un objet du jeu, pas un symbole d'interface.
+ */
+.team__slots {
   display: grid;
-  place-items: center;
+  grid-template-columns: repeat(6, 1fr);
+  align-items: stretch;
+  gap: var(--space-3);
+}
+
+.team__empty,
+.team__member {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
   min-height: var(--touch-large);
+  padding: var(--space-2);
+  border: none;
   border-radius: var(--radius-lg);
   background: var(--color-surface-muted);
   color: var(--color-text-soft);
+}
+
+.team__member {
+  background: var(--color-yellow-soft);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+/* Place libre : la Ball reste discrete, elle n'appelle pas le doigt. */
+.team__empty {
+  opacity: var(--opacity-disabled);
+}
+
+/*
+ * Deja dans l'equipe : une COCHE, en plus de la couleur de selection.
+ * Une selection ne doit jamais se lire a la seule couleur (§142).
+ */
+.team__mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-7);
+  height: var(--space-7);
+  border-radius: var(--radius-pill);
+  background: var(--color-green);
+  color: var(--color-text-onbright);
+}
+
+/* En portrait, six colonnes seraient minuscules : on passe sur deux rangees. */
+@media (orientation: portrait) {
+  .team__slots {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 /* ------------------------------- BADGES ------------------------------ */

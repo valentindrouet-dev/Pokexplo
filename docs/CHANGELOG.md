@@ -4,6 +4,42 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 Trois versions sont suivies séparément (§112) : `APP_VERSION`, `CONTENT_VERSION`,
 `SAVE_SCHEMA_VERSION`.
 
+## [1.8.0] — Passe UX : le Pokédex et l'Équipe, une chose à la fois
+
+`APP_VERSION 1.8.0` · `CONTENT_VERSION bundled-5` · `SAVE_SCHEMA_VERSION 3`
+
+### Modifié — le Pokédex
+
+- **Une grande grille, et rien d'autre.** Les deux panneaux permanents ont
+  disparu (§191) : on touche une créature, sa **fiche s'ouvre par-dessus**, et
+  un seul geste la referme. L'enfant n'a plus à comprendre que le panneau de
+  droite parle de ce qu'il a touché à gauche.
+- **Les filtres sont des pictogrammes** (§147) et suivent les types réellement
+  présents dans le contenu : ajouter une créature de Feu fait apparaître le
+  filtre Feu, sans toucher au code. Quatorze nouveaux dessins de type.
+- Le compteur devient **deux nombres** (« 3 / 20 ») au lieu d'une phrase.
+
+### Modifié — l'Équipe
+
+- **Un seul geste.** L'équipe est en haut, la collection dessous ; toucher une
+  créature l'emmène, la retoucher la laisse à la maison. Plus de sélection à
+  faire suivre d'un bouton visé en bas d'écran.
+- Les places libres sont des **Balls vides**, pas des « + » : un objet du jeu,
+  pas un symbole d'interface.
+- Une créature de l'équipe porte une **coche** en plus de la couleur (§142).
+- Équipe pleine : on le **dit à la voix** au lieu de bloquer en silence (§192).
+- Collection vide : un message centré avec une Ball, au lieu d'un grand panneau
+  blanc avec une ligne de texte en haut à gauche (§175).
+
+### Ajouté
+
+- Le garde-fou `child-ux` sait maintenant qu'un **groupe compte pour un
+  choix** : une rangée de filtres, une grille de créatures ou les six places
+  d'une équipe sont autant de réponses à une seule question. Le groupe est
+  déclaré dans le code (`data-choice-group`), jamais deviné par le test.
+- Deux tests de bout en bout : la fiche s'ouvre bien par-dessus la collection,
+  et le même geste fait l'aller et le retour dans l'équipe.
+
 ## [1.7.0] — Passe UX : l'accueil et le Centre redeviennent ceux d'un enfant
 
 `APP_VERSION 1.7.0` · `CONTENT_VERSION bundled-5` · `SAVE_SCHEMA_VERSION 3`

@@ -272,14 +272,31 @@ test('la consigne d’un exercice reste grande, dans les deux orientations', asy
   for (const height of boxes) expect(height).toBeGreaterThanOrEqual(56);
 });
 
-test('le Pokédex ne superpose jamais fiche et compteur', async ({ page }) => {
+test('la fiche d’une créature tient dans l’écran, sans rien superposer', async ({ page }) => {
   await boot(page);
   await page.goto('./#/play/pokedex');
   await expect(page.getByRole('button', { name: 'Tous' })).toBeVisible();
 
-  // Regression portrait : « 0 / 20 créatures attrapées » passait sur la fiche.
-  await expectNoOverlap(page, '.pokedex__detail-text > *, .pokedex__count', 2);
-  await expect(page.locator('.pokedex__count')).toBeInViewport();
+  /*
+   * La fiche s'ouvre désormais PAR-DESSUS la grille (§191) : le risque n'est
+   * plus qu'un compteur passe sur elle, c'est qu'elle déborde de l'écran — et
+   * en portrait, la place manque vite.
+   */
+  await page.locator('.ds-creature-card').first().click();
+  const panel = page.locator('.sheet__panel');
+  await expect(panel).toBeVisible();
+
+  const viewport = page.viewportSize()!;
+  const box = (await panel.boundingBox())!;
+  expect(box.height).toBeLessThanOrEqual(viewport.height + 1);
+  expect(box.y).toBeGreaterThanOrEqual(-1);
+  expect(box.x).toBeGreaterThanOrEqual(-1);
+  expect(box.x + box.width).toBeLessThanOrEqual(viewport.width + 1);
+
+  await expectNoOverlap(page, '.sheet__panel > *', 3);
+  // Fermer reste une cible confortable, au même endroit qu'ailleurs.
+  const close = (await page.getByRole('button', { name: 'Fermer' }).boundingBox())!;
+  expect(Math.min(close.width, close.height)).toBeGreaterThanOrEqual(56);
 });
 
 test('la navigation de l’Admin reste compacte quand l’écran est étroit', async ({ page }) => {

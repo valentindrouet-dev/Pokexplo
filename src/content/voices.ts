@@ -157,6 +157,12 @@ const screenVoices: VoiceMessage[] = [
   ),
   createVoiceMessage(SCREEN_VOICES.badges, 'Voici tes badges !', 'ui'),
   createVoiceMessage(SCREEN_VOICES.quests, 'Voici tes missions !', 'ui'),
+  // On ne bloque jamais en silence : l'equipe pleine se DIT (§192).
+  createVoiceMessage(
+    'voice.ui.team.full',
+    'Ton équipe est complète ! Laisse une créature à la maison pour en prendre une autre.',
+    'ui',
+  ),
 ];
 
 /** CONCEPTION §54 — quatre voix par matrice : question, indice 1, indice 2, réussite. */

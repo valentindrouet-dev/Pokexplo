@@ -158,6 +158,13 @@ La carte se lit sans savoir lire :
 
 Un biome peut définir un `shortName`, utilisé uniquement sur la carte.
 
+## 148 ter. Pictogrammes de types
+
+Chaque `CreatureType` a son dessin (`features/pokedex/typeIcons.tsx`), même
+grille et même trait que le reste. Les filtres du Pokédex les utilisent, et
+**suivent les types réellement présents dans le contenu** : la donnée décide de
+la liste, pas le code.
+
 ## 149–150. Navigation
 
 Barre d'onglets grands, carrés arrondis, espacés, principalement iconographiques ; onglet actif en

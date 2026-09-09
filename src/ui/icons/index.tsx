@@ -466,3 +466,68 @@ export const IconEgg = (p: IconProps) => (
     <path d="M9 12.5c0-2 1-4.5 2.5-6" />
   </IconBase>
 );
+
+/* ------------------------------------------------------------------ *
+ * Types de creatures (§147) — un pictogramme par type, meme trait.
+ * ------------------------------------------------------------------ */
+
+/** Eclair — type Electrik. */
+export const IconBolt = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M13.5 3 6 13.5h5L10.5 21 18 10.5h-5Z" />
+  </IconBase>
+);
+
+/** Aile — type Vol. */
+export const IconWing = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M3 17c4-1 7-3.5 9-7s4.5-5.5 9-6c-.5 6-3 10.5-7 13s-8 1.5-11 0Z" />
+    <path d="M8.5 14.5c2-.5 4-2 5.5-4" />
+  </IconBase>
+);
+
+/** Petite bête — type Insecte. */
+export const IconBug = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M8 8a4 4 0 0 1 8 0v5a4 4 0 0 1-8 0Z" />
+    <path d="M9.5 5.5 8 3.5M14.5 5.5 16 3.5M8 10H4.5M16 10h3.5M8 14H5M16 14h3" />
+  </IconBase>
+);
+
+/** Spirale — type Psy. */
+export const IconSpiral = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M12 12a2 2 0 1 1 2.5 1.9A4 4 0 0 1 8.5 12a6.5 6.5 0 1 1 9.9 5.6" />
+  </IconBase>
+);
+
+/** Croissant sombre — type Ténèbres. */
+export const IconCrescent = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M16.5 4a8.5 8.5 0 1 0 3.5 12 7 7 0 0 1-3.5-12Z" />
+    <circle cx="9" cy="10" r="1" />
+  </IconBase>
+);
+
+/** Poing — type Combat. */
+export const IconFist = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M5 11a2 2 0 0 1 2-2h9a3 3 0 0 1 3 3v3a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4Z" />
+    <path d="M8 9V6.5a1.8 1.8 0 0 1 3.5 0V9M11.5 9V5.8a1.8 1.8 0 0 1 3.5 0V9" />
+  </IconBase>
+);
+
+/** Sillons — type Sol. */
+export const IconFurrow = (p: IconProps) => (
+  <IconBase {...p}>
+    <path d="M3 9h18M3 14c3-2 6-2 9 0s6 2 9 0M4 19h16" />
+  </IconBase>
+);
+
+/** Rond simple — type Normal. */
+export const IconCircle = (p: IconProps) => (
+  <IconBase {...p}>
+    <circle cx="12" cy="12" r="7.5" />
+    <circle cx="12" cy="12" r="3" />
+  </IconBase>
+);

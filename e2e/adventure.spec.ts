@@ -112,7 +112,8 @@ test('rencontre → exercice → capture → Pokédex', async ({ page }) => {
   await page.locator('.ds-icon-button').first().click();
   await page.getByRole('button', { name: 'Pokédex', exact: true }).click();
 
-  await expect(page.getByText(/1 \/ 20 créatures attrapées/)).toBeVisible();
+  // Le compteur est devenu deux nombres, sans phrase à lire (§190).
+  await expect(page.getByText('1 / 20')).toBeVisible();
 });
 
 test('aucune fonctionnalité ne dépend du survol (§160)', async ({ page }) => {

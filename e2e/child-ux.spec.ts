@@ -37,8 +37,17 @@ async function boot(page: Page): Promise<void> {
  */
 async function childChoices(page: Page): Promise<string[]> {
   return page.evaluate(() => {
+    /*
+     * Un GROUPE compte pour un seul choix.
+     *
+     * Une rangée de filtres, une grille de créatures, les six places d'une
+     * équipe : ce sont autant de réponses à UNE question — « lequel ? ». Ce
+     * qui fatigue un enfant, ce sont les questions différentes, pas le nombre
+     * de réponses. Le groupe est déclaré dans le code (`data-choice-group`),
+     * pas deviné ici.
+     */
+    const groups = new Set<string>();
     const ignored = [
-      '.ds-creature-card',
       '.ds-choice',
       '.map__node',
       '.map__edit',
@@ -55,23 +64,33 @@ async function childChoices(page: Page): Promise<string[]> {
         const box = el.getBoundingClientRect();
         return box.width > 0 && box.height > 0;
       })
-      .map((el) => (el.getAttribute('aria-label') || el.textContent || '?').trim().slice(0, 40));
+      .filter((el) => {
+        const group = el.closest<HTMLElement>('[data-choice-group]')?.dataset.choiceGroup;
+        if (!group) return true;
+        if (groups.has(group)) return false;
+        groups.add(group);
+        return true;
+      })
+      .map((el) => {
+        const group = el.closest<HTMLElement>('[data-choice-group]')?.dataset.choiceGroup;
+        return group ?? (el.getAttribute('aria-label') || el.textContent || '?').trim().slice(0, 40);
+      });
   });
 }
 
-const SCREENS: Array<{ name: string; hash: string; ready: RegExp }> = [
-  { name: 'Centre', hash: './#/play', ready: /partir/i },
-  { name: 'Carte', hash: './#/play/map', ready: /prairie/i },
-  { name: 'Pokédex', hash: './#/play/pokedex', ready: /tous/i },
-  { name: 'Équipe', hash: './#/play/team', ready: /équipe|pokémon/i },
-  { name: 'Badges', hash: './#/play/badges', ready: /badge/i },
+const SCREENS: Array<{ name: string; hash: string; ready: string }> = [
+  { name: 'Centre', hash: './#/play', ready: '.center-hub' },
+  { name: 'Carte', hash: './#/play/map', ready: '.map__node' },
+  { name: 'Pokédex', hash: './#/play/pokedex', ready: '.pokedex__grid' },
+  { name: 'Équipe', hash: './#/play/team', ready: '.team__slots' },
+  { name: 'Badges', hash: './#/play/badges', ready: '.badges' },
 ];
 
 for (const screen of SCREENS) {
   test(`${screen.name} : quatre choix au maximum (§190)`, async ({ page }) => {
     await boot(page);
     await page.goto(screen.hash);
-    await expect(page.getByText(screen.ready).first()).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator(screen.ready).first()).toBeVisible({ timeout: 20_000 });
 
     const choices = await childChoices(page);
     // Le retour, présent partout, fait partie de la grammaire : on l'exclut ici.
@@ -170,4 +189,77 @@ test('chaque écran enfant s’annonce à la voix (§192)', async ({ page }) => 
       )
       .toMatch(expected);
   }
+});
+
+/**
+ * POKÉDEX ET ÉQUIPE — une chose à la fois, un seul geste (§191, §190).
+ */
+test('le Pokédex montre la grille, puis la fiche par-dessus', async ({ page }) => {
+  await boot(page);
+  await go(page, '/play/pokedex');
+  await expect(page.locator('.ds-creature-card').first()).toBeVisible({ timeout: 20_000 });
+
+  // Régression : deux panneaux permanents, dont un parlait de l'autre.
+  await expect(page.locator('.ds-two-pane')).toHaveCount(0);
+  await expect(page.locator('.sheet')).toHaveCount(0);
+
+  // Les filtres sont d'abord des dessins (§147).
+  const all = page.getByRole('button', { name: 'Tous' });
+  await expect(all.locator('svg')).toHaveCount(1);
+
+  await page.locator('.ds-creature-card').first().click();
+  const sheet = page.locator('.sheet');
+  await expect(sheet).toBeVisible();
+  // La fiche couvre vraiment la collection : elle est en grand, par-dessus.
+  const box = (await sheet.locator('.sheet__panel').boundingBox())!;
+  expect(box.width).toBeGreaterThan(320);
+
+  await page.getByRole('button', { name: 'Fermer' }).click();
+  await expect(sheet).toHaveCount(0);
+});
+
+test('l’Équipe se compose d’un seul geste', async ({ page }) => {
+  await boot(page);
+
+  // On attrape une créature : sans collection, l'écran n'a rien à montrer.
+  await go(page, '/play/map');
+  await page.locator('.map__node[aria-label^="Prairie"]').first().click();
+  await page.getByRole('button', { name: 'Relever le défi !' }).click({ timeout: 20_000 });
+  await page.locator('.ds-choice').first().waitFor({ timeout: 20_000 });
+  // On répond jusqu'à la capture : la bonne réponse finit toujours par venir (§14).
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    const choices = page.locator('.ds-choice:not([data-state="removed"])');
+    const count = await choices.count();
+    if (count === 0) break;
+    await choices.nth(attempt % count).click();
+    await page.waitForTimeout(1500);
+    if ((await page.getByRole('button', { name: 'Continuer' }).count()) > 0) break;
+  }
+  await page.getByRole('button', { name: 'Continuer' }).click({ timeout: 20_000 });
+  await expect(page.locator('.map__node').first()).toBeVisible({ timeout: 20_000 });
+
+  await go(page, '/play/team');
+  const card = page.locator('.pokedex__grid .ds-creature-card').first();
+  await expect(card).toBeVisible({ timeout: 20_000 });
+
+  // Régression : il fallait sélectionner, puis viser un bouton en bas d'écran.
+  await expect(page.getByRole('button', { name: /mettre dans l’équipe/i })).toHaveCount(0);
+
+  /*
+   * La créature qu'on vient d'attraper rejoint l'équipe toute seule : on part
+   * donc de l'état réel, et on vérifie que LE MÊME geste fait l'aller ET le
+   * retour. C'est tout ce qui compte : un seul geste, réversible.
+   */
+  const members = page.locator('.team__member');
+  const before = await members.count();
+  const wasInTeam = (await card.locator('.team__mark').count()) > 0;
+
+  await card.click();
+  await expect(members).toHaveCount(wasInTeam ? before - 1 : before + 1);
+  // La coche suit : une sélection ne se lit jamais à la seule couleur (§142).
+  await expect(card.locator('.team__mark')).toHaveCount(wasInTeam ? 0 : 1);
+
+  await card.click();
+  await expect(members).toHaveCount(before);
+  await expect(card.locator('.team__mark')).toHaveCount(wasInTeam ? 1 : 0);
 });
