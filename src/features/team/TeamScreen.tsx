@@ -5,6 +5,8 @@ import { CreatureSprite } from '../../components/CreatureSprite';
 import { useContent } from '../../app/providers/ContentProvider';
 import { useGame } from '../../app/providers/GameProvider';
 import { PlayScreen } from '../play/PlayScreen';
+import { useScreenVoice } from '../../app/providers/useScreenVoice';
+import { SCREEN_VOICES } from '../../content/voices';
 import { TypeChip } from '../pokedex/PokedexScreen';
 
 /**
@@ -13,6 +15,8 @@ import { TypeChip } from '../pokedex/PokedexScreen';
  * statistique complexe.
  */
 export function TeamScreen() {
+  // §192 — l'écran dit ce qu'on peut y faire, à l'arrivée.
+  useScreenVoice(SCREEN_VOICES.team);
   const { bundle, creature } = useContent();
   const { save, dispatch } = useGame();
   const [selectedId, setSelectedId] = useState<string | null>(null);

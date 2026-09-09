@@ -4,6 +4,56 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 Trois versions sont suivies séparément (§112) : `APP_VERSION`, `CONTENT_VERSION`,
 `SAVE_SCHEMA_VERSION`.
 
+## [1.7.0] — Passe UX : l'accueil et le Centre redeviennent ceux d'un enfant
+
+`APP_VERSION 1.7.0` · `CONTENT_VERSION bundled-5` · `SAVE_SCHEMA_VERSION 3`
+
+Première étape d'une passe qui ne cherche pas à ajouter des fonctions, mais à
+**retirer de la complexité visible**. Constat : l'interface avait été conçue
+trop près du modèle de données et pas assez près des gestes réels de l'enfant.
+
+### Ajouté — trois règles, et de quoi les tenir
+
+- **§190 — quatre choix au maximum** par écran enfant, trois de préférence, et
+  jamais deux chemins vers la même destination. Les réponses d'un exercice, le
+  retour et le 🔊 ne comptent pas ; une grille de créatures compte pour un.
+- **§191 — une chose à la fois, en grand** : les deux panneaux permanents sont
+  désormais réservés à `/admin`.
+- **§192 — la voix guide aussi la navigation** : chaque écran enfant annonce ce
+  qu'on peut y faire, en arrivant (« Voici tous les Pokémon que tu as
+  rencontrés ! », « Où veux-tu aller ? »). Cinq nouvelles `VoiceMessage`,
+  enregistrables comme les autres — d'où le nouveau `CONTENT_VERSION`.
+- **§195** (checklist d'une PR qui touche `/play`) et **§196** (l'Admin montre
+  des intentions, pas la structure de données) rejoignent `UI_DESIGN.md` et
+  `CLAUDE.md`.
+- `e2e/child-ux.spec.ts` **mesure** ces règles sur les écrans réels : une règle
+  écrite dans un document ne tient pas toute seule.
+
+### Modifié — l'accueil
+
+- Plus de champ de saisie, plus de numéro de version, plus de bouton « Espace
+  parents » : l'enfant voit **sa frimousse, son prénom et un seul bouton**. À
+  plusieurs, la question « Qui joue ? » et de très grands visages.
+- Créer un profil est une opération d'adulte : cet écran-là n'apparaît qu'au
+  tout premier lancement, et il l'assume.
+- L'accès adulte est un **petit cadenas qui demande un appui maintenu** — un
+  geste qu'un enfant de cinq ans ne fait pas par hasard.
+- Le numéro de version rejoint l'espace parents, y compris avant qu'un profil
+  existe : c'est quand rien ne marche qu'on va le chercher.
+
+### Modifié — le Centre
+
+- De sept choix à **quatre** : le Professeur dit la mission en haut, **PARTIR !**
+  est la seule action principale, et trois destinations restent — Pokédex,
+  Équipe, Badges.
+- **« Aventure » et « Partir ! » menaient au même endroit.** La tuile a
+  disparu, et « Partir ! » accepte la mission au passage : un geste au lieu de
+  deux.
+- « Quêtes » et « Professeur » ne sont plus des destinations : ce sont les
+  missions, là où l'enfant les entend.
+- La progression garde sa place, discrète : le titre du chapitre et une jauge
+  sans chiffre — et c'est là que l'adulte modifie le chapitre en édition.
+
 ## [1.6.0] — Ajouter depuis la carte, choisir les pictogrammes, textes jamais superposés
 
 `APP_VERSION 1.6.0` · `CONTENT_VERSION bundled-4` · `SAVE_SCHEMA_VERSION 3`

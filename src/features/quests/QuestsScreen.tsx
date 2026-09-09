@@ -4,9 +4,13 @@ import { useAudio } from '../../app/providers/AudioProvider';
 import { useContent } from '../../app/providers/ContentProvider';
 import { useGame } from '../../app/providers/GameProvider';
 import { PlayScreen } from '../play/PlayScreen';
+import { useScreenVoice } from '../../app/providers/useScreenVoice';
+import { SCREEN_VOICES } from '../../content/voices';
 
 /** QUETES (CONCEPTION §25) — objectifs courts, comprehensibles sans lire. */
 export function QuestsScreen() {
+  // §192 — l'écran dit ce qu'on peut y faire, à l'arrivée.
+  useScreenVoice(SCREEN_VOICES.quests);
   const { bundle } = useContent();
   const { save } = useGame();
   const { speak, buttonState } = useAudio();

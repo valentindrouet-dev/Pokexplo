@@ -23,6 +23,8 @@ import { useNavigation } from '../../app/router';
 import { useEditMode } from '../../app/providers/EditModeProvider';
 import './parent.css';
 
+const APP_VERSION = typeof __APP_VERSION__ === 'string' ? __APP_VERSION__ : 'dev';
+
 /**
  * TABLEAU PARENT (CONCEPTION §77).
  *
@@ -73,6 +75,8 @@ export function ParentDashboard() {
     return (
       <div className="parent surface-dense">
         <SoftPanel title="Espace parents">
+          {/* La version d'abord : c'est quand rien ne marche qu'on la cherche. */}
+          <p className="parent__version">Version {APP_VERSION}</p>
           <p>Aucun profil n’a encore été créé.</p>
           <p className="admin__status">
             Lancez l’aventure une première fois : la progression, les statistiques et les réglages
@@ -111,6 +115,12 @@ export function ParentDashboard() {
     <div className="parent surface-dense">
       <header className="parent__header">
         <h1 className="parent__title">Espace parents — {save.profile.nickname}</h1>
+        {/*
+          Repère de version. Il était sur l'accueil de l'enfant ; c'est une
+          information d'adulte (§190), et elle sert vraiment : sur l'iPad, elle
+          dit si le Service Worker sert encore une version précédente.
+        */}
+        <p className="parent__version">Version {APP_VERSION}</p>
         <div className="ds-row">
           <SecondaryButton onClick={() => navigate({ name: 'center' })}>
             Retour au jeu

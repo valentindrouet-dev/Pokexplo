@@ -131,6 +131,34 @@ const uiVoices: VoiceMessage[] = [
   createVoiceMessage('voice.ui.newPath', 'Un nouveau chemin s’est ouvert !', 'ui'),
 ];
 
+/**
+ * LA VOIX GUIDE AUSSI LA NAVIGATION (UI_DESIGN §192).
+ *
+ * Une phrase par ecran enfant, dite a l'arrivee. Sans elle, il fallait
+ * comprendre les mots « Pokedex », « Equipe » ou « Quetes » pour se servir du
+ * jeu. Ce sont des VoiceMessage comme les autres : enregistrables, rattrapees
+ * par la synthese, et leur absence ne casse jamais rien.
+ */
+export const SCREEN_VOICES = {
+  map: 'voice.ui.screen.map',
+  pokedex: 'voice.ui.screen.pokedex',
+  team: 'voice.ui.screen.team',
+  badges: 'voice.ui.screen.badges',
+  quests: 'voice.ui.screen.quests',
+} as const;
+
+const screenVoices: VoiceMessage[] = [
+  createVoiceMessage(SCREEN_VOICES.map, 'Où veux-tu aller ?', 'ui'),
+  createVoiceMessage(SCREEN_VOICES.pokedex, 'Voici tous les Pokémon que tu as rencontrés !', 'ui'),
+  createVoiceMessage(
+    SCREEN_VOICES.team,
+    'Choisis les Pokémon que tu veux emmener avec toi !',
+    'ui',
+  ),
+  createVoiceMessage(SCREEN_VOICES.badges, 'Voici tes badges !', 'ui'),
+  createVoiceMessage(SCREEN_VOICES.quests, 'Voici tes missions !', 'ui'),
+];
+
 /** CONCEPTION §54 — quatre voix par matrice : question, indice 1, indice 2, réussite. */
 export function exerciseVoices(templates: ExerciseTemplate[]): VoiceMessage[] {
   return templates.flatMap((template) => {
@@ -173,5 +201,6 @@ export const narrativeVoices: VoiceMessage[] = [
   ...gymVoices,
   ...questVoices,
   ...uiVoices,
+  ...screenVoices,
   ...feedbackVoices,
 ];

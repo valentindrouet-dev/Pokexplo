@@ -20,6 +20,8 @@ import { useGame } from '../../app/providers/GameProvider';
 import { useNavigation } from '../../app/router';
 import { useEditMode } from '../../app/providers/EditModeProvider';
 import { PlayScreen } from '../play/PlayScreen';
+import { useScreenVoice } from '../../app/providers/useScreenVoice';
+import { SCREEN_VOICES } from '../../content/voices';
 import { useOrientation } from '../../utils/useOrientation';
 import { useAdminDraftOptional } from '../admin/AdminDraftContext';
 import { createNodeAfter } from '../admin/nodeFactory';
@@ -192,6 +194,8 @@ function ZoneShape({
  *  - un PICTOGRAMME dit de quel type de lieu il s'agit.
  */
 export function MapScreen() {
+  // §192 — l'écran dit ce qu'on peut y faire, à l'arrivée.
+  useScreenVoice(SCREEN_VOICES.map);
   const { navigate } = useNavigation();
   const { editing, open: openEditor } = useEditMode();
   const { bundle, biome } = useContent();

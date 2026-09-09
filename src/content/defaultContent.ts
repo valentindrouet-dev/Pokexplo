@@ -17,7 +17,7 @@ import { creatureNameVoiceId, creatureNameVoices, exerciseVoices, narrativeVoice
  * installe : sans cela, un appareil qui a deja joue garderait indefiniment
  * l'ancienne version, meme apres une mise a jour de l'application.
  */
-export const BUNDLED_CONTENT_VERSION = 'bundled-4';
+export const BUNDLED_CONTENT_VERSION = 'bundled-5';
 
 /**
  * CONTENU LIVRE AVEC L'APPLICATION (release_0001).

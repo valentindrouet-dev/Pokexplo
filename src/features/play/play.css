@@ -59,17 +59,90 @@
   width: min(560px, 100%);
 }
 
-.start__profiles {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  width: 100%;
+.start__panel--wide {
+  width: min(880px, 100%);
 }
 
-.start__version {
-  font-size: var(--text-small);
+/*
+ * « Qui joue ? » — de tres grands visages, jamais une liste de lignes.
+ * L'enfant reconnait sa place sans savoir lire son prenom (§190).
+ */
+.start__players {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-6);
+}
+
+.start__player {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-soft);
+  cursor: pointer;
+  min-width: var(--touch-large);
+}
+
+.start__player-name {
+  font-size: var(--text-large);
+  font-weight: var(--weight-heavy);
+}
+
+/*
+ * ACCES ADULTE (§190).
+ *
+ * Un petit cadenas dans un coin, qui demande un appui MAINTENU : un enfant de
+ * cinq ans ne tombe pas dessus par hasard, un parent le trouve du premier
+ * coup. L'anneau se remplit pendant l'appui pour montrer qu'il se passe
+ * quelque chose.
+ */
+.parent-gate {
+  position: absolute;
+  top: calc(var(--space-3) + var(--safe-top));
+  right: calc(var(--space-3) + var(--safe-right));
+  z-index: var(--z-bar);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  border: none;
+  border-radius: var(--radius-pill);
+  background: transparent;
   color: var(--color-text-soft);
-  opacity: var(--opacity-disabled);
+  opacity: 0.45;
+  cursor: pointer;
+}
+
+.parent-gate:focus-visible {
+  outline: var(--space-1) solid var(--color-lavender);
+  opacity: 1;
+}
+
+.parent-gate__ring {
+  position: absolute;
+  inset: var(--space-1);
+  border-radius: var(--radius-pill);
+  border: var(--border-hairline-strong);
+  transform: scale(0.6);
+  opacity: 0;
+  transition:
+    transform var(--duration-slow) var(--ease-soft),
+    opacity var(--duration-fast) var(--ease-soft);
+}
+
+.parent-gate[data-holding='true'] {
+  opacity: 1;
+}
+
+.parent-gate[data-holding='true'] .parent-gate__ring {
+  transform: scale(1);
+  opacity: 1;
+  background: var(--color-lavender-soft);
 }
 
 .start__field {
@@ -85,23 +158,31 @@
 
 /* ------------------------------- CENTRE ------------------------------ */
 
+/*
+ * Trois destinations, cote a cote, tres grandes (§190).
+ *
+ * Elles occupent la place laissee libre entre le Professeur (en haut) et la
+ * jauge de chapitre (en bas) : sans cela, l'ecran se vidait par le milieu et
+ * l'enfant voyait surtout du decor.
+ */
 .center-hub {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--space-5);
-  align-content: center;
   flex: 1 1 auto;
   min-height: 0;
 }
 
 .center-hub__tile {
-  min-height: clamp(140px, 18vh, 190px);
+  min-height: clamp(120px, 16vh, 168px);
+  height: 100%;
 }
 
+/* La jauge de chapitre ne prend jamais plus que sa hauteur propre. */
 .center-chapter {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 
 .center-chapter__title {

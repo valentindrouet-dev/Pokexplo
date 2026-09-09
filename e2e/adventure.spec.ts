@@ -41,12 +41,21 @@ test('l’enfant peut lancer l’aventure sans savoir lire', async ({ page }) =>
 test('le Centre propose des destinations très grandes et peu nombreuses', async ({ page }) => {
   await startAdventure(page);
 
-  for (const label of ['Aventure', 'Équipe', 'Pokédex', 'Badges', 'Quêtes', 'Professeur']) {
+  // Trois destinations, et une seule action principale (§190). « Aventure »,
+  // « Quêtes » et « Professeur » ont disparu : la première doublait « Partir ! »,
+  // les deux autres sont ce que dit le Professeur, en haut de l'écran.
+  for (const label of ['Équipe', 'Pokédex', 'Badges']) {
     const tile = page.getByRole('button', { name: label, exact: true });
     await expect(tile).toBeVisible();
     const box = await tile.boundingBox();
     expect(box?.height ?? 0).toBeGreaterThanOrEqual(56);
   }
+  for (const gone of ['Aventure', 'Quêtes', 'Professeur']) {
+    await expect(page.getByRole('button', { name: gone, exact: true })).toHaveCount(0);
+  }
+  // Le Professeur dit la mission, et son bouton 🔊 la répète.
+  await expect(page.getByText('Professeur')).toBeVisible();
+  await expect(page.getByRole('button', { name: /réécouter le professeur/i })).toBeVisible();
 });
 
 test('la carte affiche les nœuds avec leur état et permet de voyager', async ({ page }) => {
@@ -139,17 +148,21 @@ test('l’espace parents affiche la progression une fois le profil créé', asyn
   await expect(page.getByRole('button', { name: 'Partir !' })).toBeVisible();
 });
 
-test('l’accueil affiche la version installée', async ({ page }) => {
-  await page.goto('./');
-  // Repere indispensable pour verifier, sur l'iPad, que le Service Worker
-  // ne sert plus une version precedente.
+test('l’espace parents affiche la version installée', async ({ page }) => {
+  // Repere indispensable pour verifier, sur l'iPad, que le Service Worker ne
+  // sert plus une version precedente. Il a quitte l'accueil de l'enfant
+  // (§190) : c'est une information d'adulte, elle vit chez les adultes — et
+  // elle doit s'y trouver AVANT même qu'un profil existe, car c'est justement
+  // quand rien ne marche qu'on va la chercher.
+  await page.goto('./#/parents');
   await expect(page.getByText(/^Version \d+\.\d+\.\d+$/)).toBeVisible({ timeout: 20_000 });
 });
 
-test('l’accueil mène à l’espace parents en un seul geste', async ({ page }) => {
+test('le premier lancement mène à l’espace parents en un seul geste', async ({ page }) => {
+  // Aucun profil : c'est un adulte qui est là, et l'écran l'assume (§190).
   await page.goto('./');
   await page.getByPlaceholder('Ton prénom').waitFor({ timeout: 20_000 });
-  await page.getByRole('button', { name: 'Espace parents' }).click();
+  await page.getByRole('button', { name: 'Espace parents', exact: true }).click();
   await expect(page.getByText(/espace parents/i).first()).toBeVisible();
 });
 

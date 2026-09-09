@@ -41,6 +41,10 @@ exercices, les Arènes, les quêtes et l'histoire.
 - **Ne pas coder les exercices individuellement.** Un nouvel exercice = une nouvelle *matrice*
   (`ExerciseTemplate`) ou un nouveau *générateur* enregistré dans `src/exercise-engine/registry.ts`.
 - **Respecter l'ergonomie enfant** (cibles ≥ 56 px, voix, peu de texte).
+- **L'Admin montre des intentions, pas la structure de données** (§196). Aucun parcours normal ne
+  doit demander de saisir un chemin `media/…`, un identifiant, une coordonnée X/Y, une valeur
+  d'énumération ou une couleur hexadécimale. Image et voix s'éditent dans l'entité concernée ;
+  ce qui reste technique vit sous « Réglages avancés ».
 - **Respecter le système `VoiceTextEditor`** : c'est le seul point d'entrée pour associer une voix à un texte.
 - **Tout texte destiné à l'enfant doit pouvoir être vocalisé** (référence `VoiceMessage`).
 - **Tester avant toute PR** : `npm run verify` (typecheck + lint + tests + build).
@@ -71,7 +75,13 @@ exercices, les Arènes, les quêtes et l'histoire.
 - **Ne jamais dépendre du `:hover`** dans `/play`.
 - Toutes les actions enfant doivent être tactiles. **Minimum tactile : 56 px.**
 - **Une seule action cognitive principale par écran.**
-- Jamais plus de **2 ou 3 actions majeures simultanées**.
+- **Jamais plus de 4 choix conceptuellement différents** sur un écran enfant (§190) — 3 est mieux.
+  Les réponses d'un exercice, le retour et le bouton 🔊 ne comptent pas ; une grille de créatures
+  compte pour **un** choix. Jamais deux chemins vers la même destination sur le même écran.
+- **Une chose à la fois, en grand** (§191) : pas de deux panneaux permanents côté enfant. Le détail
+  s'ouvre par-dessus la collection.
+- **La voix guide aussi la navigation** (§192) : chaque écran enfant annonce ce qu'on peut y faire,
+  et toute sélection se nomme. Toujours par une `VoiceMessage`, jamais un chemin audio en dur.
 - **Ne jamais utiliser du noir pur** pour le texte (`--color-text: #514A4B`).
 - **Utiliser uniquement les design tokens** (`src/ui/theme/tokens.css`).
 - **Ne pas créer de CSS one-off** sans justification (un test garde-fou vérifie les rayons/couleurs).
@@ -120,7 +130,24 @@ npm run verify      # tout ce qui précède, dans l'ordre de la CI
 
 ---
 
-## 8. Test ultime de chaque écran enfant (§189)
+## 8. Checklist d'une PR qui touche `/play` (§195)
+
+| Critère | Cible |
+| --- | --- |
+| Lecture nécessaire pour jouer | **aucune** |
+| Actions principales simultanées | **1**, exceptionnellement 2 |
+| Choix conceptuels simultanés | **≤ 4** |
+| Taille tactile | **≥ 56 px** |
+| Navigation dépendant du `:hover` | **0** |
+| Texte enfant | **1–2 lignes** |
+| Consigne importante | **voix disponible** |
+| Action principale visible en moins de 2 s | **oui** |
+| Défilement pour atteindre l'action principale | **non** |
+| Ressemble à un formulaire Web | **non** |
+
+---
+
+## 9. Test ultime de chaque écran enfant (§189)
 
 1. Un enfant qui ne sait pas lire comprend-il ce qu'il peut toucher ?
 2. L'action principale est-elle identifiable en moins de deux secondes ?

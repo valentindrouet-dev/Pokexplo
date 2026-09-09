@@ -360,10 +360,17 @@ test('les titres de la carte ne se chevauchent jamais', async ({ page }) => {
   await expectNoOverlap(page, '.map__node-label, .map__zone-label', 10);
 });
 
-test('le Centre donne accès à l’espace parents', async ({ page }) => {
+test('le Centre donne accès à l’espace parents, par un appui maintenu', async ({ page }) => {
   await boot(page);
 
   // Regression : depuis le Centre, aucun chemin ne menait à l'espace parents.
-  await page.getByRole('button', { name: 'Espace parents' }).click();
+  // Il y mène désormais par un cadenas discret (§190), qui demande un appui
+  // maintenu — le détail du geste est vérifié dans e2e/child-ux.spec.ts.
+  const gate = page.getByRole('button', { name: /espace parents/i });
+  const box = (await gate.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.waitForTimeout(1500);
+  await page.mouse.up();
   await expect(page.getByText(/espace parents — lucie/i)).toBeVisible({ timeout: 20_000 });
 });

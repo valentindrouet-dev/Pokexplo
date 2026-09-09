@@ -14,6 +14,8 @@ import { useAudio } from '../../app/providers/AudioProvider';
 import { useContent } from '../../app/providers/ContentProvider';
 import { useGame } from '../../app/providers/GameProvider';
 import { PlayScreen } from '../play/PlayScreen';
+import { useScreenVoice } from '../../app/providers/useScreenVoice';
+import { SCREEN_VOICES } from '../../content/voices';
 import { Editable } from '../edit-mode/Editable';
 
 const FILTERS: Array<{ id: 'ALL' | CreatureType; label: string }> = [
@@ -30,6 +32,8 @@ const FILTERS: Array<{ id: 'ALL' | CreatureType; label: string }> = [
  * et informations a droite. Une creature inconnue reste une silhouette « ??? ».
  */
 export function PokedexScreen() {
+  // §192 — l'écran dit ce qu'on peut y faire, à l'arrivée.
+  useScreenVoice(SCREEN_VOICES.pokedex);
   const { bundle } = useContent();
   const { save } = useGame();
   const { speak, buttonState } = useAudio();

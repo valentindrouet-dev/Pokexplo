@@ -171,11 +171,16 @@ Action principale en jaune / couleur forte, action secondaire en blanc ou pastel
 Boutons **pilule** pour filtres, petits choix, catégories.
 **Pas de checkbox ni de radio HTML côté enfant** : une vraie grosse carte tactile.
 
-## 154–156. Deux grandes colonnes
+## 154–156. Deux grandes colonnes — **côté adulte uniquement**
 
-Ratio recommandé **45 % / 55 %** : collection (grille) à gauche, information (grande image +
-détails) à droite. C'est exactement la structure du Pokédex. Une créature inconnue s'affiche en
-silhouette avec `???`.
+Ratio **45 % / 55 %** : liste à gauche, édition à droite. C'est la structure de `/admin`.
+
+> **Cette structure est proscrite dans `/play` (§191).** Le Pokédex et l'Équipe l'utilisaient : un
+> enfant de cinq ans doit alors comprendre que le panneau de droite parle de ce qu'il a touché à
+> gauche, et que le bouton du bas agit sur la sélection. C'est trois idées avant le premier geste.
+> Côté enfant, on montre **une chose à la fois, en grand** : la grille, puis la fiche par-dessus.
+
+Une créature inconnue s'affiche en silhouette avec `???`.
 
 ## 157–159. Espacement, safe-area, responsive
 
@@ -269,6 +274,107 @@ Route `#/dev/ui-kit` : couleurs, boutons, panneaux, cartes, voix, états, typogr
 ## 186. Règles Claude pour l'UI
 
 Reprises intégralement dans `CLAUDE.md` §4.
+
+---
+
+# Deuxième passe UX (§190–§196)
+
+> Ces règles viennent d'une inspection complète de la V1. Le constat tenait en une phrase :
+> **l'interface avait été conçue trop près du modèle de données et pas assez près des gestes réels
+> de l'enfant et de l'éditeur.** Elles ne demandent pas d'ajouter des fonctions — elles demandent
+> d'en **retirer de la complexité visible**.
+
+## 190. Quatre choix, pas davantage
+
+**Un écran destiné à l'enfant ne présente jamais plus de QUATRE actions conceptuellement
+différentes en même temps.** Trois est mieux. Une seule est *l'action principale* (§177).
+
+Ne comptent pas dans ce total : les réponses d'un exercice (2 à 4, §167), le retour (§176), le
+bouton 🔊 (§168), et les éléments d'une même collection — vingt créatures dans une grille sont
+**un** choix, pas vingt.
+
+Ne pas offrir **deux chemins vers la même destination** sur un même écran : le Centre proposait à
+la fois une tuile « Aventure » et un bouton « Partir ! ».
+
+## 191. Une chose à la fois, en grand
+
+Côté enfant, pas de deux panneaux permanents (§154). Le détail d'un élément s'ouvre **par-dessus**
+la collection, en plein écran, et se referme d'un geste. L'enfant sait toujours ce qu'il regarde.
+
+## 192. La voix guide aussi la NAVIGATION
+
+Le moteur vocal ne sert plus seulement aux exercices. **Chaque écran enfant annonce ce qu'on peut y
+faire**, à l'arrivée, une fois :
+
+| Écran | Ce que dit la voix |
+| --- | --- |
+| Pokédex | « Voici tous les Pokémon que tu as rencontrés ! » |
+| Équipe | « Choisis les Pokémon que tu veux emmener avec toi ! » |
+| Carte | « Où veux-tu aller ? » |
+| Badges | « Voici tes badges ! » |
+
+Et **toute sélection se nomme** : toucher un lieu dit son nom, toucher une créature dit le sien.
+
+> L'enfant ne doit pas avoir besoin de comprendre les mots **Pokédex**, **Équipe** ou **Quêtes**
+> pour se servir du jeu.
+
+Ces phrases sont des `VoiceMessage` comme les autres (CLAUDE.md §3) : jamais de chemin audio en
+dur, toujours enregistrables par l'administrateur, toujours rattrapées par la synthèse.
+
+## 193. Sélection en deux temps sur la carte
+
+Toucher un lieu le **sélectionne** et dit son nom ; un second geste sur « Y aller ! » lance le
+voyage. Cela supprime les départs accidentels et laisse à l'enfant le temps de comprendre ce qu'il
+vient de choisir.
+
+## 194. Hiérarchie d'un écran d'exercice
+
+De haut en bas : **🔊 · grande scène · réponses géantes**. La consigne écrite reste présente mais
+**secondaire** (elle sert à l'adulte et à l'enfant qui commence à lire). Quand un indice apparaît,
+ce sont **l'animation et la voix** qui portent l'aide — pas un nouveau bloc de texte dominant.
+
+## 195. Checklist obligatoire d'une PR qui touche `/play`
+
+| Critère | Cible |
+| --- | --- |
+| Lecture nécessaire pour jouer | **aucune** |
+| Actions principales simultanées | **1**, exceptionnellement 2 |
+| Choix conceptuels simultanés | **≤ 4** |
+| Taille tactile | **≥ 56 px** |
+| Navigation dépendant du `:hover` | **0** |
+| Texte enfant | **1–2 lignes** |
+| Consigne importante | **voix disponible** |
+| Action principale visible en moins de 2 s | **oui** |
+| Défilement pour atteindre l'action principale | **non** |
+| Ressemble à un formulaire Web | **non** |
+
+## 196. L'Admin montre des INTENTIONS, pas la structure de données
+
+`/admin` a le droit d'être dense et professionnel (§178). Il n'a pas le droit d'exiger la
+connaissance du modèle interne. Aucun parcours normal ne doit demander de saisir un chemin
+`media/…`, un identifiant, une coordonnée X/Y, une valeur d'énumération ou une couleur
+hexadécimale : image et voix s'éditent **dans l'entité** qu'elles concernent, les couleurs par un
+sélecteur, la carte au doigt. Ce qui reste technique vit sous un repli **« Réglages avancés »**.
+
+Cibles :
+
+| Action | Objectif |
+| --- | --- |
+| Ajouter une créature | < 1 minute |
+| Remplacer son image | 2 à 3 gestes |
+| Enregistrer son nom | 2 à 3 gestes |
+| Dupliquer une créature | 1 geste |
+| Créer une matrice d'exercice | < 2 minutes |
+| Ajouter un lieu | depuis la carte |
+| Ajouter une créature à un lieu | vignettes visuelles |
+| Voir les voix manquantes | 1 geste |
+| Prévisualiser | 1 geste |
+| Publier | 1 action claire, après validation |
+
+Les pages globales « Images » et « Voix » ne servent plus à éditer une entité : elles servent à
+**vérifier l'ensemble** — ce qui manque, ce qui est obsolète, ce qui n'est plus utilisé.
+
+---
 
 ## 189. Test ultime de chaque écran
 

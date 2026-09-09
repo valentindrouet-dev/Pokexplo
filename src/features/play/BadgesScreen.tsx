@@ -3,9 +3,13 @@ import { LoadingBall, SoftPanel } from '../../ui';
 import { useContent } from '../../app/providers/ContentProvider';
 import { useGame } from '../../app/providers/GameProvider';
 import { PlayScreen } from './PlayScreen';
+import { useScreenVoice } from '../../app/providers/useScreenVoice';
+import { SCREEN_VOICES } from '../../content/voices';
 
 /** BADGES (CONCEPTION §22) — la preuve visible des Arènes remportées. */
 export function BadgesScreen() {
+  // §192 — l'écran dit ce qu'on peut y faire, à l'arrivée.
+  useScreenVoice(SCREEN_VOICES.badges);
   const { bundle, gym } = useContent();
   const { save } = useGame();
 

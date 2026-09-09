@@ -27,6 +27,13 @@
   flex: 0 0 auto;
 }
 
+/* Repere de version, discret : il sert au diagnostic, pas a la lecture. */
+.parent__version {
+  font-size: var(--text-small);
+  color: var(--color-text-soft);
+  opacity: var(--opacity-disabled);
+}
+
 .parent__title {
   font-size: var(--title);
   font-weight: var(--weight-heavy);
