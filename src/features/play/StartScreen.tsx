@@ -7,6 +7,8 @@ import { useGame } from '../../app/providers/GameProvider';
 import { useNavigation } from '../../app/router';
 import './play.css';
 
+const APP_VERSION = typeof __APP_VERSION__ === 'string' ? __APP_VERSION__ : 'dev';
+
 /**
  * ECRAN D'ACCUEIL (CONCEPTION §64).
  *
@@ -138,6 +140,13 @@ export function StartScreen() {
           <SecondaryButton onClick={() => navigate({ name: 'parents' })}>
             Espace parents
           </SecondaryButton>
+
+          {/*
+            Repere de version : permet de verifier d'un coup d'œil, sur l'iPad,
+            quelle build est reellement installee (le Service Worker pouvant
+            servir une version precedente tant qu'elle n'a pas ete remplacee).
+          */}
+          <p className="start__version">Version {APP_VERSION}</p>
         </SoftPanel>
       </div>
     </div>

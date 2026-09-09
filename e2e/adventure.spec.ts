@@ -139,6 +139,13 @@ test('l’espace parents affiche la progression une fois le profil créé', asyn
   await expect(page.getByRole('button', { name: 'Partir !' })).toBeVisible();
 });
 
+test('l’accueil affiche la version installée', async ({ page }) => {
+  await page.goto('./');
+  // Repere indispensable pour verifier, sur l'iPad, que le Service Worker
+  // ne sert plus une version precedente.
+  await expect(page.getByText(/^Version \d+\.\d+\.\d+$/)).toBeVisible({ timeout: 20_000 });
+});
+
 test('l’accueil mène à l’espace parents en un seul geste', async ({ page }) => {
   await page.goto('./');
   await page.getByPlaceholder('Ton prénom').waitFor({ timeout: 20_000 });

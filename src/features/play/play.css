@@ -66,6 +66,12 @@
   width: 100%;
 }
 
+.start__version {
+  font-size: var(--text-small);
+  color: var(--color-text-soft);
+  opacity: var(--opacity-disabled);
+}
+
 .start__field {
   width: 100%;
   min-height: var(--touch-comfort);
