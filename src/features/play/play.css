@@ -171,11 +171,17 @@
   gap: var(--space-5);
   flex: 1 1 auto;
   min-height: 0;
+  /*
+   * Les tuiles se CENTRENT dans la place libre au lieu de s'y etirer : sur un
+   * grand ecran, elles devenaient de hauts rectangles blancs avec un petit
+   * pictogramme perdu au milieu.
+   */
+  align-content: center;
 }
 
 .center-hub__tile {
   min-height: clamp(120px, 16vh, 168px);
-  height: 100%;
+  max-height: clamp(140px, 22vh, 220px);
 }
 
 /* La jauge de chapitre ne prend jamais plus que sa hauteur propre. */

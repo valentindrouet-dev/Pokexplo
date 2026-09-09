@@ -4,6 +4,25 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 Trois versions sont suivies séparément (§112) : `APP_VERSION`, `CONTENT_VERSION`,
 `SAVE_SCHEMA_VERSION`.
 
+## [1.12.1] — Le cadenas répond, et les tuiles du Centre cessent de s'étirer
+
+`APP_VERSION 1.12.1` · `CONTENT_VERSION bundled-5` · `SAVE_SCHEMA_VERSION 3`
+
+### Corrigé
+
+- **Le cadenas de l'espace parents ne faisait rien sur un appui bref** — ni
+  action, ni retour visuel. Seul un appui maintenu d'une seconde ouvrait, et
+  rien ne le disait : le cadenas était indiscernable d'un bouton cassé, et un
+  parent ne pouvait plus entrer chez lui. Un appui bref ouvre désormais une
+  petite carte qui explique le geste et propose l'entrée ; l'appui maintenu
+  reste le raccourci de celui qui le connaît.
+- Au **premier lancement**, l'écran s'adresse déjà à un adulte et porte le
+  bouton « Espace parents » en clair : le cadenas y était une seconde porte
+  vers le même endroit (§190). Il n'apparaît plus que sur l'écran de l'enfant.
+- **Les tuiles du Centre s'étiraient** sur un grand écran : de hauts
+  rectangles blancs avec un petit pictogramme perdu au milieu. Elles se
+  centrent maintenant dans la place libre, avec une hauteur plafonnée.
+
 ## [1.12.0] — Passe UX : créer un exercice en deux questions, relier deux lieux au doigt
 
 `APP_VERSION 1.12.0` · `CONTENT_VERSION bundled-5` · `SAVE_SCHEMA_VERSION 3`

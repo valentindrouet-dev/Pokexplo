@@ -106,10 +106,17 @@ function Shell({
   children,
   biome,
   wide = false,
+  gate = true,
 }: {
   children: React.ReactNode;
   biome: ReturnType<ReturnType<typeof useContent>['biome']>;
   wide?: boolean;
+  /**
+   * Le cadenas n'a de sens que sur l'écran de l'ENFANT. Au premier
+   * lancement, l'écran s'adresse déjà à un adulte et porte le bouton en
+   * clair : deux portes vers le même endroit, ce serait une de trop (§190).
+   */
+  gate?: boolean;
 }) {
   return (
     <div className="play">
@@ -119,7 +126,7 @@ function Shell({
           {children}
         </SoftPanel>
       </div>
-      <ParentGate />
+      {gate ? <ParentGate /> : null}
     </div>
   );
 }
@@ -158,7 +165,7 @@ function FirstProfile() {
   };
 
   return (
-    <Shell biome={biome('centre')}>
+    <Shell biome={biome('centre')} gate={false}>
       <h1 className="start__title">Pokexplo</h1>
       <p className="start__subtitle">
         Bonjour ! Créons le profil de votre enfant — c’est la seule étape qui vous demande d’écrire.

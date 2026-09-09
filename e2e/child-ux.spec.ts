@@ -129,32 +129,69 @@ test('l’accueil est celui de l’enfant : ni version, ni champ de saisie', asy
 
   await expect(page.getByText(/^Version \d+\.\d+\.\d+$/)).toHaveCount(0);
   await expect(page.getByPlaceholder('Ton prénom')).toHaveCount(0);
-  // Le cadenas parental porte « Espace parents — appui long » : c'est l'ancien
-  // bouton en clair, au milieu de l'écran, qui ne doit plus exister.
-  await expect(page.getByRole('button', { name: 'Espace parents', exact: true })).toHaveCount(0);
+  // Le cadenas discret reste ; c'est l'ancien bouton en clair, au milieu de
+  // l'écran de l'enfant, qui ne doit plus exister.
+  await expect(page.locator('.play__content').getByRole('button', { name: 'Espace parents' })).toHaveCount(0);
   // Son prénom est là, en grand : il reconnaît sa place sans savoir lire.
   await expect(page.getByText('Lucie')).toBeVisible();
 });
 
-test('l’espace parents demande un appui maintenu (§190)', async ({ page }) => {
+test('le cadenas répond toujours, et mène à l’espace parents (§190)', async ({ page }) => {
   await boot(page);
-  const gate = page.getByRole('button', { name: /espace parents/i });
+  const gate = page.getByRole('button', { name: 'Espace parents' });
   const box = (await gate.boundingBox())!;
   // Cible confortable pour un adulte, malgré sa discrétion.
   expect(Math.min(box.width, box.height)).toBeGreaterThanOrEqual(44);
 
-  // Un appui bref — celui d'un enfant qui explore — ne fait rien.
+  /*
+   * RÉGRESSION VÉCUE : un appui bref ne faisait RIEN — ni action, ni retour
+   * visuel. Le cadenas était indiscernable d'un bouton cassé, et un parent ne
+   * pouvait plus entrer chez lui. Un appui bref explique désormais le geste,
+   * et propose l'entrée.
+   */
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.mouse.down();
-  await page.waitForTimeout(200);
+  await page.waitForTimeout(150);
   await page.mouse.up();
+
+  const dialog = page.getByRole('dialog', { name: 'Espace parents' });
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText(/maintenez le cadenas/i);
+  // On n'y est pas encore : le jeu est toujours là derrière.
   await expect(page.getByRole('button', { name: 'Partir !' })).toBeVisible();
 
-  // Maintenu, il ouvre l'espace parents.
+  await page.getByRole('button', { name: /ouvrir l’espace parents/i }).click();
+  await expect(page.getByText(/espace parents — lucie/i)).toBeVisible({ timeout: 20_000 });
+});
+
+test('le cadenas maintenu entre directement (§190)', async ({ page }) => {
+  await boot(page);
+  const box = (await page.getByRole('button', { name: 'Espace parents' }).boundingBox())!;
+
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
   await page.mouse.down();
   await page.waitForTimeout(1500);
   await page.mouse.up();
+
+  // Le raccourci de celui qui connaît le geste : pas de carte intermédiaire.
   await expect(page.getByText(/espace parents — lucie/i)).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByRole('dialog', { name: 'Espace parents' })).toHaveCount(0);
+});
+
+test('les tuiles du Centre ne s’étirent pas sur un grand écran', async ({ page }) => {
+  await boot(page);
+  // Régression : sur un écran haut, elles devenaient de hauts rectangles
+  // blancs avec un petit pictogramme perdu au milieu.
+  await page.setViewportSize({ width: 1600, height: 1300 });
+  await expect(page.locator('.center-hub__tile').first()).toBeVisible();
+
+  const tiles = await page
+    .locator('.center-hub__tile')
+    .evaluateAll((els) => els.map((el) => el.getBoundingClientRect().height));
+  for (const height of tiles) {
+    expect(height).toBeGreaterThanOrEqual(120);
+    expect(height).toBeLessThanOrEqual(280);
+  }
 });
 
 test('chaque écran enfant s’annonce à la voix (§192)', async ({ page }) => {

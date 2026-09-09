@@ -106,8 +106,12 @@ de l'enfant, et chaque texte, lieu ou créature devient modifiable d'un geste.
 
 ### Y entrer
 
-- `/parents` → **« Modifier l'aventure »**, ou
-- `/admin` → **Prévisualiser** → **« Éditer sur place »**.
+Depuis l'écran de l'enfant : **touchez le petit cadenas en haut à droite** →
+**« Ouvrir l'espace parents »** → **« Modifier l'aventure »**. Un appui
+maintenu d'une seconde sur le cadenas entre directement.
+
+Autres chemins, si vous préférez l'adresse : `/parents`, ou `/admin` →
+**Aperçu** → **« Éditer sur place »**.
 
 Un bandeau mauve apparaît en haut : c'est le seul signe que le mode est actif.
 Il indique aussi si le brouillon est enregistré. **« Quitter l'édition »** rend
