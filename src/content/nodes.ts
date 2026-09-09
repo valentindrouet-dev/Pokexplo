@@ -24,7 +24,7 @@ export const defaultNodes: MapNode[] = [
     biomeId: 'centre',
     label: 'Centre',
     kind: 'CENTER',
-    x: 6,
+    x: 7,
     y: 50,
     connections: ['prairie-1'],
     arrivalVoiceId: 'voice.node.centre',

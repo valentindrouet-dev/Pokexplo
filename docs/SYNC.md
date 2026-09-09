@@ -121,6 +121,7 @@ l'écran à l'enfant, à l'identique.
 
 | Sur l'écran | On touche | On modifie |
 | --- | --- | --- |
+| Carte | **on fait glisser un lieu** | **sa place sur la carte** |
 | Carte | le crayon sur un lieu | son nom, sa région, ses exercices, sa phrase d'arrivée |
 | Carte | le titre d'une région (en mauve) | le nom de la région, son nom court sur la carte |
 | Centre | le titre du chapitre | le titre, les voix d'ouverture et de fin |
@@ -128,6 +129,21 @@ l'écran à l'enfant, à l'identique.
 | Rencontre | la créature | son nom, son habitat, ses syllabes, sa description, sa voix |
 | Exercice | la consigne | consigne, deux indices, félicitations — et leurs voix |
 | Pokédex | le nom d'une créature | idem créature |
+
+### Ranger la carte
+
+Faites **glisser un lieu** pour le déplacer. Sa bulle de région se reforme sous
+le doigt, les chemins suivent : vous voyez tout de suite ce que l'enfant verra.
+
+- Les lieux se posent sur une **grille** et ne peuvent pas sortir du cadre — ni
+  en paysage, ni en portrait, quel que soit le sens dans lequel vous éditez.
+- **Un simple appui reste un voyage** : vous continuez à parcourir l'aventure
+  tout en la modifiant.
+- Au clavier : sélectionnez un lieu et déplacez-le aux **flèches**.
+- Si vous lâchez un lieu **chez une autre région**, Pokexplo vous le dit et
+  propose de l'y rattacher. Sans cela, la bulle de sa région d'origine irait le
+  chercher là-bas et traverserait la voisine — la carte deviendrait illisible.
+  Rien n'est réaffecté sans votre accord.
 
 Les textes se saisissent **dans l'enregistreur de voix**, jamais ailleurs :
 c'est le seul point d'entrée pour associer une voix à un texte, et c'est lui qui

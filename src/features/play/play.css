@@ -178,6 +178,74 @@
 
 .map__node {
   cursor: pointer;
+  /*
+   * Le cadre de focus par defaut du navigateur est un rectangle noir pose sur
+   * le dessin (et le noir pur est proscrit, §186). On le remplace par un
+   * anneau du systeme, reserve au clavier : indispensable pour deplacer un
+   * lieu aux fleches.
+   */
+  outline: none;
+}
+
+.map__node:focus-visible .map__node-ring {
+  stroke: var(--color-lavender);
+  stroke-width: 1.6;
+}
+
+/*
+ * DEPLACER UN LIEU (mode edition).
+ *
+ * `touch-action: none` est indispensable : sans lui, iPadOS interprete le
+ * glissement comme un defilement de la page et le lieu ne suit pas le doigt.
+ */
+/*
+ * `touch-action: none` sur la carte ENTIERE : le geste est suivi par le <svg>,
+ * et sans cela iPadOS l'interprete comme un defilement de la page.
+ */
+.map__svg[data-editing='true'] {
+  touch-action: none;
+}
+
+.map__node--draggable {
+  cursor: grab;
+}
+
+.map__node--dragging {
+  cursor: grabbing;
+}
+
+.map__node--dragging .map__node-ring {
+  stroke: var(--color-lavender);
+  stroke-width: 1.2;
+}
+
+/* La region que l'on remodele s'affirme, le temps du geste. */
+.map__zone-group--active .map__zone {
+  opacity: 0.5;
+}
+
+.map__zone-group--active .map__zone-edge {
+  opacity: 0.72;
+}
+
+/* Proposition de rattachement, posee au-dessus de la carte. */
+.map__stray {
+  position: absolute;
+  left: var(--space-4);
+  right: var(--space-4);
+  bottom: var(--space-4);
+  z-index: var(--z-bar);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-float);
+  font-size: var(--text-small);
+  font-weight: var(--weight-bold);
 }
 
 .map__node-ring {

@@ -4,6 +4,37 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 Trois versions sont suivies séparément (§112) : `APP_VERSION`, `CONTENT_VERSION`,
 `SAVE_SCHEMA_VERSION`.
 
+## [1.4.0] — Ranger la carte au doigt
+
+`APP_VERSION 1.4.0` · `CONTENT_VERSION bundled-4` · `SAVE_SCHEMA_VERSION 3`
+
+### Ajouté
+
+- **Déplacer les lieux sur la carte**, en mode édition (`docs/SYNC.md` §3). La
+  bulle de région se reforme sous le doigt et les chemins suivent : on voit
+  immédiatement ce que l'enfant verra. Les lieux se posent sur une grille et ne
+  peuvent pas sortir du cadre — dans les deux orientations, quelle que soit
+  celle dans laquelle on édite. Au clavier, les flèches font la même chose, en
+  suivant l'écran et non les données.
+- **Cohérence des régions** : un lieu lâché chez une autre région est signalé,
+  avec un bouton pour l'y rattacher. Sans cela, la bulle de sa région d'origine
+  s'étire pour aller le chercher et traverse la voisine. Rien n'est jamais
+  réaffecté sans l'accord de l'administrateur (§115).
+- La géométrie de la carte vit désormais dans `mapGeometry.ts`, pure et testée :
+  les deux projections, leurs inverses, et la boîte utile qui garantit qu'un
+  lieu rangé reste lisible en paysage comme en portrait.
+
+### Corrigé
+
+- **Un appui sur un lieu ne faisait plus rien en mode édition** : dès qu'on
+  capture le pointeur — indispensable pour suivre le doigt — le navigateur
+  n'émet plus de `click`. Le lâcher décide désormais lui-même.
+- **Le crayon d'un lieu lançait un voyage** au lieu d'ouvrir son tiroir.
+- Le cadre de focus posé sur un lieu était un rectangle noir du navigateur ;
+  c'est maintenant un anneau du design system, réservé au clavier (§186).
+- Le **Centre** débordait du cadre à gauche : sa bulle était rognée. Il est
+  ramené dans la boîte utile — d'où le nouveau `CONTENT_VERSION`.
+
 ## [1.3.0] — iPad en portrait, et le tiroir d'édition partout
 
 `APP_VERSION 1.3.0` · `CONTENT_VERSION bundled-3` · `SAVE_SCHEMA_VERSION 3`

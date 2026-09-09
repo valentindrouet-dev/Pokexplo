@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import type { Biome, BiomeKind, MapNode, NodeState } from '../../types';
 import { canTravelTo, nodeState, pathBetween } from '../../game-engine';
 import {
@@ -16,6 +16,8 @@ import {
   IconVolcano,
   IconWave,
   LoadingBall,
+  PrimaryButton,
+  SecondaryButton,
   SoftPanel,
   VoiceButton,
 } from '../../ui';
@@ -25,82 +27,42 @@ import { useGame } from '../../app/providers/GameProvider';
 import { useNavigation } from '../../app/router';
 import { useEditMode } from '../../app/providers/EditModeProvider';
 import { PlayScreen } from '../play/PlayScreen';
-import { useOrientation, type Orientation } from '../../utils/useOrientation';
+import { useOrientation } from '../../utils/useOrientation';
+import { useAdminDraftOptional } from '../admin/AdminDraftContext';
+import {
+  HIT_R,
+  NODE_R,
+  NODE_R_GYM,
+  PROJECTIONS,
+  ZONE_LINK_W,
+  ZONE_R,
+  foreignBiomeAt,
+  placeNode,
+  type Point,
+  type Zone as ZoneShapeData,
+} from './mapGeometry';
+
+const TRAVEL_STEP_MS = 320;
 
 /**
- * PROJECTION DE LA CARTE.
- *
- * Les positions du contenu sont en pourcentage (§159) ; l'administrateur
- * raisonne toujours ainsi. L'ecran, lui, change de forme :
- *
- *  - PAYSAGE  : repere 160 x 100, le chemin Centre → Arene va vers la droite ;
- *  - PORTRAIT : repere 100 x 150, la carte est TRANSPOSEE — le meme chemin
- *    descend. Sans cela, la carte paysage flottait, minuscule, au milieu d'un
- *    panneau vide, et les lieux devenaient trop petits pour un enfant.
- *
- * Toutes les tailles (rayons, textes, traits) sont en unites du repere : elles
- * grandissent donc avec le panneau, dans les deux sens.
+ * Au-dela de ce deplacement (en unites du repere), on ne considere plus le
+ * geste comme un appui : c'est un glisser. En deca, l'adulte peut continuer a
+ * parcourir l'aventure d'une simple touche, meme en mode edition.
  */
-interface Point {
-  x: number;
-  y: number;
+const DRAG_THRESHOLD = 2;
+
+/** Un pas de clavier : la meme distance dans les deux orientations. */
+const NUDGE_STEP = 2;
+
+interface DragState {
+  id: string;
+  pointerId: number;
+  /** Position courante, en pourcentages, deja rangee sur la grille. */
+  at: Point;
+  /** Point de depart, en unites du repere : sert a mesurer le seuil. */
+  origin: Point;
+  moved: boolean;
 }
-
-interface ZoneLabel extends Point {
-  anchor: 'start' | 'middle' | 'end';
-}
-
-interface Projection {
-  w: number;
-  h: number;
-  toView: (node: { x: number; y: number }) => Point;
-  /**
-   * Position du titre d'une region. `points` sont ses lieux, `all` tous les
-   * lieux de la carte : on s'en sert pour poser le titre du cote libre.
-   */
-  labelFor: (points: Point[], all: Point[]) => ZoneLabel;
-}
-
-const PROJECTIONS: Record<Orientation, Projection> = {
-  landscape: {
-    w: 160,
-    h: 100,
-    toView: (node) => ({ x: node.x * 1.6, y: node.y }),
-    // Au-dessus du lieu le plus a gauche : le milieu d'une bulle est souvent
-    // traverse par un chemin, qui couperait le titre.
-    labelFor: (points) => {
-      const left = points.reduce((best, point) => (point.x < best.x ? point : best), points[0]!);
-      return { x: left.x, y: Math.max(4, left.y - ZONE_R - 3), anchor: 'middle' };
-    },
-  },
-  portrait: {
-    w: 100,
-    h: 150,
-    // Marges : le personnage se tient AU-DESSUS du lieu courant (§11), et les
-    // bulles de region ne doivent pas affleurer les bords du cadre.
-    toView: (node) => ({ x: 6 + node.y * 0.88, y: 12 + node.x * 1.34 }),
-    // Les regions s'empilent : un titre « au-dessus » tomberait sur la region
-    // precedente. On le pose A COTE du lieu le plus haut, du cote ou la carte
-    // est vide — a l'oppose de l'axe des lieux.
-    labelFor: (points, all) => {
-      const top = points.reduce((best, point) => (point.y < best.y ? point : best), points[0]!);
-      const axis = all.reduce((sum, point) => sum + point.x, 0) / Math.max(1, all.length);
-      const right = top.x >= axis;
-      return {
-        x: right ? Math.min(96, top.x + NODE_R + 4) : Math.max(4, top.x - NODE_R - 4),
-        y: top.y - 1.5,
-        anchor: right ? 'start' : 'end',
-      };
-    },
-  },
-};
-
-const NODE_R = 5.6;
-const NODE_R_GYM = 6.6;
-const HIT_R = 10;
-const ZONE_R = 11;
-const ZONE_LINK_W = 22;
-const TRAVEL_STEP_MS = 320;
 
 /** Couleur de fond du nœud selon son etat (§11). */
 const STATE_FILL: Record<NodeState, string> = {
@@ -173,6 +135,12 @@ function MapEditBadge({
       role="button"
       tabIndex={0}
       aria-label={`Modifier ${label}`}
+      /*
+       * Le crayon est POSE sur le lieu : sans cela, l'appui demarrait un
+       * deplacement, la carte capturait le pointeur, et le `click` du crayon
+       * n'etait jamais emis — toucher le crayon lancait un voyage.
+       */
+      onPointerDown={(event) => event.stopPropagation()}
       onClick={(event) => {
         event.stopPropagation();
         onOpen();
@@ -193,11 +161,6 @@ function MapEditBadge({
   );
 }
 
-interface Zone {
-  points: Point[];
-  inner: Array<{ a: Point; b: Point }>;
-}
-
 /**
  * Forme souple d'une region : l'union de cercles poses sur les lieux et de
  * liaisons epaisses entre eux. L'opacite est portee par le groupe, sinon les
@@ -209,7 +172,7 @@ function ZoneShape({
   grow,
   className,
 }: {
-  zone: Zone;
+  zone: ZoneShapeData;
   color: string;
   grow: number;
   className: string;
@@ -255,7 +218,41 @@ export function MapScreen() {
   const [walking, setWalking] = useState<string[] | null>(null);
   const [step, setStep] = useState(0);
   const orientation = useOrientation();
-  const { w: VIEW_W, h: VIEW_H, toView, labelFor } = PROJECTIONS[orientation];
+  const { w: VIEW_W, h: VIEW_H, toView, fromView, labelFor } = PROJECTIONS[orientation];
+
+  /*
+   * DÉPLACER LES LIEUX (mode édition).
+   *
+   * Tant que le doigt est posé, la position vit ICI et non dans le brouillon :
+   * on ne réécrit pas le contenu soixante fois par seconde. Tout ce qui est
+   * dessiné à partir d'un lieu — bulles de région, chemins, étiquettes — passe
+   * par `place()`, si bien que la région se reforme sous le doigt et que
+   * l'adulte voit tout de suite ce qu'il fabrique.
+   */
+  const drafting = useAdminDraftOptional();
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const [drag, setDrag] = useState<DragState | null>(null);
+  /** Lieu lâché chez une autre région : on propose de l'y rattacher. */
+  const [strayNodeId, setStrayNodeId] = useState<string | null>(null);
+  const [strayBiomeId, setStrayBiomeId] = useState<string | null>(null);
+  /*
+   * Position ecrite, en attendant que le brouillon revienne.
+   *
+   * Le chemin est long — brouillon, previsualisation, contenu — et dure une ou
+   * deux images. Sans ce relais, le lieu revenait a son ancienne place juste
+   * apres le lacher, puis sautait a la nouvelle.
+   */
+  const [pending, setPending] = useState<{ id: string; at: Point } | null>(null);
+
+  const positionOf = useCallback(
+    (node: MapNode): Point => {
+      if (drag?.id === node.id) return drag.at;
+      if (pending?.id === node.id) return pending.at;
+      return node;
+    },
+    [drag, pending],
+  );
+  const place = useCallback((node: MapNode): Point => toView(positionOf(node)), [toView, positionOf]);
 
   const states = useMemo(() => {
     if (!bundle || !save) return new Map<string, NodeState>();
@@ -288,10 +285,10 @@ export function MapScreen() {
       .map((item) => {
         const nodes = bundle.nodes.filter((node) => node.biomeId === item.id);
         if (nodes.length === 0) return null;
-        const points = nodes.map(toView);
+        const points = nodes.map(place);
         const inner = links
           .filter((link) => link.from.biomeId === item.id && link.to.biomeId === item.id)
-          .map((link) => ({ a: toView(link.from), b: toView(link.to) }));
+          .map((link) => ({ a: place(link.from), b: place(link.to) }));
         return {
           biome: item,
           points,
@@ -299,11 +296,11 @@ export function MapScreen() {
           // Une region d'un seul lieu n'a pas besoin d'etiquette : le nom du
           // lieu, juste en dessous, suffit et evite un chevauchement.
           showLabel: nodes.length > 1,
-          label: labelFor(points, bundle.nodes.map(toView)),
+          label: labelFor(points, bundle.nodes.map(place)),
         };
       })
       .filter((zone): zone is NonNullable<typeof zone> => zone !== null);
-  }, [bundle, links, toView, labelFor]);
+  }, [bundle, links, place, labelFor]);
 
   const currentNode = bundle?.nodes.find((node) => node.id === save?.state.currentNode) ?? null;
   const currentBiome = biome(currentNode?.biomeId);
@@ -328,6 +325,12 @@ export function MapScreen() {
     },
     [bundle, dispatch, navigate, speak],
   );
+
+  useEffect(() => {
+    if (!pending) return;
+    const node = bundle?.nodes.find((entry) => entry.id === pending.id);
+    if (node && node.x === pending.at.x && node.y === pending.at.y) setPending(null);
+  }, [bundle, pending]);
 
   useEffect(() => {
     if (!walking) return undefined;
@@ -358,9 +361,145 @@ export function MapScreen() {
     setWalking(pathBetween(save.state.currentNode, node.id, save, bundle));
   };
 
+  const draggable = editing && drafting !== null;
+
+  /**
+   * Position du doigt, en pourcentages.
+   *
+   * `getScreenCTM` fait tout le travail : il tient compte du `viewBox`, de la
+   * mise a l'echelle du panneau et du defilement de la page. Absent d'un
+   * environnement de test sans rendu — on renvoie alors `null` plutot que de
+   * calculer faux.
+   */
+  const pointerAt = (event: { clientX: number; clientY: number }): Point | null => {
+    const svg = svgRef.current;
+    if (!svg || typeof svg.getScreenCTM !== 'function' || typeof DOMPoint === 'undefined') return null;
+    const matrix = svg.getScreenCTM();
+    if (!matrix) return null;
+    const local = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse());
+    return fromView({ x: local.x, y: local.y });
+  };
+
+  /** Ecrit la nouvelle position dans le brouillon, et signale un lieu egare. */
+  const moveNodeTo = (node: MapNode, position: Point): void => {
+    if (!drafting) return;
+    const at = placeNode(position);
+    if (at.x === node.x && at.y === node.y) return;
+
+    setPending({ id: node.id, at });
+    drafting.update((current) => ({
+      ...current,
+      nodes: current.nodes.map((entry) => (entry.id === node.id ? { ...entry, ...at } : entry)),
+    }));
+
+    const foreign = foreignBiomeAt(at, bundle.nodes, node, toView);
+    setStrayNodeId(foreign ? node.id : null);
+    setStrayBiomeId(foreign);
+  };
+
+  /**
+   * La capture est posee sur le <svg>, jamais sur le lieu.
+   *
+   * Le lieu qu'on deplace passe par-dessus les autres, donc il change de place
+   * dans le document — et le navigateur relache alors la capture. Le geste
+   * s'interrompait des que le doigt sortait du lieu, par exemple quand la
+   * position butait sur le bord du cadre.
+   */
+  const startDrag = (node: MapNode, event: ReactPointerEvent<SVGGElement>): void => {
+    if (!draggable || walking) return;
+    const svg = svgRef.current;
+    if (svg && typeof svg.setPointerCapture === 'function') svg.setPointerCapture(event.pointerId);
+    setStrayNodeId(null);
+    setStrayBiomeId(null);
+    setDrag({
+      id: node.id,
+      pointerId: event.pointerId,
+      at: { x: node.x, y: node.y },
+      origin: toView(node),
+      moved: false,
+    });
+  };
+
+  const continueDrag = (event: ReactPointerEvent<SVGSVGElement>): void => {
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    const at = pointerAt(event);
+    if (!at) return;
+    const view = toView(at);
+    const moved =
+      drag.moved || Math.hypot(view.x - drag.origin.x, view.y - drag.origin.y) > DRAG_THRESHOLD;
+    // On range des le glissement : l'adulte voit exactement ou le lieu tombera.
+    setDrag({ ...drag, moved, at: moved ? placeNode(at) : drag.at });
+  };
+
+  /**
+   * C'est le LACHER qui decide, et non un `click`.
+   *
+   * Des qu'on capture le pointeur — indispensable pour que le lieu suive le
+   * doigt hors de sa zone tactile — le navigateur n'emet plus de `click` du
+   * tout. Toucher un lieu en mode edition ne faisait donc plus rien.
+   */
+  const endDrag = (event: ReactPointerEvent<SVGSVGElement>): void => {
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    const dropped = drag;
+    const node = bundle.nodes.find((entry) => entry.id === dropped.id);
+    setDrag(null);
+    if (!node) return;
+    if (dropped.moved) moveNodeTo(node, dropped.at);
+    // Un appui reste un appui : l'adulte parcourt l'aventure tout en l'editant.
+    else if (event.isPrimary) travelTo(node);
+  };
+
+  /** Clavier : les fleches suivent l'ECRAN, pas les donnees (§159). */
+  const nudge = (node: MapNode, dx: number, dy: number): void => {
+    const view = toView(node);
+    moveNodeTo(node, fromView({ x: view.x + dx, y: view.y + dy }));
+  };
+
+  const onNodeKeyDown = (node: MapNode, event: React.KeyboardEvent<SVGGElement>): void => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      travelTo(node);
+      return;
+    }
+    if (!draggable) return;
+    const steps: Record<string, [number, number]> = {
+      ArrowLeft: [-NUDGE_STEP, 0],
+      ArrowRight: [NUDGE_STEP, 0],
+      ArrowUp: [0, -NUDGE_STEP],
+      ArrowDown: [0, NUDGE_STEP],
+    };
+    const step = steps[event.key];
+    if (!step) return;
+    event.preventDefault();
+    nudge(node, step[0], step[1]);
+  };
+
+  /*
+   * Le lieu que l'on deplace passe par-dessus les autres : sans cela, un voisin
+   * dessine plus tard le recouvrait en cours de route.
+   */
+  const orderedNodes = drag
+    ? [...bundle.nodes.filter((node) => node.id !== drag.id), ...bundle.nodes.filter((node) => node.id === drag.id)]
+    : bundle.nodes;
+
+  const strayNode = bundle.nodes.find((node) => node.id === strayNodeId) ?? null;
+  const strayBiome = bundle.biomes.find((item) => item.id === strayBiomeId) ?? null;
+  const strayHome = bundle.biomes.find((item) => item.id === strayNode?.biomeId) ?? null;
+
+  const attachStray = (): void => {
+    if (!drafting || !strayNode || !strayBiome) return;
+    drafting.update((current) => ({
+      ...current,
+      nodes: current.nodes.map((entry) =>
+        entry.id === strayNode.id ? { ...entry, biomeId: strayBiome.id } : entry,
+      ),
+    }));
+    setStrayNodeId(null);
+    setStrayBiomeId(null);
+  };
+
   const walkingNodeId = walking?.[step] ?? save.state.currentNode;
   const avatarNode = bundle.nodes.find((node) => node.id === walkingNodeId) ?? currentNode;
-  const avatar = avatarNode ? toView(avatarNode) : null;
+  const avatar = avatarNode ? place(avatarNode) : null;
 
   return (
     <PlayScreen
@@ -382,10 +521,15 @@ export function MapScreen() {
     >
       <SoftPanel padding="tight" tone="soft" className="map">
         <svg
+          ref={svgRef}
           className="map__svg"
+          data-editing={draggable}
           viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
           preserveAspectRatio="xMidYMid meet"
           role="presentation"
+          onPointerMove={continueDrag}
+          onPointerUp={endDrag}
+          onPointerCancel={() => setDrag(null)}
         >
           {/* --- Bulles de region : elles regroupent les lieux voisins ------ */}
           {/*
@@ -395,7 +539,16 @@ export function MapScreen() {
             coutures qu'un vrai contour laisserait sur une union de cercles.
           */}
           {zones.map((zone) => (
-            <g key={zone.biome.id}>
+            <g
+              key={zone.biome.id}
+              data-biome={zone.biome.id}
+              /* La region que l'on remodele s'affirme : on voit ce qu'on fait. */
+              className={
+                drag && bundle.nodes.find((node) => node.id === drag.id)?.biomeId === zone.biome.id
+                  ? 'map__zone-group map__zone-group--active'
+                  : 'map__zone-group'
+              }
+            >
               <ZoneShape zone={zone} color={zone.biome.accent} grow={1.5} className="map__zone-edge" />
               <ZoneShape zone={zone} color={zone.biome.ground} grow={0} className="map__zone" />
             </g>
@@ -403,8 +556,8 @@ export function MapScreen() {
 
           {/* --- Chemins : ils montrent la progression possible ------------- */}
           {links.map((link) => {
-            const from = toView(link.from);
-            const to = toView(link.to);
+            const from = place(link.from);
+            const to = place(link.to);
             const open =
               states.get(link.from.id) !== 'LOCKED' && states.get(link.to.id) !== 'LOCKED';
             const done =
@@ -488,22 +641,35 @@ export function MapScreen() {
             ))}
 
           {/* --- Lieux ------------------------------------------------------ */}
-          {bundle.nodes.map((node) => {
+          {orderedNodes.map((node) => {
             const state = states.get(node.id) ?? 'LOCKED';
-            const point = toView(node);
+            const point = place(node);
             const radius = node.kind === 'GYM' ? NODE_R_GYM : NODE_R;
             const locked = state === 'LOCKED';
             return (
               <g
                 key={node.id}
-                className={`map__node${locked ? ' map__node--locked' : ''}`}
+                className={[
+                  'map__node',
+                  locked ? 'map__node--locked' : '',
+                  draggable ? 'map__node--draggable' : '',
+                  drag?.id === node.id ? 'map__node--dragging' : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
                 role="button"
                 tabIndex={0}
-                aria-label={`${node.label} — ${describeState(state)}`}
-                onClick={() => travelTo(node)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') travelTo(node);
+                aria-label={
+                  draggable
+                    ? `${node.label} — ${describeState(state)}. Faites glisser pour déplacer ce lieu.`
+                    : `${node.label} — ${describeState(state)}`
+                }
+                // Hors edition, le clic natif suffit — et reste accessible.
+                onClick={() => {
+                  if (!draggable) travelTo(node);
                 }}
+                onKeyDown={(event) => onNodeKeyDown(node, event)}
+                onPointerDown={(event) => startDrag(node, event)}
               >
                 {/* Zone tactile large, bien au-dela du dessin (§4). */}
                 <circle cx={point.x} cy={point.y} r={HIT_R} fill="transparent" />
@@ -572,6 +738,23 @@ export function MapScreen() {
             </g>
           ) : null}
         </svg>
+
+        {/*
+          Un lieu lâché chez une autre région : sa bulle d'origine irait le
+          chercher là-bas et traverserait la voisine. On le dit, et on propose —
+          jamais de réaffectation dans le dos de l'administrateur.
+        */}
+        {strayNode && strayBiome ? (
+          <div className="map__stray surface-dense" role="status">
+            <span>
+              « {strayNode.label} » est posé dans {strayBiome.name}.
+            </span>
+            <PrimaryButton onClick={attachStray}>Rattacher à cette région</PrimaryButton>
+            <SecondaryButton onClick={() => setStrayNodeId(null)}>
+              Garder {strayHome?.name ?? 'sa région'}
+            </SecondaryButton>
+          </div>
+        ) : null}
       </SoftPanel>
     </PlayScreen>
   );
