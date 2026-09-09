@@ -41,8 +41,10 @@ npm run dev      # http://localhost:5173
 
 ## Déploiement sur GitHub Pages
 
-1. Pousser sur `main` (ou lancer le workflow *Deploy* à la main).
-2. La CI exécute `typecheck → lint → test → build` puis publie `dist/` sur la branche `gh-pages`.
+1. Pousser sur la **branche par défaut** du dépôt, ou lancer le workflow *Deploy*
+   à la main (**Actions → Deploy → Run workflow**).
+2. Le workflow exécute `typecheck → lint → test → build` puis publie `dist/` sur la
+   branche `gh-pages`. C'est le **seul** à écrire sur cette branche.
 3. Dans GitHub : **Settings → Pages → Deploy from a branch → `gh-pages` → `/ (root)`**.
 4. Sur l'iPad, ouvrir `https://<compte>.github.io/Pokexplo/` dans Safari,
    puis **Partager → Sur l'écran d'accueil**. L'application s'installe en PWA plein écran.
