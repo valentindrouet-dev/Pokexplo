@@ -1,6 +1,15 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import {
+  ANSWER_MIN_HEIGHT,
+  ANSWER_MIN_WIDTH,
+  LIST_ROW_MIN,
+  RADIUS,
+  TOUCH_COMFORT,
+  TOUCH_LARGE,
+  TOUCH_MIN,
+} from '../../src/ui/tokens';
 
 /**
  * GARDE-FOU DU DESIGN SYSTEM (docs/UI_DESIGN.md §181).
@@ -117,5 +126,35 @@ describe('Design tokens (docs/UI_DESIGN.md §181)', () => {
     const textColor = tokens.match(/--color-text:\s*(#[0-9a-f]{6})/iu)?.[1]?.toLowerCase();
     expect(textColor).not.toBe('#000000');
     expect(textColor).toBe('#514a4b');
+  });
+});
+
+describe('Cohérence CSS ↔ TypeScript (src/ui/tokens)', () => {
+  const tokens = readFileSync(join(ROOT, TOKENS_FILE), 'utf8');
+
+  function cssPx(name: string): number {
+    const match = tokens.match(new RegExp(`--${name}:\\s*(\\d+)px`, 'u'));
+    return Number(match?.[1]);
+  }
+
+  it('garde les mêmes tailles tactiles des deux côtés', () => {
+    expect(cssPx('touch-min')).toBe(TOUCH_MIN);
+    expect(cssPx('touch-comfort')).toBe(TOUCH_COMFORT);
+    expect(cssPx('touch-large')).toBe(TOUCH_LARGE);
+    expect(cssPx('list-row-min')).toBe(LIST_ROW_MIN);
+  });
+
+  it('garde les mêmes dimensions de réponse (§167)', () => {
+    expect(cssPx('answer-min-width')).toBe(ANSWER_MIN_WIDTH);
+    expect(cssPx('answer-min-height')).toBe(ANSWER_MIN_HEIGHT);
+    expect(ANSWER_MIN_WIDTH).toBeGreaterThanOrEqual(100);
+    expect(ANSWER_MIN_HEIGHT).toBeGreaterThanOrEqual(70);
+  });
+
+  it('garde les mêmes rayons (§135)', () => {
+    expect(cssPx('radius-sm')).toBe(RADIUS.sm);
+    expect(cssPx('radius-md')).toBe(RADIUS.md);
+    expect(cssPx('radius-lg')).toBe(RADIUS.lg);
+    expect(cssPx('radius-xl')).toBe(RADIUS.xl);
   });
 });
