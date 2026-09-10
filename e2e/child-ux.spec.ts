@@ -162,7 +162,7 @@ test('le cadenas répond toujours, et mène à l’espace parents (§190)', asyn
 
   const dialog = page.getByRole('dialog', { name: 'Espace parents' });
   await expect(dialog).toBeVisible();
-  await expect(dialog).toContainText(/maintenez le cadenas/i);
+  await expect(dialog).toContainText(/maintenez le bouton parents appuyé/i);
   // On n'y est pas encore : le jeu est toujours là derrière.
   await expect(page.getByRole('button', { name: 'Partir à l’aventure !' })).toBeVisible();
 
@@ -401,4 +401,22 @@ test('l’exercice met la voix et la scène devant la consigne écrite', async (
     const stage = (await page.locator('.exercise__stage').boundingBox())!;
     expect(hintBox.height).toBeLessThan(stage.height);
   }
+});
+
+test('la jauge de chapitre s’aligne sur la largeur des boutons', async ({ page }) => {
+  await boot(page);
+
+  // Régression : elle traversait tout l'écran sous des boutons deux fois
+  // plus étroits, et devenait l'élément le plus large de la page.
+  const widths = await page.evaluate(() => {
+    const width = (selector: string): number =>
+      Math.round(document.querySelector(selector)!.getBoundingClientRect().width);
+    return {
+      depart: width('.center-menu__adventure'),
+      tuiles: width('.center-hub'),
+      chapitre: width('.center-chapter-panel'),
+    };
+  });
+  expect(widths.chapitre).toBe(widths.depart);
+  expect(widths.chapitre).toBe(widths.tuiles);
 });

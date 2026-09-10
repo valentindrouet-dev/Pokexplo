@@ -1,17 +1,14 @@
 import { useMemo } from 'react';
 import {
-  DialogCard,
   IconMap,
-  IconProfessor,
   LoadingBall,
   PrimaryButton,
   ProgressBar,
   SelectionTile,
   SoftPanel,
-  VoiceButton,
 } from '../../ui';
 import { chapterProgress, currentChapter, offerableQuests } from '../../game-engine';
-import { useAudio, useAutoVoice } from '../../app/providers/AudioProvider';
+import { useAutoVoice } from '../../app/providers/AudioProvider';
 import { useContent } from '../../app/providers/ContentProvider';
 import { useGame } from '../../app/providers/GameProvider';
 import { useNavigation } from '../../app/router';
@@ -28,7 +25,6 @@ export function CenterScreen() {
   const { navigate } = useNavigation();
   const { bundle, biome } = useContent();
   const { save, dispatch } = useGame();
-  const { speak, buttonState } = useAudio();
 
   const chapter = useMemo(
     () => (bundle && save ? currentChapter(save, bundle) : null),
@@ -56,9 +52,6 @@ export function CenterScreen() {
   }
 
   const progress = chapter ? chapterProgress(chapter, save) : 0;
-  const said = save.state.adventureCompleted
-    ? 'Tu as gagné ton premier badge ! Continue d’explorer si tu veux.'
-    : (objective?.title ?? 'Va explorer la prairie et attrape une créature !');
 
   /**
    * PARTIR accepte la mission au passage.
@@ -80,27 +73,10 @@ export function CenterScreen() {
       className="center-screen"
     >
       {/*
-        Le Professeur EST le haut de l'écran : sa phrase remplace le titre de
-        chapitre, les compteurs et la tuile « Professeur ».
+        Le Professeur ne prend plus la moitié de l'écran : sa mission se dit
+        À LA VOIX, en arrivant (§192), et l'enfant la retrouve auprès de lui
+        sur la carte. L'écran n'est plus qu'un départ et six destinations.
       */}
-      <Editable
-        target={objective ? { kind: 'quest', id: objective.id } : { kind: 'chapter', id: chapter?.id ?? '' }}
-        label="ce que dit le Professeur"
-      >
-        <DialogCard
-          speaker="Professeur"
-          portrait={<IconProfessor size={72} />}
-          text={said}
-          voiceButton={
-            <VoiceButton
-              state={buttonState(professorVoiceId)}
-              onPlay={() => speak(professorVoiceId)}
-              label="Réécouter le Professeur"
-            />
-          }
-        />
-      </Editable>
-
       <div className="center-menu">
         <PrimaryButton className="center-menu__adventure" large icon={<IconMap size={32} />} onClick={() => void leave()}>
           Partir à l’aventure !
@@ -121,7 +97,7 @@ export function CenterScreen() {
         c'est là que l'adulte modifie le chapitre en mode édition.
       */}
       {chapter ? (
-        <SoftPanel padding="tight" tone="soft">
+        <SoftPanel padding="tight" tone="soft" className="center-chapter-panel">
           <Editable target={{ kind: 'chapter', id: chapter.id }} label="le chapitre">
             <div className="center-chapter">
               <p className="center-chapter__title">{chapter.title}</p>

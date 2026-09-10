@@ -1,7 +1,7 @@
 {
   "name": "pokexplo",
   "private": true,
-  "version": "1.12.1",
+  "version": "1.13.0",
   "type": "module",
   "description": "Aventure pédagogique tactile pour enfants de CP — moteur d'aventure configurable et vocal.",
   "scripts": {

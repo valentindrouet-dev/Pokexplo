@@ -4,6 +4,22 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 Trois versions sont suivies séparément (§112) : `APP_VERSION`, `CONTENT_VERSION`,
 `SAVE_SCHEMA_VERSION`.
 
+## [1.13.0] — Le Centre se réduit au départ et aux six raccourcis
+
+`APP_VERSION 1.13.0` · `CONTENT_VERSION bundled-5` · `SAVE_SCHEMA_VERSION 3`
+
+Suite de l'accueil à six boutons carrés (PR #1).
+
+### Modifié
+
+- **Le Professeur quitte le Centre.** Sa carte prenait le haut de l'écran
+  au-dessus du départ ; sa mission se dit désormais **à la voix** en arrivant
+  (§192), et l'enfant la retrouve auprès de lui sur la carte. L'écran n'est
+  plus qu'un départ et six destinations.
+- **La jauge de chapitre s'aligne** sur la largeur du bouton et des tuiles.
+  Elle traversait tout l'écran sous des boutons deux fois plus étroits, et
+  devenait l'élément le plus large de la page.
+
 ## [1.12.1] — Le cadenas répond, et les tuiles du Centre cessent de s'étirer
 
 `APP_VERSION 1.12.1` · `CONTENT_VERSION bundled-5` · `SAVE_SCHEMA_VERSION 3`

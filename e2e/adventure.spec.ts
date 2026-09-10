@@ -50,19 +50,23 @@ test('l’enfant peut lancer l’aventure sans savoir lire', async ({ page }) =>
 test('le Centre propose des destinations très grandes et peu nombreuses', async ({ page }) => {
   await startAdventure(page);
 
-  // Accueil demandé : six raccourcis et un départ pleine largeur.
+  // Le départ, puis six raccourcis carrés (docs/UI_DESIGN.md §197).
+  // « Parents » porte le nom accessible « Espace parents » : c'est cette tuile
+  // qui remplace le cadenas, et son libellé visible reste court (§197).
   for (const label of ['Équipe', 'Pokédex', 'Objets', 'Exercices', 'Carte', 'Espace parents']) {
     const tile = page.getByRole('button', { name: label, exact: true });
     await expect(tile).toBeVisible();
     const box = await tile.boundingBox();
     expect(box?.height ?? 0).toBeGreaterThanOrEqual(56);
   }
-  for (const gone of ['Aventure', 'Quêtes', 'Professeur']) {
-    await expect(page.getByRole('button', { name: gone, exact: true })).toHaveCount(0);
-  }
-  // Le Professeur dit la mission, et son bouton 🔊 la répète.
-  await expect(page.getByText('Professeur')).toBeVisible();
-  await expect(page.getByRole('button', { name: /réécouter le professeur/i })).toBeVisible();
+
+  /*
+   * Le Professeur ne prend plus la moitié de l'écran : sa mission se dit à la
+   * voix en arrivant (§192), et l'enfant la retrouve auprès de lui sur la
+   * carte. L'écran n'est plus qu'un départ et six destinations.
+   */
+  await expect(page.locator('.ds-dialog')).toHaveCount(0);
+  await expect(page.getByText('PROFESSEUR')).toHaveCount(0);
 });
 
 test('la carte affiche les nœuds avec leur état et permet de voyager', async ({ page }) => {
