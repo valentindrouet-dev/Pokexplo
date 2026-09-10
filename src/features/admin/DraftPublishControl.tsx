@@ -50,7 +50,8 @@ export function DraftPublishControl() {
     return (
       <span className="draft-publish draft-publish--confirm">
         <span>
-          {drafting.validation?.missingVoices ?? 0} texte(s) seront lus par la voix de synthèse.
+          {drafting.validation?.missingVoices ?? 0} texte(s) resteront muets : aucune voix n’y est
+          encore enregistrée.
         </span>
         <PrimaryButton disabled={drafting.publishing} onClick={() => void publish(true)}>
           Publier quand même

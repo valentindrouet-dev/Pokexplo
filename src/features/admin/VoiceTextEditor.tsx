@@ -29,6 +29,11 @@ export interface VoiceTextEditorProps {
   title: string;
   /** Empeche l'edition du texte quand il vient d'ailleurs (matrice d'exercice). */
   readOnlyText?: boolean;
+  /**
+   * Masque l'en-tete (titre + statut) quand ce qui l'ouvre les affiche deja :
+   * dans une liste dépliable, ils étaient écrits deux fois de suite.
+   */
+  hideHead?: boolean;
 }
 
 type Phase = 'idle' | 'recording' | 'review' | 'denied';
@@ -56,7 +61,13 @@ const STATUS_CLASS: Record<VoiceStatus, string> = {
  *  - la prise precedente n'est supprimee qu'apres validation (§42) ;
  *  - le `textHash` est enregistre pour detecter un texte modifie (§50).
  */
-export function VoiceTextEditor({ voice, onChange, title, readOnlyText = false }: VoiceTextEditorProps) {
+export function VoiceTextEditor({
+  voice,
+  onChange,
+  title,
+  readOnlyText = false,
+  hideHead = false,
+}: VoiceTextEditorProps) {
   const [phase, setPhase] = useState<Phase>('idle');
   const [permission, setPermission] = useState<MicPermission | null>(null);
   const [take, setTake] = useState<RecordingTake | null>(null);
@@ -226,10 +237,14 @@ export function VoiceTextEditor({ voice, onChange, title, readOnlyText = false }
 
   return (
     <div className="vte">
-      <div className="vte__head">
-        <span className="vte__title">{title}</span>
-        <span className={cn('vte__status', STATUS_CLASS[status])}>{VOICE_STATUS_LABEL[status]}</span>
-      </div>
+      {hideHead ? null : (
+        <div className="vte__head">
+          <span className="vte__title">{title}</span>
+          <span className={cn('vte__status', STATUS_CLASS[status])}>
+            {VOICE_STATUS_LABEL[status]}
+          </span>
+        </div>
+      )}
 
       <label className="field">
         <span className="field__label">Texte</span>
@@ -260,7 +275,7 @@ export function VoiceTextEditor({ voice, onChange, title, readOnlyText = false }
         DEUX ÉTATS, ET RIEN D'AUTRE (UI_DESIGN §196).
 
         Tout était visible en même temps : enregistrer, importer, supprimer,
-        restaurer, lecture auto, afficher le texte, voix de synthèse. Sept
+        restaurer, lecture auto, afficher le texte, mode de lecture. Sept
         possibilités pour un geste qui en demande une. Ce qui reste s'ouvre
         sous « Options avancées ».
       */}
@@ -334,7 +349,7 @@ export function VoiceTextEditor({ voice, onChange, title, readOnlyText = false }
 
       <AdvancedPanel
         title="Options avancées"
-        hint="lecture automatique, voix de synthèse, prise précédente"
+        hint="lecture automatique, texte affiché, prise précédente"
       >
         <div className="ds-row">
           <PillButton
@@ -349,13 +364,19 @@ export function VoiceTextEditor({ voice, onChange, title, readOnlyText = false }
           >
             Afficher le texte à l’enfant
           </PillButton>
+          {/*
+            « Texte seul » remplace l'ancienne « voix de synthèse » : il ne
+            promet plus une voix de machine, il dit ce qui se passe vraiment —
+            l'enfant lit, et rien n'est lu. C'est aussi ce qui retire ce texte
+            du décompte des voix à enregistrer.
+          */}
           <PillButton
-            active={voice.voiceMode === 'TTS'}
+            active={voice.voiceMode === 'NONE'}
             onClick={() =>
-              onChange({ ...voice, voiceMode: voice.voiceMode === 'TTS' ? 'RECORDED' : 'TTS' })
+              onChange({ ...voice, voiceMode: voice.voiceMode === 'NONE' ? 'RECORDED' : 'NONE' })
             }
           >
-            Voix de synthèse
+            Texte seul, sans voix
           </PillButton>
         </div>
 

@@ -35,8 +35,8 @@ export interface AdminDraftValue {
    */
   unpublished: boolean;
   /**
-   * Publie le brouillon pour l'enfant. `force` accepte les voix manquantes,
-   * que la voix de synthese prend en charge (§53). `label` nomme la release.
+   * Publie le brouillon pour l'enfant. `force` accepte les voix manquantes :
+   * ces textes resteront muets (§53). `label` nomme la release.
    */
   publish: (options?: {
     force?: boolean;

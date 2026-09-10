@@ -331,12 +331,15 @@ Et **toute sélection se nomme** : toucher un lieu dit son nom, toucher une cré
 > pour se servir du jeu.
 
 Ces phrases sont des `VoiceMessage` comme les autres (CLAUDE.md §3) : jamais de chemin audio en
-dur, toujours enregistrables par l'administrateur, toujours rattrapées par la synthèse.
+dur, toujours enregistrables par l'administrateur. **Aucune voix de synthèse ne les rattrape**
+(CONCEPTION §59) : tant qu'elles ne sont pas enregistrées, l'écran est muet — et l'écran doit
+rester compréhensible ainsi. Le bouton « Voix de cette page » (§199) sert précisément à les
+enregistrer sans quitter l'écran.
 
 ## 193. Sélection en deux temps sur la carte
 
-Toucher un lieu le **sélectionne** et dit son nom ; un second geste sur « Y aller ! » lance le
-voyage. Cela supprime les départs accidentels et laisse à l'enfant le temps de comprendre ce qu'il
+Toucher un lieu le **sélectionne** — pointeur et variation de taille, jamais la couleur seule ; un
+second geste sur « Y aller ! » lance le voyage. Cela supprime les départs accidentels et laisse à l'enfant le temps de comprendre ce qu'il
 vient de choisir.
 
 ## 194. Hiérarchie d'un écran d'exercice
@@ -435,3 +438,21 @@ transparent, aplats pastel et contours sombres épais inspirés de la référenc
 La confirmation Parents est conservée. Objets donne accès aux badges existants.
 Exercices propose un entraînement libre issu des matrices et du pack du profil,
 sans capture ni modification de la progression de l’aventure ou des statistiques.
+
+## 199. La voix s'enregistre là où elle se lit
+
+Pour donner sa voix à un texte, il fallait quitter l'écran, ouvrir les menus, aller dans « Voix », et
+retrouver le bon texte parmi cent quatre-vingts — sans savoir lequel appartenait à l'écran d'où l'on
+venait. Le travail était possible ; il n'était pas praticable.
+
+Deux règles en découlent, et elles valent pour tout ce qui s'enregistre :
+
+1. **Le bandeau du mode édition et la barre des menus portent « Voix de cette page »**, qui ouvre
+   les seules voix de ce qu'on a sous les yeux, avec le nombre restant à enregistrer écrit sur le
+   bouton. L'enregistreur est le `VoiceTextEditor` habituel (CLAUDE.md §3), jamais une copie.
+2. **Une longue liste se range en sous-menus dépliables.** `Admin → Voix` montre d'abord les
+   sections — le Professeur, l'aventure, les missions… — avec ce qu'il y reste à faire ; on ouvre
+   celle qu'on cherche ; et un seul enregistreur est ouvert à la fois (§191).
+
+Le bouton disparaît quand la page ne porte aucune voix : un bouton qui ouvre une liste vide est un
+bouton de trop (§190).

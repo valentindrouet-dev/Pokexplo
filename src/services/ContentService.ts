@@ -279,7 +279,7 @@ class ContentServiceImpl {
    *
    * Les references cassees sont des ERREURS (elles casseraient le jeu) ;
    * les voix manquantes ou obsoletes sont des AVERTISSEMENTS : l'administrateur
-   * peut publier quand meme et s'appuyer temporairement sur le TTS.
+   * peut publier quand meme : ces textes resteront muets (§59).
    */
   validate(bundle: ContentBundle): ValidationReport {
     const issues: ValidationIssue[] = [];

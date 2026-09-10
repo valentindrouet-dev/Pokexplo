@@ -248,8 +248,10 @@ Les indices possèdent leur propre voix.
 ## 36–37. Principe général
 
 Tout bloc de contenu destiné à l'enfant associe **TEXTE + VOIX**. Tout texte important doit pouvoir
-posséder une voix enregistrée, une lecture automatique facultative, un bouton de réécoute et
-éventuellement une solution TTS de secours.
+posséder une voix enregistrée, une lecture automatique facultative et un bouton de réécoute.
+
+**On ne lit que les voix enregistrées par l'administrateur** (§59) : aucune voix de synthèse ne
+parle à sa place.
 
 ## 38–42. Enregistrement dans l'Admin
 
@@ -297,8 +299,8 @@ Un `textHash` est enregistré au moment de la prise. Si le texte change, l'Admin
 Statuts : `NO_TEXT` · `TEXT_ONLY` · `VOICE_OK` · `VOICE_OUTDATED` · `VOICE_MISSING`.
 
 L'Admin propose un filtre « voix à enregistrer » et une **session de doublage**. Avant publication,
-il avertit : « ⚠️ 7 textes destinés à l'enfant n'ont pas de voix » — l'administrateur peut corriger,
-publier quand même, ou utiliser temporairement le TTS.
+il avertit : « ⚠️ 7 textes destinés à l'enfant n'ont pas de voix » — l'administrateur peut corriger
+ou publier quand même, ces textes restant alors **muets**.
 
 ## 54–58. Voix d'exercice et textes dynamiques
 
@@ -308,9 +310,20 @@ On distingue le **texte statique** (voix enregistrée complète) du **texte dyna
 (« Combien vois-tu de Pikachu ? »). On n'enregistre pas 300 variantes : on préfère des formulations
 génériques (« Combien y en a-t-il ? »). Les fragments assemblés ne sont pas indispensables en V1.
 
-## 59. TTS de secours
+## 59. Pas de voix de synthèse
 
-`voiceMode: RECORDED | TTS | NONE`. Priorité : voix enregistrée → TTS → texte seul.
+`voiceMode: RECORDED | NONE`. Priorité : **voix enregistrée → silence**, le texte restant affiché.
+
+Il y a eu un repli sur la synthèse vocale du navigateur. Il a été retiré : un fichier absent — ou
+présent sur un autre appareil seulement — et une voix de machine prenait la place de celle de
+l'adulte, sans que rien ne le dise. On croyait entendre sa prise, on entendait la machine.
+
+Le silence est plus honnête : il se voit dans l'Admin (« voix manquante »), il se corrige en une
+prise, et il ne fait jamais passer une voix pour une autre. L'absence de voix ne casse rien, et le
+jeu reste entièrement jouable sans le son.
+
+`voiceMode: 'TTS'` reste accepté en lecture pour les contenus d'avant ce retrait : il se comporte
+comme `RECORDED`.
 
 ## 60–63. Services
 

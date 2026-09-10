@@ -251,12 +251,6 @@ export function ParentDashboard() {
             >
               Lecture automatique
             </PillButton>
-            <PillButton
-              active={settings.ttsFallback}
-              onClick={() => update({ ttsFallback: !settings.ttsFallback })}
-            >
-              Voix de synthèse
-            </PillButton>
           </div>
         </SoftPanel>
 

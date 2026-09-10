@@ -11,6 +11,7 @@ import {
 } from '../../src/game-engine';
 import type { GameEvent } from '../../src/game-engine';
 import type { SaveFile } from '../../src/types';
+import { SAVE_SCHEMA_VERSION } from '../../src/types/save';
 
 const bundle = defaultContentBundle();
 
@@ -32,7 +33,7 @@ describe('Progression (CONCEPTION §104-106)', () => {
     const save = freshSave();
     expect(save.state.currentNode).toBe('centre');
     expect(save.state.saveRevision).toBe(1);
-    expect(save.schemaVersion).toBe(3);
+    expect(save.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
   });
 
   it('incrémente saveRevision à chaque événement appliqué', () => {

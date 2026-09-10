@@ -224,8 +224,7 @@ enregistrent d'abord la retouche en cours, publient, puis rechargent l'écran �
 la nouvelle version est en service **immédiatement**, sur cet appareil.
 
 Si des textes n'ont pas encore de voix enregistrée, Pokexplo ne bloque pas : il
-annonce combien seront lus par la **voix de synthèse** et propose de publier
-quand même (§53).
+annonce combien **resteront muets** et propose de publier quand même (§53).
 
 **Quitter l'édition avec des retouches non publiées vous le dit**, plutôt que de
 laisser l'écran revenir en arrière sans un mot. Vous choisissez :
@@ -310,9 +309,18 @@ n'existent que sur cet appareil.
 
 Les **voix enregistrées** suivent la même règle : elles vivent dans le magasin
 de médias de l'appareil qui les a enregistrées. Pour les diffuser partout, il
-faut soit les déposer dans `public/media/`, soit utiliser Firebase (option C).
-En attendant, le jeu reste utilisable : la voix de synthèse prend le relais et
-**l'absence de voix ne fait jamais planter l'application**.
+faut soit les déposer dans `public/media/voice/`, soit utiliser Firebase
+(option C).
+
+> **C'est le piège à connaître.** Une voix enregistrée sur l'ordinateur n'existe
+> pas sur l'iPad : là-bas, le texte reste **muet**. Auparavant la voix de
+> synthèse comblait le trou sans prévenir — on croyait entendre sa prise, on
+> entendait la machine. Elle a été retirée (CONCEPTION §59) : `Admin → Voix`
+> annonce désormais combien de voix « ont été enregistrées sur un autre
+> appareil ».
+
+Le jeu reste utilisable dans tous les cas : **l'absence de voix ne fait jamais
+planter l'application** et rien n'attend le son pour avancer.
 
 ### Option C — Firebase (temps réel, aucune reconstruction)
 

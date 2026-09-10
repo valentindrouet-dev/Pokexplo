@@ -84,6 +84,56 @@ describe('L’enfant ne voit jamais l’outillage adulte', () => {
   }, 20_000);
 });
 
+describe('Les voix de la page, sous les yeux (§196)', () => {
+  it('ouvre les voix de l’écran depuis le bandeau d’édition', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await startAdventure(user);
+    await becomeAdmin(user);
+    await enterEditMode(user);
+
+    goTo('#/play/map');
+    // Le bouton dit ce qu'il reste à faire : c'est l'information utile.
+    const open = await screen.findByRole(
+      'button',
+      { name: /voix de cette page/iu },
+      { timeout: 5000 },
+    );
+    await user.click(open);
+
+    // On est bien sur les voix de LA CARTE, pas sur les deux cents autres.
+    const dialog = await screen.findByRole('dialog', { name: 'Les voix de la carte' });
+    await user.click(within(dialog).getByRole('button', { name: /où veux-tu aller/iu }));
+
+    // L'enregistreur habituel, ouvert sous le texte concerné.
+    expect(within(dialog).getByRole('button', { name: 'Enregistrer la voix' })).toBeInTheDocument();
+  }, 20_000);
+
+  it('modifie un texte destiné à l’enfant sans quitter l’écran', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await startAdventure(user);
+    await becomeAdmin(user);
+    await enterEditMode(user);
+
+    goTo('#/play/map');
+    await user.click(
+      await screen.findByRole('button', { name: /voix de cette page/iu }, { timeout: 5000 }),
+    );
+    const dialog = await screen.findByRole('dialog', { name: 'Les voix de la carte' });
+    await user.click(within(dialog).getByRole('button', { name: /où veux-tu aller/iu }));
+
+    const area = within(dialog).getByRole('textbox');
+    await user.clear(area);
+    await user.type(area, 'Choisis un endroit !');
+
+    // Le brouillon a suivi : le texte modifié devient le titre de la ligne.
+    expect(
+      await within(dialog).findByRole('button', { name: /choisis un endroit/iu }),
+    ).toBeInTheDocument();
+  }, 20_000);
+});
+
 describe('Éditer là où on le voit', () => {
   it('propose une zone modifiable sur chaque lieu de la carte', async () => {
     const user = userEvent.setup();

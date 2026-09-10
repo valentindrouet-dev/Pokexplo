@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import type { VoiceMessage, VoiceMessageId } from '../../types';
+import type { VoiceMessageId } from '../../types';
 import { useAudio } from './AudioProvider';
 import { useContent } from './ContentProvider';
 
@@ -12,8 +12,8 @@ import { useContent } from './ContentProvider';
  * seule fois — et se tait si la même voix est déjà celle de l'écran.
  *
  * C'est une `VoiceMessage` du contenu comme les autres (CLAUDE.md §3) :
- * l'administrateur peut l'enregistrer, la synthèse la rattrape sinon, et son
- * absence ne fait jamais rien planter.
+ * l'administrateur l'enregistre depuis « Voix de cette page », et son absence
+ * ne fait jamais rien planter — l'écran reste simplement muet.
  */
 export function useScreenVoice(voiceId: VoiceMessageId | undefined, enabled = true): void {
   const { speak, settings } = useAudio();
@@ -25,36 +25,15 @@ export function useScreenVoice(voiceId: VoiceMessageId | undefined, enabled = tr
     // Une seule annonce par arrivée : revenir sur l'écran la rejoue, un simple
     // re-rendu (une créature capturée, un filtre touché) ne la rejoue pas.
     if (announced.current === voiceId) return;
-    announced.current = voiceId;
     if (!settings.autoPlayVoices || settings.muted) return;
     const message = voice(voiceId);
+    /*
+     * L'annonce n'est marquée « faite » que lorsqu'elle a vraiment lieu.
+     * L'écran pouvait s'afficher avant que le contenu ne soit là : la voix
+     * était alors notée comme dite, et l'écran restait muet pour toujours.
+     */
     if (!message?.autoPlay) return;
+    announced.current = voiceId;
     speak(voiceId);
   }, [voiceId, enabled, settings.autoPlayVoices, settings.muted, speak, voice]);
-}
-
-/**
- * NOMMER CE QUE L'ON VIENT DE TOUCHER (§192).
- *
- * « Toute sélection se nomme. » Une créature a une vraie voix de nom (§155) ;
- * un lieu de la carte n'en a pas, et lui en donner une créerait un second
- * endroit où son nom vivrait — donc un endroit où il pourrait diverger.
- *
- * On fabrique donc une voix ÉPHÉMÈRE portant le libellé du contenu lui-même :
- * elle ne peut pas se désynchroniser, et la synthèse la dit. Ce n'est pas une
- * voix codée en dur (CLAUDE.md §3) : le texte vient de la donnée, et une vraie
- * voix enregistrée, quand elle existe, passe toujours en premier.
- */
-export function spokenName(id: string, label: string): VoiceMessage {
-  return {
-    id: `voice.name.${id}`,
-    text: label,
-    autoPlay: true,
-    replayEnabled: true,
-    showText: true,
-    voiceMode: 'TTS',
-    locale: 'fr-FR',
-    category: 'ui',
-    updatedAt: 0,
-  };
 }

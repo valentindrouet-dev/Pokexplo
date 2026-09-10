@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
+import { Disclosure } from './Disclosure';
 import './forms.css';
 
 /**
@@ -9,7 +10,8 @@ import './forms.css';
  * un chemin de fichier, une valeur d'énumération : on le replie.
  *
  * Fermé par défaut, et il dit ce qu'il contient : l'adulte sait qu'il ne rate
- * rien en le laissant fermé.
+ * rien en le laissant fermé. C'est un `Disclosure` habillé d'un titre par
+ * défaut — le plier/déplier ne vit qu'à un seul endroit.
  */
 export function AdvancedPanel({
   title = 'Réglages avancés',
@@ -20,29 +22,11 @@ export function AdvancedPanel({
   hint?: string;
   children: ReactNode;
 }) {
-  const [open, setOpen] = useState(false);
-
   return (
     <div className="advanced">
-      <button
-        type="button"
-        className="ds-tap advanced__toggle"
-        aria-expanded={open}
-        /*
-         * Le nom accessible reste le TITRE : sans cela, l'indice s'y ajoutait
-         * et le bouton s'appelait « Options avancées lecture automatique,
-         * voix de synthèse, prise précédente ».
-         */
-        aria-label={title}
-        onClick={() => setOpen(!open)}
-      >
-        <span className="advanced__chevron" aria-hidden="true">
-          {open ? '▾' : '▸'}
-        </span>
-        <span>{title}</span>
-        {hint ? <span className="admin__status">{hint}</span> : null}
-      </button>
-      {open ? <div className="advanced__body ds-stack">{children}</div> : null}
+      <Disclosure title={title} hint={hint}>
+        {children}
+      </Disclosure>
     </div>
   );
 }

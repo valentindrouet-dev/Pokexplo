@@ -195,7 +195,7 @@ export function ReleasesSection() {
           <p className="admin__issue">
             <IconWarning size={22} />
             {voices.missing} texte(s) destiné(s) à l’enfant n’ont pas de voix. Vous pouvez les
-            enregistrer, publier quand même, ou laisser la voix de synthèse prendre le relais.
+            enregistrer maintenant, ou publier quand même : ils resteront muets.
           </p>
         ) : null}
 
@@ -367,8 +367,8 @@ export function ReleasesSection() {
         }
       >
         <p>
-          {voices.missing} texte(s) seront lus par la voix de synthèse en attendant votre
-          enregistrement. Le jeu reste parfaitement utilisable.
+          {voices.missing} texte(s) resteront muets en attendant votre enregistrement. Le jeu
+          reste parfaitement utilisable : rien n’attend le son pour avancer.
         </p>
       </ModalPanel>
     </>

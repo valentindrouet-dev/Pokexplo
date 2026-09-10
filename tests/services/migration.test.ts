@@ -40,8 +40,8 @@ describe('MigrationService (CONCEPTION §113)', () => {
   it('migre jusqu’à la version courante', () => {
     const { save, applied } = MigrationService.migrate(legacySave());
     expect(save.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
-    expect(applied.map((step) => `${step.from}->${step.to}`)).toEqual(['1->2', '2->3']);
-    expect(save.meta.migrations).toHaveLength(2);
+    expect(applied.map((step) => `${step.from}->${step.to}`)).toEqual(['1->2', '2->3', '3->4']);
+    expect(save.meta.migrations).toHaveLength(3);
   });
 
   it('n’est jamais destructive : la progression existante est conservée', () => {
@@ -69,11 +69,32 @@ describe('MigrationService (CONCEPTION §113)', () => {
     expect(save.profile.audioSettings.voicesVolume).toBe(1);
   });
 
+  it('garde les réglages audio d’avant le retrait de la voix de synthèse (3→4)', () => {
+    // Une migration n'est jamais destructive (CLAUDE.md §2) : `ttsFallback`
+    // n'est plus lu, mais on ne l'efface pas, et les volumes sont conservés.
+    const before = {
+      ...legacySave(),
+      schemaVersion: 3,
+      profile: {
+        ...legacySave().profile,
+        audioSettings: { voicesVolume: 0.6, ttsFallback: true },
+      },
+    } as unknown as SaveFile;
+
+    const { save } = MigrationService.migrate(before);
+
+    expect(save.profile.audioSettings.voicesVolume).toBeCloseTo(0.6);
+    expect(save.profile.audioSettings.musicVolume).toBe(0.45);
+    expect((save.profile.audioSettings as unknown as Record<string, unknown>).ttsFallback).toBe(
+      true,
+    );
+  });
+
   it('est idempotente : migrer deux fois ne change plus rien', () => {
     const once = MigrationService.migrate(legacySave()).save;
     const twice = MigrationService.migrate(once);
     expect(twice.applied).toHaveLength(0);
-    expect(twice.save.meta.migrations).toHaveLength(2);
+    expect(twice.save.meta.migrations).toHaveLength(3);
   });
 
   it('refuse d’écraser une sauvegarde plus récente que l’application (§112)', () => {

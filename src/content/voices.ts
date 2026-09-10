@@ -8,8 +8,9 @@ import { SYSTEM_ENCOURAGEMENTS } from '../exercise-engine/feedback';
  * Toutes les VoiceMessage sont livrees AVEC leur texte et SANS fichier audio :
  * leur statut est donc `VOICE_MISSING`. C'est volontaire — c'est exactement la
  * liste de travail que /admin > VOIX propose d'enregistrer en une session de
- * doublage (§117). En attendant, le TTS de secours prend le relais (§59) :
- * l'enfant peut jouer des le premier lancement.
+ * doublage (§117) — et que « Voix de cette page » propose ecran par ecran.
+ * Tant qu'une prise manque, le texte reste MUET : plus rien ne parle a la place
+ * de l'adulte (§59). L'enfant peut jouer des le premier lancement, sans le son.
  */
 
 /** Dialogues du Professeur (§9) — toujours tres courts. */
@@ -136,8 +137,9 @@ const uiVoices: VoiceMessage[] = [
  *
  * Une phrase par ecran enfant, dite a l'arrivee. Sans elle, il fallait
  * comprendre les mots « Pokedex », « Equipe » ou « Quetes » pour se servir du
- * jeu. Ce sont des VoiceMessage comme les autres : enregistrables, rattrapees
- * par la synthese, et leur absence ne casse jamais rien.
+ * jeu. Ce sont des VoiceMessage comme les autres : a enregistrer depuis
+ * « Voix de cette page », et leur absence ne casse jamais rien — l'ecran est
+ * simplement muet jusque-la.
  */
 export const SCREEN_VOICES = {
   map: 'voice.ui.screen.map',

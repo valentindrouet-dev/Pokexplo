@@ -91,55 +91,93 @@ describe('AudioService (CONCEPTION §60, §64, §127)', () => {
     expect(AudioService.getState().playingVoiceId === 'voice.a').toBe(false);
   });
 
-  it('retombe sur la synthèse vocale quand aucun fichier n’existe (§59)', async () => {
+  /*
+   * ON NE LIT QUE LES VOIX ENREGISTREES (§127).
+   *
+   * Il y avait un repli sur la synthese vocale : on croyait entendre sa prise,
+   * on entendait la machine — et rien ne le disait. Ces trois tests tiennent la
+   * regle par les deux bouts : la machine ne parle plus, et le silence ne casse
+   * rien.
+   */
+  it('ne fait jamais parler la synthèse vocale à la place de l’adulte (§127)', async () => {
     await AudioService.unlock();
     const speak = vi.spyOn(speechSynthesis, 'speak');
-    const voice = createVoiceMessage('voice.tts', 'Bienvenue dans la forêt !', 'adventure');
+    const play = vi.spyOn(HTMLMediaElement.prototype, 'play');
 
-    await AudioService.playVoice(voice);
-    expect(speak).toHaveBeenCalledTimes(1);
+    // Aucune prise enregistrée : on se tait, et on le dit dans l'état.
+    await AudioService.playVoice(createVoiceMessage('voice.mute', 'Bienvenue !', 'adventure'));
+
+    expect(speak).not.toHaveBeenCalled();
+    expect(play).not.toHaveBeenCalled();
+    expect(AudioService.getState().playingVoiceId).toBeNull();
   });
 
-  it('ne dit rien si le TTS de secours est désactivé, mais ne plante pas', async () => {
+  it('ne substitue rien quand le fichier est absent de CET appareil (§127)', async () => {
+    // C'est le cas qui trompait : la voix enregistrée sur l'ordinateur n'existe
+    // pas sur l'iPad, et la synthèse prenait le relais sans prévenir.
     await AudioService.unlock();
-    AudioService.setSettings({ ...DEFAULT_AUDIO_SETTINGS, ttsFallback: false });
     const speak = vi.spyOn(speechSynthesis, 'speak');
 
-    await AudioService.playVoice(createVoiceMessage('voice.none', 'Sans voix', 'ui'));
+    await AudioService.playVoice(
+      createVoiceMessage('voice.elsewhere', 'Enregistrée ailleurs', 'ui', {
+        audioPath: 'media/voice/ui/enregistree-ailleurs.m4a',
+      }),
+    );
+
     expect(speak).not.toHaveBeenCalled();
-    expect(AudioService.getState().playingVoiceId).toBeNull();
+  });
+
+  it('joue quand même la prise d’une donnée héritée marquée « TTS »', async () => {
+    // `voiceMode: 'TTS'` ne se produit plus, mais d'anciens contenus en
+    // portent : la prise de l'adulte doit rester audible.
+    await AudioService.unlock();
+    const play = vi.spyOn(HTMLMediaElement.prototype, 'play');
+    const voice = createVoiceMessage('voice.legacy', 'Ancienne donnée', 'ui', {
+      audioPath: await storeVoice('legacy'),
+      voiceMode: 'TTS',
+    });
+
+    await AudioService.playVoice(voice);
+    expect(play).toHaveBeenCalled();
   });
 
   it('reste silencieux quand le son est coupé, sans casser le jeu (§127)', async () => {
     await AudioService.unlock();
     AudioService.mute();
-    const speak = vi.spyOn(speechSynthesis, 'speak');
+    const play = vi.spyOn(HTMLMediaElement.prototype, 'play');
 
-    await AudioService.playVoice(createVoiceMessage('voice.muted', 'Coupé', 'ui'));
-    expect(speak).not.toHaveBeenCalled();
+    await AudioService.playVoice(
+      createVoiceMessage('voice.muted', 'Coupé', 'ui', { audioPath: await storeVoice('muted') }),
+    );
+    expect(play).not.toHaveBeenCalled();
     expect(AudioService.getState().muted).toBe(true);
 
     AudioService.unmute();
     expect(AudioService.getState().muted).toBe(false);
   });
 
-  it('ne joue rien pour un mode NONE', async () => {
+  it('ne joue rien pour un mode NONE, même avec une prise', async () => {
     await AudioService.unlock();
-    const speak = vi.spyOn(speechSynthesis, 'speak');
+    const play = vi.spyOn(HTMLMediaElement.prototype, 'play');
     await AudioService.playVoice(
-      createVoiceMessage('voice.silent', 'Texte seul', 'ui', { voiceMode: 'NONE' }),
+      createVoiceMessage('voice.silent', 'Texte seul', 'ui', {
+        voiceMode: 'NONE',
+        audioPath: await storeVoice('silent'),
+      }),
     );
-    expect(speak).not.toHaveBeenCalled();
+    expect(play).not.toHaveBeenCalled();
   });
 
   it('permet de réécouter la dernière voix (§65)', async () => {
     await AudioService.unlock();
-    const speak = vi.spyOn(speechSynthesis, 'speak');
-    const voice = createVoiceMessage('voice.replay', 'Écoute encore', 'ui');
+    const voice = createVoiceMessage('voice.replay', 'Écoute encore', 'ui', {
+      audioPath: await storeVoice('replay'),
+    });
+    const play = vi.spyOn(HTMLMediaElement.prototype, 'play');
 
     await AudioService.playVoice(voice);
     await AudioService.replay();
-    expect(speak).toHaveBeenCalledTimes(2);
+    expect(play).toHaveBeenCalledTimes(2);
   });
 
   it('gère des volumes séparés par canal (§67)', () => {

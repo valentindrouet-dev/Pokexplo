@@ -17,7 +17,7 @@ import type { AudioSettings } from './audio';
 import type { AttemptOutcome, ExerciseInstance } from './exercises';
 
 /** Version du schema de sauvegarde (§112). */
-export const SAVE_SCHEMA_VERSION = 3;
+export const SAVE_SCHEMA_VERSION = 4;
 
 /** CONCEPTION §18 : trois etats du Pokedex. */
 export type PokedexState = 'UNKNOWN' | 'SEEN' | 'CAPTURED';

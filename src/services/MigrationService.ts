@@ -53,6 +53,27 @@ const MIGRATIONS: Migration[] = [
       pokedex: save.pokedex ?? {},
     }),
   },
+  {
+    from: 3,
+    to: 4,
+    label: 'retrait de la voix de synthese',
+    /*
+     * La synthese vocale du navigateur a ete retiree (§127) : `ttsFallback`
+     * n'est plus lu. On ne l'efface PAS — une migration n'est jamais
+     * destructive (CLAUDE.md §2) — on garantit seulement que les reglages que
+     * l'application lit encore sont tous presents.
+     */
+    apply: (save) => ({
+      ...save,
+      profile: {
+        ...save.profile,
+        audioSettings: {
+          ...DEFAULT_AUDIO_SETTINGS,
+          ...(save.profile?.audioSettings ?? {}),
+        },
+      },
+    }),
+  },
 ];
 
 export interface MigrationResult {

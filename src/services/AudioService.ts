@@ -34,7 +34,7 @@ const UNLOCK_TIMEOUT_MS = 600;
  *  - deux voix ne parlent JAMAIS en meme temps ;
  *  - une nouvelle voix arrete la precedente ;
  *  - la musique est attenuee pendant une voix, jamais l'inverse ;
- *  - l'absence de fichier ne fait jamais planter le jeu (repli TTS, puis texte) ;
+ *  - l'absence de fichier ne fait jamais planter le jeu : on se tait, le texte reste ;
  *  - le contexte audio n'est debloque qu'au premier toucher (Safari/iPad).
  */
 class AudioServiceImpl {
@@ -150,9 +150,6 @@ class AudioServiceImpl {
         this.prime(this.musicElement),
         this.prime(this.sfxElement),
       ]);
-
-      // Certaines voix de synthese ne se chargent qu'apres une premiere demande.
-      if (typeof speechSynthesis !== 'undefined') speechSynthesis.getVoices();
     } catch {
       /* l'audio restera indisponible : le jeu doit rester jouable (§127) */
     }
@@ -190,7 +187,18 @@ class AudioServiceImpl {
 
   /**
    * Joue une voix. Toute voix en cours est arretee avant (§127).
-   * Priorite : fichier enregistre -> TTS -> rien (le texte reste affiche).
+   *
+   * ON NE LIT QUE CE QUI A ETE ENREGISTRE.
+   *
+   * Il y avait un repli sur la synthese vocale du navigateur : un fichier
+   * absent, un fichier introuvable sur CET appareil, et une voix robotique
+   * prenait la place de celle de l'adulte — sans le dire. On croyait entendre
+   * sa prise ; on entendait la machine.
+   *
+   * Le silence est plus honnete : il se voit dans l'Admin (« voix manquante »),
+   * il se corrige en une prise, et il ne fait jamais passer une voix pour une
+   * autre. L'absence de voix ne casse rien (CLAUDE.md §3) : le texte reste
+   * affiche et le jeu reste jouable sans le son.
    */
   async playVoice(voice: VoiceMessage | null | undefined): Promise<void> {
     if (!voice) return;
@@ -198,6 +206,17 @@ class AudioServiceImpl {
 
     this.stopVoice();
     if (this.settings.muted || voice.voiceMode === 'NONE') return;
+    /*
+     * Rien d'enregistre : on sort AVANT de toucher a l'etat. Sinon la musique
+     * s'attenuait et le bouton passait « en lecture » le temps d'un rendu,
+     * pour une voix qui n'allait jamais se faire entendre.
+     *
+     * `voiceMode` valait autrefois 'TTS' pour les textes confies a la
+     * synthese. On ne le produit plus nulle part, mais d'anciennes donnees en
+     * portent : elles ne doivent pas empecher une vraie prise d'etre jouee.
+     * Seul 'NONE' — « texte seul », decide par l'adulte — fait taire la voix.
+     */
+    if (!voice.audioPath) return;
 
     const token = ++this.voiceToken;
     this.playingVoiceId = voice.id;
@@ -211,53 +230,23 @@ class AudioServiceImpl {
       this.emit();
     };
 
-    if (voice.voiceMode === 'RECORDED' && voice.audioPath) {
-      const url = await AssetService.getUrl(voice.audioPath);
-      if (this.voiceToken !== token) return;
-      if (url && this.voiceElement) {
-        try {
-          const element = this.voiceElement;
-          element.onended = finish;
-          element.onerror = () => {
-            void this.speak(voice, token, finish);
-          };
-          element.src = url;
-          element.volume = this.volumeFor('voice');
-          await element.play();
-          return;
-        } catch {
-          /* fichier illisible : on tente le TTS */
-        }
-      }
-    }
+    const url = await AssetService.getUrl(voice.audioPath);
+    if (this.voiceToken !== token) return;
 
-    await this.speak(voice, token, finish);
-  }
-
-  /** CONCEPTION §59 — TTS de secours. */
-  private async speak(voice: VoiceMessage, token: number, finish: () => void): Promise<void> {
-    const canSpeak =
-      this.settings.ttsFallback &&
-      voice.voiceMode !== 'NONE' &&
-      typeof speechSynthesis !== 'undefined' &&
-      typeof SpeechSynthesisUtterance !== 'undefined' &&
-      voice.text.trim().length > 0;
-
-    if (!canSpeak) {
+    if (!url || !this.voiceElement) {
       finish();
       return;
     }
 
     try {
-      speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(voice.text);
-      utterance.lang = voice.locale;
-      utterance.volume = this.volumeFor('voice');
-      utterance.rate = 0.95;
-      utterance.onend = finish;
-      utterance.onerror = finish;
-      if (this.voiceToken !== token) return;
-      speechSynthesis.speak(utterance);
+      const element = this.voiceElement;
+      element.onended = finish;
+      // Fichier illisible ou absent de cet appareil : on se tait, on ne
+      // substitue rien.
+      element.onerror = finish;
+      element.src = url;
+      element.volume = this.volumeFor('voice');
+      await element.play();
     } catch {
       finish();
     }
@@ -277,7 +266,6 @@ class AudioServiceImpl {
         this.voiceElement.pause();
         this.voiceElement.currentTime = 0;
       }
-      if (typeof speechSynthesis !== 'undefined') speechSynthesis.cancel();
     } catch {
       /* rien a faire : l'arret ne doit jamais lever */
     }

@@ -86,12 +86,28 @@ test('la scène d’exercice ne déborde jamais sur les réponses', async ({ pag
 });
 
 test('les listes de l’admin ne se chevauchent jamais', async ({ page }) => {
+  await page.goto('./#/admin/creatures');
+  await page.getByLabel('Code d’accès').fill('parent');
+  await page.getByRole('button', { name: 'Entrer' }).click();
+  await expect(page.getByText(/^Créatures \(/)).toBeVisible({ timeout: 20_000 });
+
+  await expectNoOverlap(page, '.admin__scroll-list .ds-list-row', 3);
+});
+
+test('les sections de voix se déplient sans se chevaucher', async ({ page }) => {
   await page.goto('./#/admin/audio');
   await page.getByLabel('Code d’accès').fill('parent');
   await page.getByRole('button', { name: 'Entrer' }).click();
   await expect(page.getByText(/^Voix \(/)).toBeVisible({ timeout: 20_000 });
 
-  await expectNoOverlap(page, '.admin__scroll-list .ds-list-row', 3);
+  // Repliées, les sections tiennent les unes sous les autres.
+  await expectNoOverlap(page, '.disclosure--group > .disclosure__toggle', 3);
+
+  // Dépliée, la section pousse les suivantes au lieu de leur passer dessus.
+  await page.locator('.disclosure--group > .disclosure__toggle').first().click();
+  await expect(page.locator('.disclosure--item').first()).toBeVisible();
+  await expectNoOverlap(page, '.disclosure--group > .disclosure__toggle', 3);
+  await expectNoOverlap(page, '.disclosure--item > .disclosure__toggle', 2);
 });
 
 test('toutes les sections de l’admin sont atteignables sans défilement caché', async ({ page }) => {

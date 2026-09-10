@@ -15,7 +15,6 @@ import {
   SoftPanel,
   VoiceButton,
 } from '../../ui';
-import { spokenName } from '../../app/providers/useScreenVoice';
 import { useAudio } from '../../app/providers/AudioProvider';
 import { useContent } from '../../app/providers/ContentProvider';
 import { useGame } from '../../app/providers/GameProvider';
@@ -202,7 +201,7 @@ export function MapScreen() {
   const { editing, open: openEditor } = useEditMode();
   const { bundle, biome } = useContent();
   const { save, dispatch } = useGame();
-  const { speak, speakMessage, buttonState } = useAudio();
+  const { speak, buttonState } = useAudio();
   const [walking, setWalking] = useState<string[] | null>(null);
   const [step, setStep] = useState(0);
   const orientation = useOrientation();
@@ -448,8 +447,13 @@ export function MapScreen() {
       travelTo(node);
       return;
     }
+    /*
+     * Le nom du lieu était dit par la synthèse vocale. Elle a été retirée
+     * (§127) : la sélection reste identifiable sans le son — pointeur et
+     * variation de taille (§186) — et le lieu se nommera de nouveau le jour
+     * où l'adulte enregistre sa voix.
+     */
     setPickedId(node.id);
-    speakMessage(spokenName(node.id, node.label));
   };
 
   /** Ajoute ou retire un chemin entre deux lieux, dans les deux sens. */

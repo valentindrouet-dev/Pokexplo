@@ -22,6 +22,7 @@ import { useAuth } from '../../app/providers/AuthProvider';
 import { useNavigation } from '../../app/router';
 import { useAdminDraft } from './AdminDraftContext';
 import { DraftPublishControl } from './DraftPublishControl';
+import { PageVoicesButton } from './PageVoicesButton';
 import { DraftOutdatedNotice } from './DraftOutdatedNotice';
 import { DashboardSection } from './sections/DashboardSection';
 import { CreaturesSection } from './sections/CreaturesSection';
@@ -208,6 +209,12 @@ function AdminShell({ section }: { section: AdminSection }) {
               l'enfant voyait deja les modifications. On repond a la vraie
               question, au meme endroit qu'en mode edition. */}
           <DraftPublishControl />
+          {/*
+            Les voix de la page ouverte : on modifie une créature, une Arène,
+            un exercice — sa voix se donne au même endroit, sans changer de
+            menu (§196).
+          */}
+          <PageVoicesButton />
           <span className="admin__status">
             {saving ? 'Enregistrement du brouillon…' : savedAt ? 'Brouillon enregistré' : ''}
             {validation

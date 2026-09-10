@@ -5,15 +5,16 @@ import { useNavigation } from '../../app/router';
 import { useAdminDraftOptional } from '../admin/AdminDraftContext';
 import { DraftOutdatedNotice } from '../admin/DraftOutdatedNotice';
 import { DraftPublishControl } from '../admin/DraftPublishControl';
+import { PageVoicesButton } from '../admin/PageVoicesButton';
 import '../admin/forms.css';
 import './edit-mode.css';
 
 /**
  * Bandeau du mode édition.
  *
- * Il dit trois choses, et rien de plus : qu'on édite, que le brouillon est
- * enregistré, et comment sortir. Les erreurs de contenu sont signalées ici
- * parce qu'elles bloqueraient la publication.
+ * Il dit ce qu'il faut, et rien de plus : qu'on édite, ce que l'enfant voit,
+ * les voix de l'écran sous les yeux, et comment sortir. Les erreurs de contenu
+ * sont signalées ici parce qu'elles bloqueraient la publication.
  */
 export function EditModeBar() {
   const { editing, setEditing } = useEditMode();
@@ -40,6 +41,11 @@ export function EditModeBar() {
         on quittait, et l'ecran revenait a l'ancienne version sans un mot.
       */}
       <DraftPublishControl />
+      {/*
+        Les voix de l'écran, ICI : c'est en le regardant qu'on entend ce qui
+        manque, et c'est là qu'il faut pouvoir l'enregistrer.
+      */}
+      <PageVoicesButton />
       <SecondaryButton onClick={() => navigate({ name: 'admin', section: 'dashboard' })}>
         Menus
       </SecondaryButton>

@@ -200,39 +200,16 @@ test('les tuiles du Centre ne s’étirent pas sur un grand écran', async ({ pa
   }
 });
 
-test('chaque écran enfant s’annonce à la voix (§192)', async ({ page }) => {
-  await boot(page);
-
-  // On observe ce que l'application demande à la synthèse : c'est la seule
-  // preuve que l'enfant entend bien quelque chose en arrivant. Le mouchard est
-  // posé sur la page VIVANTE — un rechargement effacerait le profil.
-  await page.evaluate(() => {
-    const scope = window as unknown as { __spoken: string[] };
-    scope.__spoken = [];
-    const original = window.speechSynthesis.speak.bind(window.speechSynthesis);
-    window.speechSynthesis.speak = (utterance: SpeechSynthesisUtterance) => {
-      scope.__spoken.push(utterance.text);
-      original(utterance);
-    };
-  });
-
-  for (const [hash, expected] of [
-    ['/play/pokedex', /rencontrés/i],
-    ['/play/team', /emmener/i],
-    ['/play/map', /où veux-tu aller/i],
-  ] as const) {
-    await go(page, hash);
-    await expect
-      .poll(
-        async () =>
-          (await page.evaluate(() => (window as unknown as { __spoken?: string[] }).__spoken ?? [])).join(
-            ' | ',
-          ),
-        { timeout: 15_000 },
-      )
-      .toMatch(expected);
-  }
-});
+/*
+ * §192 — « CHAQUE ÉCRAN ENFANT S'ANNONCE À LA VOIX » se vérifiait ici en
+ * espionnant `speechSynthesis`. La synthèse vocale a été retirée (§127) : on ne
+ * lit plus que les voix enregistrées par l'adulte, et un navigateur de test n'en
+ * a aucune. Un mouchard sur la synthèse ne prouverait donc plus rien.
+ *
+ * La règle est désormais tenue par `tests/app/screenVoice.test.tsx`, qui vérifie
+ * ce qui reste vrai sans enregistrement : chaque écran DEMANDE bien sa voix
+ * d'arrivée, et cette voix existe dans le contenu.
+ */
 
 /**
  * POKÉDEX ET ÉQUIPE — une chose à la fois, un seul geste (§191, §190).

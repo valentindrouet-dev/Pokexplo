@@ -3,7 +3,15 @@ import type { MediaPath, VoiceMessageId } from './ids';
 /** Canal de lecture : la voix a toujours la priorite (CONCEPTION §68). */
 export type AudioChannel = 'voice' | 'music' | 'sfx';
 
-/** CONCEPTION §59 : priorite voix enregistree -> TTS -> texte seul. */
+/**
+ * Mode de restitution d'un bloc « texte + voix ».
+ *
+ *  - 'RECORDED' : on joue la prise de l'adulte, si elle existe ;
+ *  - 'NONE' : texte seul, volontairement muet ;
+ *  - 'TTS' : valeur HERITEE, plus jamais produite. La synthese vocale du
+ *    navigateur a ete retiree (§127) : on ne lit que les voix enregistrees.
+ *    Les anciennes donnees qui la portent se comportent comme 'RECORDED'.
+ */
 export type VoiceMode = 'RECORDED' | 'TTS' | 'NONE';
 
 /** CONCEPTION §51 : statut d'un bloc texte + voix, affiche dans l'Admin. */
@@ -17,7 +25,7 @@ export type VoiceStatus =
 /** CONCEPTION §49. */
 export interface VoiceMessage {
   id: VoiceMessageId;
-  /** Texte affiche a l'enfant (et lu par le TTS de secours). */
+  /** Texte affiche a l'enfant, et lu par la voix enregistree. */
   text: string;
   /** Chemin du fichier dans le magasin de medias. Jamais le son lui-meme (§72). */
   audioPath?: MediaPath;
@@ -79,8 +87,6 @@ export interface AudioSettings {
   muted: boolean;
   /** Lecture automatique des dialogues (peut etre coupee par le parent). */
   autoPlayVoices: boolean;
-  /** Autorise le TTS quand aucune voix n'est enregistree. */
-  ttsFallback: boolean;
 }
 
 export const DEFAULT_AUDIO_SETTINGS: AudioSettings = {
@@ -89,5 +95,4 @@ export const DEFAULT_AUDIO_SETTINGS: AudioSettings = {
   sfxVolume: 0.8,
   muted: false,
   autoPlayVoices: true,
-  ttsFallback: true,
 };

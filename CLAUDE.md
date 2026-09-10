@@ -54,7 +54,13 @@ exercices, les Arènes, les quêtes et l'histoire.
 ## 3. Règles audio (§127 du guide)
 
 - Tout texte enfant doit pouvoir référencer une `VoiceMessage`.
+- **Ne jamais lire un texte avec une voix de synthèse.** Le repli TTS a été retiré (CONCEPTION §59) :
+  on ne lit que les voix enregistrées par l'administrateur. Un texte sans prise reste **muet**, et ce
+  silence doit se voir dans l'Admin — jamais être comblé par une voix de machine.
 - `VoiceTextEditor` doit rester **réutilisable** : ne jamais recoder un enregistreur ailleurs.
+- **Toute voix doit pouvoir s'enregistrer depuis la page où elle se lit** (`UI_DESIGN.md` §199) :
+  « Voix de cette page » en mode édition et dans les menus. Une nouvelle page qui parle à l'enfant
+  déclare ses voix dans `src/features/admin/pageVoices.ts`.
 - **Ne jamais coder une voix directement dans un composant spécifique** (pas de chemin audio en dur).
 - Les fichiers audio restent dans **Storage** (ou le magasin de médias local) ;
   **Firestore ne stocke que les métadonnées** (`audioPath`, `mimeType`, `duration`, `textHash`).

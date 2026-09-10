@@ -70,6 +70,14 @@ public/media/music/foret.m4a         →  media/music/foret.m4a
 public/media/voice/professor/x.m4a   →  media/voice/professor/x.m4a
 ```
 
+> **Les voix aussi.** Une voix enregistrée depuis l'Admin est rangée dans le
+> navigateur de l'appareil qui l'a enregistrée : sur l'iPad, elle n'existe pas,
+> et le texte reste **muet** — plus rien ne parle à votre place depuis le
+> retrait de la voix de synthèse (CONCEPTION §59). Pour qu'une voix suive le
+> site partout, déposez son fichier dans `public/media/voice/…` et renseignez ce
+> chemin, ou utilisez Firebase (docs/SYNC.md, option C). `Admin → Voix` compte
+> et signale les voix qui n'existent que sur un autre appareil.
+
 ## 2. Adresse externe
 
 Collez une adresse complète dans le champ « Image de la créature » :

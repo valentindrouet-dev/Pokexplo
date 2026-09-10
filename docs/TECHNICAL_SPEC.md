@@ -72,7 +72,7 @@ Le reste de l'application ne connaît que les *ports* : aucun composant n'import
 | `SaveService` | Charger/écrire les profils, `saveRevision`, journal d'événements idempotent. |
 | `SyncService` | File d'attente hors ligne, réconciliation, résolution par `saveRevision`. |
 | `AssetService` | Résoudre `mediaPath` → URL (Blob local ou Storage), cache, `downloadCurrentAdventure()`. |
-| `AudioService` | Lecture voix/musique/bruitages, canaux, ducking, TTS de secours. |
+| `AudioService` | Lecture voix/musique/bruitages, canaux, ducking. Aucune synthèse vocale (§59). |
 | `VoiceRecorderService` | Permission micro, `MediaRecorder`, prises multiples, import de fichier. |
 | `AuthService` | Rôles `ADMIN` / `PLAYER`, session locale ou Firebase. |
 | `MigrationService` | Migrations de `saveSchemaVersion`, non destructives. |

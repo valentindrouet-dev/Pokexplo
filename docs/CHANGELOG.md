@@ -4,6 +4,51 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 Trois versions sont suivies séparément (§112) : `APP_VERSION`, `CONTENT_VERSION`,
 `SAVE_SCHEMA_VERSION`.
 
+## [1.15.0] — On n'entend plus que votre voix
+
+`APP_VERSION 1.15.0` · `CONTENT_VERSION bundled-6` · `SAVE_SCHEMA_VERSION 4`
+
+### Retiré
+
+- **La voix de synthèse, partout.** Il y avait un repli : quand le fichier
+  enregistré était introuvable, la voix du navigateur prenait la place, sans
+  rien dire. On croyait entendre sa prise, on entendait la machine — c'est
+  exactement ce qui se passait avec une voix enregistrée sur l'ordinateur puis
+  écoutée sur l'iPad, où le fichier n'existe pas. **On ne lit plus que les voix
+  que vous enregistrez vous-même** ; un texte sans prise reste muet, et le jeu
+  reste entièrement jouable sans le son.
+- Le réglage « Voix de synthèse » de l'espace parents et la pastille du même nom
+  de l'enregistreur. Cette dernière est remplacée par **« Texte seul, sans
+  voix »**, qui dit ce qui se passe vraiment.
+
+### Ajouté
+
+- **« Voix de cette page »**, dans le bandeau du mode édition et dans la barre
+  des menus. Il ouvre les seules voix de ce qu'on a sous les yeux — la carte,
+  le Pokédex, une Arène, une fiche de créature — avec le nombre restant à
+  enregistrer écrit sur le bouton, et l'enregistreur habituel dessous.
+- **`Admin → Voix` se range en sections dépliables** : le Professeur,
+  l'aventure, les missions, les Arènes, les exercices, les premiers pas, les
+  écrans. Chaque section annonce ce qu'il y reste à faire, et l'enregistreur
+  s'ouvre sous le texte concerné — un seul à la fois (§191). Une recherche
+  permet de retrouver un texte précis parmi les cent quatre-vingts.
+- **L'Admin signale les voix enregistrées sur un autre appareil.** Leur fichier
+  n'existe pas ici : elles resteront muettes, et c'est désormais écrit.
+
+### Corrigé
+
+- **Un écran affiché avant le chargement du contenu restait muet pour
+  toujours** : l'annonce d'arrivée se notait comme « faite » sans avoir eu lieu.
+- Le bouton 🔊 est maintenant **inactif quand aucune voix n'est enregistrée**,
+  au lieu de ne rien faire une fois touché.
+- Une prise enregistrée sous l'ancien mode `TTS` est de nouveau jouée : seul
+  « texte seul » fait taire une voix.
+
+### Migration
+
+- `SAVE_SCHEMA_VERSION 3 → 4` : les réglages audio sont complétés, `ttsFallback`
+  n'est plus lu. **Rien n'est effacé** (CLAUDE.md §2).
+
 ## [1.14.0] — Les créatures ont un numéro, et leurs images se choisissent
 
 `APP_VERSION 1.14.0` · `CONTENT_VERSION bundled-6` · `SAVE_SCHEMA_VERSION 3`

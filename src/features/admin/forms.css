@@ -340,7 +340,9 @@
   margin-bottom: var(--space-4);
 }
 
-.advanced__toggle {
+/* ------------------------- Sous-menus dépliables ------------------------- */
+
+.disclosure__toggle {
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -357,12 +359,48 @@
   cursor: pointer;
 }
 
-.advanced__chevron {
+.disclosure__chevron {
   width: var(--space-4);
+  flex: none;
 }
 
-.advanced__body {
+/* Le titre prend la place, l'indice reste collé à droite. */
+.disclosure__title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.disclosure__hint {
+  flex: none;
+  font-weight: var(--weight-regular);
+  color: var(--color-text-soft);
+}
+
+.disclosure__body {
   padding-top: var(--space-3);
+}
+
+/* Une famille : elle se détache du fond pour qu'on voie où elle commence. */
+.disclosure--group + .disclosure--group {
+  margin-top: var(--space-2);
+}
+
+/* Une ligne dans une famille : décalée, séparée par un filet. */
+.disclosure--item {
+  border-top: var(--border-hairline);
+  padding-left: var(--space-3);
+}
+
+.disclosure--item > .disclosure__toggle {
+  font-weight: var(--weight-regular);
+  color: var(--color-text);
+}
+
+.disclosure--item > .disclosure__body {
+  padding-bottom: var(--space-3);
 }
 
 /* ---------------------------- Couleurs ---------------------------- */
@@ -544,4 +582,41 @@
   font-size: var(--text-normal);
   font-weight: var(--weight-bold);
   letter-spacing: 0.04em;
+}
+
+/* ------------------------------ Liste de voix ----------------------------- */
+
+.voice-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Le statut se lit d'un coup d'œil, et pas seulement à la couleur (§186). */
+.voice-row__status {
+  font-size: var(--text-small);
+  white-space: nowrap;
+}
+
+.voice-row__status--VOICE_OK {
+  color: var(--color-text-soft);
+}
+
+.voice-row__status--VOICE_MISSING {
+  color: var(--color-challenge);
+  font-weight: var(--weight-bold);
+}
+
+.voice-row__status--VOICE_OUTDATED {
+  color: var(--color-action-strong);
+  font-weight: var(--weight-bold);
+}
+
+/*
+ * La liste défile DANS la modale : avec dix-huit lieux, « Fermer » se
+ * retrouvait au bout d'un long déroulement.
+ */
+.page-voices__list {
+  max-height: 55vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }

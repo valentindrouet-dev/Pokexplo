@@ -63,6 +63,13 @@ export function AudioProvider({
         if (!voiceId) return 'unavailable';
         const message = voice(voiceId);
         if (!message || message.voiceMode === 'NONE') return 'unavailable';
+        /*
+         * Plus de synthese vocale (§127) : sans prise enregistree, ce bouton
+         * ne dirait rien. Il reste visible — sa place ne bouge pas d'un ecran
+         * a l'autre (§168) — mais inactif, plutot que de se taire en silence
+         * apres un toucher.
+         */
+        if (!message.audioPath) return 'unavailable';
         if (settings.muted) return 'muted';
         return state.playingVoiceId === voiceId ? 'playing' : 'available';
       },
