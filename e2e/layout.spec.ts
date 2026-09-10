@@ -21,7 +21,7 @@ async function boot(page: Page): Promise<void> {
   await page.getByPlaceholder('Ton prénom').waitFor({ timeout: 20_000 });
   await page.getByPlaceholder('Ton prénom').fill('Lucie');
   await page.getByRole('button', { name: /commencer l’aventure/i }).click();
-  await expect(page.getByRole('button', { name: 'Partir !' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Partir à l’aventure !' })).toBeVisible();
 }
 
 /** Vérifie qu'aucun élément de la sélection n'en recouvre un autre. */
@@ -269,7 +269,7 @@ test('le mode édition se pose sur l’écran de l’enfant sans le masquer', as
 
 test('la carte remplit son cadre dans les deux orientations', async ({ page }) => {
   await boot(page);
-  await page.getByRole('button', { name: 'Partir !' }).click();
+  await page.getByRole('button', { name: 'Partir à l’aventure !' }).click();
   await expect(page.getByRole('button', { name: /Prairie — à explorer/ })).toBeVisible();
 
   // Regression : en portrait, la carte paysage flottait, minuscule, au milieu
@@ -392,7 +392,7 @@ test('l’espace parents tient sur un écran d’iPad', async ({ page }) => {
 
 test('la carte regroupe les lieux en régions lisibles', async ({ page }) => {
   await boot(page);
-  await page.getByRole('button', { name: 'Partir !' }).click();
+  await page.getByRole('button', { name: 'Partir à l’aventure !' }).click();
   await expect(page.getByRole('button', { name: /Prairie — à explorer/ })).toBeVisible();
 
   const map = await page.evaluate(() => {
@@ -420,7 +420,7 @@ test('la carte regroupe les lieux en régions lisibles', async ({ page }) => {
 
 test('les titres de la carte ne se chevauchent jamais', async ({ page }) => {
   await boot(page);
-  await page.getByRole('button', { name: 'Partir !' }).click();
+  await page.getByRole('button', { name: 'Partir à l’aventure !' }).click();
   await expect(page.getByRole('button', { name: /Prairie — à explorer/ })).toBeVisible();
 
   // Regression : « Grand pré », « Chemin fleuri » et « Rivière » se

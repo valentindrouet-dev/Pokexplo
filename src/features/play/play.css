@@ -158,31 +158,50 @@
 
 /* ------------------------------- CENTRE ------------------------------ */
 
-/*
- * Trois destinations, cote a cote, tres grandes (§190).
- *
- * Elles occupent la place laissee libre entre le Professeur (en haut) et la
- * jauge de chapitre (en bas) : sans cela, l'ecran se vidait par le milieu et
- * l'enfant voyait surtout du decor.
- */
+/* Les six raccourcis restent carrés en paysage comme en portrait. */
+.center-screen .play__content {
+  overflow-y: auto;
+  padding-bottom: calc(var(--space-5) + var(--safe-bottom));
+}
+
+.center-screen .play__bar { display: none; }
+
+.center-menu {
+  width: min(100%, 620px, calc(75svh + 12px));
+  margin-inline: auto;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.center-menu__adventure { width: 100%; }
+
 .center-hub {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-5);
-  flex: 1 1 auto;
-  min-height: 0;
-  /*
-   * Les tuiles se CENTRENT dans la place libre au lieu de s'y etirer : sur un
-   * grand ecran, elles devenaient de hauts rectangles blancs avec un petit
-   * pictogramme perdu au milieu.
-   */
-  align-content: center;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
 }
 
 .center-hub__tile {
-  min-height: clamp(120px, 16vh, 168px);
-  max-height: clamp(140px, 22vh, 220px);
+  aspect-ratio: 1;
+  min-width: 0;
+  min-height: var(--touch-min);
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  font-size: clamp(14px, 2.4vw, 22px);
+  font-weight: var(--weight-bold);
 }
+
+.center-hub__icon {
+  width: 64%;
+  height: 64%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.center-hub__tile .parent-gate__ring { display: none; }
+.center-hub__tile[data-holding='true'] { background: var(--color-lavender-soft); }
 
 /* La jauge de chapitre ne prend jamais plus que sa hauteur propre. */
 .center-chapter {

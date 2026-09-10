@@ -22,7 +22,7 @@ async function boot(page: Page): Promise<void> {
   await page.getByPlaceholder('Ton prénom').waitFor({ timeout: 20_000 });
   await page.getByPlaceholder('Ton prénom').fill('Lucie');
   await page.getByRole('button', { name: /commencer l’aventure/i }).click();
-  await expect(page.getByRole('button', { name: 'Partir !' })).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByRole('button', { name: 'Partir à l’aventure !' })).toBeVisible({ timeout: 20_000 });
 }
 
 /**
@@ -79,7 +79,6 @@ async function childChoices(page: Page): Promise<string[]> {
 }
 
 const SCREENS: Array<{ name: string; hash: string; ready: string }> = [
-  { name: 'Centre', hash: './#/play', ready: '.center-hub' },
   { name: 'Carte', hash: './#/play/map', ready: '.map__node' },
   { name: 'Pokédex', hash: './#/play/pokedex', ready: '.pokedex__grid' },
   { name: 'Équipe', hash: './#/play/team', ready: '.team__slots' },
@@ -101,11 +100,18 @@ for (const screen of SCREENS) {
   });
 }
 
-test('le Centre ne propose jamais deux chemins vers l’aventure (§190)', async ({ page }) => {
+test('le Centre présente le départ puis les six raccourcis demandés', async ({ page }) => {
   await boot(page);
-  const choices = await childChoices(page);
-  // Régression : une tuile « Aventure » ET un bouton « Partir ! ».
-  expect(choices.filter((label) => /aventure|partir|carte/i.test(label))).toHaveLength(1);
+  const menu = page.getByRole('navigation', { name: 'Menu principal' });
+  await expect(menu.getByRole('button')).toHaveText(['Équipe', 'Pokédex', 'Objets', 'Exercices', 'Carte', 'Parents']);
+  const departure = await page.getByRole('button', { name: 'Partir à l’aventure !' }).boundingBox();
+  const grid = await menu.boundingBox();
+  expect(departure!.y + departure!.height).toBeLessThanOrEqual(grid!.y);
+  expect(Math.abs(departure!.width - grid!.width)).toBeLessThan(1);
+  for (const tile of await menu.getByRole('button').all()) {
+    const box = await tile.boundingBox();
+    expect(Math.abs(box!.width - box!.height)).toBeLessThan(1);
+  }
 });
 
 /**
@@ -158,7 +164,7 @@ test('le cadenas répond toujours, et mène à l’espace parents (§190)', asyn
   await expect(dialog).toBeVisible();
   await expect(dialog).toContainText(/maintenez le cadenas/i);
   // On n'y est pas encore : le jeu est toujours là derrière.
-  await expect(page.getByRole('button', { name: 'Partir !' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Partir à l’aventure !' })).toBeVisible();
 
   await page.getByRole('button', { name: /ouvrir l’espace parents/i }).click();
   await expect(page.getByText(/espace parents — lucie/i)).toBeVisible({ timeout: 20_000 });

@@ -145,9 +145,13 @@ export const SCREEN_VOICES = {
   team: 'voice.ui.screen.team',
   badges: 'voice.ui.screen.badges',
   quests: 'voice.ui.screen.quests',
+  items: 'voice.ui.screen.items',
+  practice: 'voice.ui.screen.practice',
 } as const;
 
 const screenVoices: VoiceMessage[] = [
+  createVoiceMessage(SCREEN_VOICES.items, 'Voici ton sac ! Tu peux regarder tes badges.', 'ui'),
+  createVoiceMessage(SCREEN_VOICES.practice, 'Entraîne-toi à ton rythme ! Touche Commencer pour jouer.', 'ui'),
   createVoiceMessage(SCREEN_VOICES.map, 'Où veux-tu aller ?', 'ui'),
   createVoiceMessage(SCREEN_VOICES.pokedex, 'Voici tous les Pokémon que tu as rencontrés !', 'ui'),
   createVoiceMessage(

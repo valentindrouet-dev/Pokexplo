@@ -41,7 +41,7 @@ async function startAdventure(user: ReturnType<typeof userEvent.setup>): Promise
   const nickname = await screen.findByPlaceholderText('Ton prénom', undefined, { timeout: 5000 });
   await user.type(nickname, 'Lucie');
   await user.click(screen.getByRole('button', { name: /commencer l’aventure/iu }));
-  await screen.findByRole('button', { name: 'Partir !' });
+  await screen.findByRole('button', { name: 'Partir à l’aventure !' });
 }
 
 /**

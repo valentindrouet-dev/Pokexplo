@@ -1,11 +1,8 @@
 import { useMemo } from 'react';
 import {
   DialogCard,
-  IconBadge,
   IconMap,
-  IconPokedex,
   IconProfessor,
-  IconTeam,
   LoadingBall,
   PrimaryButton,
   ProgressBar,
@@ -22,21 +19,11 @@ import { PlayScreen } from '../play/PlayScreen';
 import { ParentGate } from '../play/ParentGate';
 import { Editable } from '../edit-mode/Editable';
 
-/**
- * CENTRE POKÉMON (CONCEPTION §8, UI_DESIGN §190).
- *
- * C'est le hub. Il en présentait trop : progression chiffrée, créatures,
- * badges, meneur d'équipe, six tuiles, et DEUX chemins vers l'aventure — la
- * tuile « Aventure » et le bouton « Partir ! ».
- *
- * Il tient maintenant en quatre choix, dont un seul est l'action principale :
- *
- *   le Professeur dit quoi faire  →  PARTIR !
- *   puis, plus bas : Pokédex · Équipe · Badges
- *
- * Les quêtes ne sont plus une destination : ce sont les missions que donne le
- * Professeur, là où l'enfant les entend.
- */
+/** Accueil : départ pleine largeur, puis six destinations carrées. */
+function MenuIcon({ name }: { name: string }) {
+  return <img className="center-hub__icon" src={`${import.meta.env.BASE_URL}images/menu/${name}.png`} alt="" aria-hidden="true" />;
+}
+
 export function CenterScreen() {
   const { navigate } = useNavigation();
   const { bundle, biome } = useContent();
@@ -90,11 +77,7 @@ export function CenterScreen() {
       biome={biome('centre')}
       backTo={null}
       scrim="light"
-      action={
-        <PrimaryButton large icon={<IconMap size={30} />} onClick={() => void leave()}>
-          Partir !
-        </PrimaryButton>
-      }
+      className="center-screen"
     >
       {/*
         Le Professeur EST le haut de l'écran : sa phrase remplace le titre de
@@ -118,26 +101,18 @@ export function CenterScreen() {
         />
       </Editable>
 
-      {/* Trois destinations, et rien d'autre. */}
-      <div className="center-hub">
-        <SelectionTile
-          className="center-hub__tile"
-          label="Pokédex"
-          icon={<IconPokedex size={56} />}
-          onClick={() => navigate({ name: 'pokedex' })}
-        />
-        <SelectionTile
-          className="center-hub__tile"
-          label="Équipe"
-          icon={<IconTeam size={56} />}
-          onClick={() => navigate({ name: 'team' })}
-        />
-        <SelectionTile
-          className="center-hub__tile"
-          label="Badges"
-          icon={<IconBadge size={56} />}
-          onClick={() => navigate({ name: 'badges' })}
-        />
+      <div className="center-menu">
+        <PrimaryButton className="center-menu__adventure" large icon={<IconMap size={32} />} onClick={() => void leave()}>
+          Partir à l’aventure !
+        </PrimaryButton>
+        <nav className="center-hub" aria-label="Menu principal">
+          <SelectionTile className="center-hub__tile" label="Équipe" icon={<MenuIcon name="team" />} onClick={() => navigate({ name: 'team' })} />
+          <SelectionTile className="center-hub__tile" label="Pokédex" icon={<MenuIcon name="pokedex" />} onClick={() => navigate({ name: 'pokedex' })} />
+          <SelectionTile className="center-hub__tile" label="Objets" icon={<MenuIcon name="items" />} onClick={() => navigate({ name: 'items' })} />
+          <SelectionTile className="center-hub__tile" label="Exercices" icon={<MenuIcon name="exercises" />} onClick={() => navigate({ name: 'practice' })} />
+          <SelectionTile className="center-hub__tile" label="Carte" icon={<MenuIcon name="map" />} onClick={() => navigate({ name: 'map' })} />
+          <ParentGate tileIcon={<MenuIcon name="parents" />} />
+        </nav>
       </div>
 
       {/*
@@ -157,7 +132,7 @@ export function CenterScreen() {
       ) : null}
 
 
-      <ParentGate />
+
     </PlayScreen>
   );
 }

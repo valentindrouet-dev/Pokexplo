@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { IconLock, ModalPanel, PrimaryButton, SecondaryButton } from '../../ui';
 import { useNavigation } from '../../app/router';
 import './play.css';
@@ -22,7 +22,7 @@ const HOLD_MS = 1200;
  * Ce n'est pas la vraie serrure : `/admin` est protégé par un code (§93).
  * Celle-ci sert seulement à ce qu'un enfant ne tombe pas là par hasard.
  */
-export function ParentGate() {
+export function ParentGate({ tileIcon }: { tileIcon?: ReactNode }) {
   const { navigate } = useNavigation();
   const [holding, setHolding] = useState(false);
   const [asking, setAsking] = useState(false);
@@ -66,7 +66,7 @@ export function ParentGate() {
     <>
       <button
         type="button"
-        className="parent-gate"
+        className={tileIcon ? "ds-tap ds-tile center-hub__tile" : "parent-gate"}
         data-holding={holding}
         aria-label="Espace parents"
         onPointerDown={start}
@@ -79,7 +79,8 @@ export function ParentGate() {
         }}
       >
         <span className="parent-gate__ring" aria-hidden="true" />
-        <IconLock size={22} />
+        {tileIcon ?? <IconLock size={22} />}
+        {tileIcon ? <span>Parents</span> : null}
       </button>
 
       <ModalPanel
@@ -97,7 +98,7 @@ export function ParentGate() {
           Progression de votre enfant, réglages du son, et de quoi modifier l’aventure.
         </p>
         <p className="start__subtitle">
-          Astuce : maintenez le cadenas appuyé une seconde pour entrer directement.
+          Astuce : maintenez le bouton Parents appuyé une seconde pour entrer directement.
         </p>
       </ModalPanel>
     </>

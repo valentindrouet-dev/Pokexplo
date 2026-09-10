@@ -21,7 +21,7 @@ async function openMapInEditMode(page: Page): Promise<void> {
   await page.getByPlaceholder('Ton prénom').waitFor({ timeout: 20_000 });
   await page.getByPlaceholder('Ton prénom').fill('Lucie');
   await page.getByRole('button', { name: /commencer l’aventure/i }).click();
-  await expect(page.getByRole('button', { name: 'Partir !' })).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByRole('button', { name: 'Partir à l’aventure !' })).toBeVisible({ timeout: 20_000 });
 
   await page.goto('./#/admin');
   await page.getByLabel('Code d’accès').fill('parent');
