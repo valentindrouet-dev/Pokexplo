@@ -342,6 +342,25 @@ class ContentServiceImpl {
       );
     }
 
+    /*
+     * Deux creatures au meme numero : le Pokedex en affiche deux « #025 » et
+     * l'enfant ne sait plus laquelle est laquelle.
+     */
+    const numbers = new Map<number, string>();
+    for (const creature of bundle.creatures) {
+      if (typeof creature.number !== 'number') continue;
+      const taken = numbers.get(creature.number);
+      if (taken) {
+        warn(
+          'CREATURE_NUMBER',
+          `« ${creature.name} » et « ${taken} » portent le meme numero ${creature.number}.`,
+          creature.id,
+        );
+      } else {
+        numbers.set(creature.number, creature.name);
+      }
+    }
+
     for (const template of bundle.exerciseTemplates) {
       if (!skillIds.has(template.skillId)) {
         error('TEMPLATE_SKILL', `Compétence inconnue pour « ${template.label} ».`, template.id);

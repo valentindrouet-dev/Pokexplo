@@ -386,6 +386,30 @@ Cibles :
 Les pages globales « Images » et « Voix » ne servent plus à éditer une entité : elles servent à
 **vérifier l'ensemble** — ce qui manque, ce qui est obsolète, ce qui n'est plus utilisé.
 
+## 198. Créatures : un numéro, une image déposée, des syllabes en cases
+
+**Chaque créature porte un numéro** (`Creature.number`), affiché `#025` dans le
+Pokédex et dans l'Admin. Un contenu écrit avant leur apparition n'en a pas :
+`creatureNumber()` retombe alors sur le rang dans la liste — on n'a jamais
+besoin de réécrire un contenu existant pour l'afficher.
+
+**Les images vivent dans `public/media/creatures/`**, nommées `0000_nom.png`.
+Ce nom porte trois choses : un chemin, un numéro et un nom. Comme un navigateur
+ne sait pas lister un dossier, `scripts/vite-plugin-media-catalog.ts` écrit un
+inventaire (`index.json`) au démarrage du serveur et avant chaque build. L'Admin
+les propose alors **en vignettes** ; en choisir une reprend son numéro, et son
+nom si la créature n'en a pas encore. On ne saisit jamais un chemin (§196).
+
+**On ne dessine plus les créatures dans l'Admin.** Silhouette, yeux, oreilles,
+détail et trois couleurs demandaient à un parent d'être illustrateur. Le
+descripteur `visual` reste dans la donnée — il fait le dessin de secours d'une
+créature sans image, et une créature n'est jamais vide (§174).
+
+**Les syllabes se saisissent une par case**, jusqu'à huit. Un champ unique
+« Pi-lou-pi » laissait un tiret oublié découper le nom n'importe comment, sans
+rien dire. Le découpage est maintenant visible, et relu sous les cases tel que
+l'enfant l'entendra.
+
 ---
 
 ## 189. Test ultime de chaque écran

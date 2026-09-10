@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import { fileURLToPath, URL } from 'node:url';
 import { serviceWorkerPlugin } from './scripts/vite-plugin-service-worker';
 import { appVersionPlugin } from './scripts/vite-plugin-app-version';
+import { mediaCatalogPlugin } from './scripts/vite-plugin-media-catalog';
 
 /**
  * GitHub Pages sert le site sous /<repo>/ ; on garde la possibilite de
@@ -12,7 +13,7 @@ const base = process.env.BASE_PATH ?? '/Pokexplo/';
 
 export default defineConfig({
   base,
-  plugins: [react(), appVersionPlugin(), serviceWorkerPlugin({ base })],
+  plugins: [react(), appVersionPlugin(), mediaCatalogPlugin(), serviceWorkerPlugin({ base })],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

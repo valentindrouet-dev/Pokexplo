@@ -4,6 +4,7 @@ import { AssetService } from '../../services';
 import { IconImage, IconUpload, IconWarning, SecondaryButton } from '../../ui';
 import { uid } from '../../utils/id';
 import { FieldGroup } from './fields';
+import { loadCatalog, type CatalogImage } from './mediaCatalog';
 import './forms.css';
 
 export type ImageOrigin = 'generated' | 'repository' | 'external' | 'device';
@@ -49,6 +50,15 @@ export function useDeviceImages(): { paths: Set<string>; items: MediaRecordMeta[
  * mise en garde quand l'image ne quittera pas cet appareil. Le chemin brut
  * reste disponible sous « Réglages avancés », pour qui en a besoin.
  */
+/** L'inventaire des images du dépôt, chargé une fois par écran. */
+export function useCatalogImages(): CatalogImage[] {
+  const [images, setImages] = useState<CatalogImage[]>([]);
+  useEffect(() => {
+    void loadCatalog().then(setImages);
+  }, []);
+  return images;
+}
+
 export function ImagePicker({
   label = 'Illustration',
   preview,
@@ -56,6 +66,8 @@ export function ImagePicker({
   onChange,
   folder,
   deviceImages,
+  catalog = [],
+  onPickCatalog,
 }: {
   label?: string;
   /** Ce que l'on voit aujourd'hui : image fournie, ou dessin généré. */
@@ -65,6 +77,14 @@ export function ImagePicker({
   /** Sous-dossier du magasin de médias (« creatures », « biomes »…). */
   folder: string;
   deviceImages: ReturnType<typeof useDeviceImages>;
+  /** Images déposées dans le dépôt, proposées en vignettes. */
+  catalog?: CatalogImage[];
+  /**
+   * Appelé au choix d'une image du dépôt. Le nom du fichier porte plus que
+   * le chemin — « 0025_pikachu.png » dit aussi un numéro et un nom — et c'est
+   * l'appelant qui décide quoi en faire.
+   */
+  onPickCatalog?: (image: CatalogImage) => void;
 }) {
   const input = useRef<HTMLInputElement | null>(null);
   const [busy, setBusy] = useState(false);
@@ -135,6 +155,54 @@ export function ImagePicker({
           ) : null}
         </div>
       </div>
+
+      {/*
+        LES IMAGES DU DÉPÔT (§198).
+
+        Elles sont déposées dans `public/media/creatures/` et voyagent avec le
+        site : ce sont les seules qui apparaîtront sur l'iPad. On les CHOISIT
+        en vignettes — jamais en retapant `media/creatures/0025_pikachu.png`.
+      */}
+      {catalog.length > 0 ? (
+        <div className="catalog">
+          <span className="admin__status">
+            {catalog.length} image(s) déposée(s) dans <code>public/media/{folder}/</code>. Elles
+            voyagent avec le site.
+          </span>
+          <div className="catalog__grid">
+            {catalog.map((image) => (
+              <button
+                key={image.path}
+                type="button"
+                className="ds-tap catalog__item"
+                aria-pressed={path === image.path}
+                aria-label={
+                  image.number === undefined
+                    ? image.name
+                    : `${image.name}, numéro ${image.number}`
+                }
+                onClick={() => {
+                  onChange(image.path);
+                  onPickCatalog?.(image);
+                }}
+              >
+                <img
+                  className="catalog__image"
+                  src={`${import.meta.env.BASE_URL}${image.path}`}
+                  alt=""
+                  loading="lazy"
+                />
+                <span className="catalog__name">{image.name}</span>
+                {image.number === undefined ? null : (
+                  <span className="catalog__number">
+                    #{String(image.number).padStart(3, '0')}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
     </FieldGroup>
   );
 }

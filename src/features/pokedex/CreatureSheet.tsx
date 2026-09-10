@@ -5,6 +5,7 @@ import { CreatureSprite } from '../../components/CreatureSprite';
 import { useAudio } from '../../app/providers/AudioProvider';
 import { Editable } from '../edit-mode/Editable';
 import { TypeIcon } from './typeIcons';
+import { formatCreatureNumber } from '../admin/creatureNumber';
 
 /**
  * FICHE D'UNE CRÉATURE, PAR-DESSUS LA COLLECTION (UI_DESIGN §191).
@@ -18,10 +19,12 @@ import { TypeIcon } from './typeIcons';
 export function CreatureSheet({
   creature,
   state,
+  number,
   onClose,
 }: {
   creature: Creature;
   state: PokedexState;
+  number: number;
   onClose: () => void;
 }) {
   const { speak, buttonState } = useAudio();
@@ -48,7 +51,11 @@ export function CreatureSheet({
         />
 
         <Editable target={{ kind: 'creature', id: creature.id }} label={`la créature ${creature.name}`}>
-          <p className="sheet__name">{unknown ? '???' : creature.name}</p>
+          <p className="sheet__name">
+            {/* Le numéro d'abord : deux chiffres à lire, comme sur une carte. */}
+            <span className="sheet__number">{formatCreatureNumber(number)}</span>
+            {unknown ? '???' : creature.name}
+          </p>
         </Editable>
 
         {unknown ? (

@@ -14,6 +14,30 @@ biome), et elles n'ont pas du tout les mêmes conséquences.
 
 ---
 
+
+## Images de créatures déposées dans le dépôt (§198)
+
+Déposez vos images dans `public/media/creatures/`, nommées **`0000_nom.png`** :
+
+```
+public/media/creatures/
+├── 0025_pikachu.png
+└── 0132_metamorph.png
+```
+
+Le préfixe numérique est la convention qui fait tout le travail : en choisissant
+l'image dans `Admin → Créatures`, son **numéro** est repris, et son **nom** si
+la créature n'en a pas encore.
+
+Un navigateur ne sait pas lister un dossier : un inventaire
+(`public/media/creatures/index.json`) est écrit automatiquement au démarrage de
+`npm run dev` et avant chaque `npm run build`. **Déposez, relancez, l'image
+apparaît** — il n'y a rien à enregistrer à la main, et la CI fait de même.
+
+Ces images voyagent avec le site : ce sont les seules qui apparaîtront sur
+l'iPad. Une image importée depuis l'appareil reste, elle, sur cet appareil.
+
+
 ## 1. Fichier du dépôt — la voie recommandée
 
 C'est la seule qui donne, sans aucun serveur, une image visible partout et

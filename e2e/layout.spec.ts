@@ -492,19 +492,27 @@ test('l’image et les couleurs s’éditent dans la fiche, jamais par un chemin
   await expect(page.locator('.image-picker__preview svg')).toBeVisible();
   await expect(page.getByText('Dessin généré').first()).toBeVisible();
 
-  // Les couleurs se choisissent : plus aucun champ de texte hexadécimal.
-  await expect(page.getByRole('button', { name: 'Jaune', exact: true }).first()).toBeVisible();
-  await expect(page.getByLabel(/couleur principale — choisir librement/i)).toHaveAttribute(
-    'type',
-    'color',
-  );
-
   // Ce qui reste technique est replié, et le dit.
   const advanced = page.getByRole('button', { name: 'Réglages avancés' });
   await expect(advanced).toHaveAttribute('aria-expanded', 'false');
   await expect(page.getByLabel('Chemin de l’image')).toHaveCount(0);
   await advanced.click();
   await expect(page.getByLabel('Chemin de l’image')).toBeVisible();
+});
+
+test('les couleurs d’une région se choisissent, jamais en hexadécimal (§196)', async ({ page }) => {
+  await page.goto('./#/admin/world');
+  await page.getByLabel('Code d’accès').fill('parent');
+  await page.getByRole('button', { name: 'Entrer' }).click();
+  await page.getByRole('button', { name: 'Biomes' }).click({ timeout: 20_000 });
+
+  /*
+   * Les créatures ne se dessinent plus à la main (§198) : leurs couleurs ont
+   * disparu de l'Admin. Une région, elle, garde les siennes — et elles se
+   * choisissent, on ne tape plus « #FFD45C » dans un champ de texte (§196).
+   */
+  await expect(page.getByRole('button', { name: 'Jaune', exact: true }).first()).toBeVisible();
+  await expect(page.getByLabel(/^Sol — choisir librement/i)).toHaveAttribute('type', 'color');
 });
 
 test('la page « Images » vérifie l’ensemble au lieu d’éditer (§196)', async ({ page }) => {
@@ -518,4 +526,55 @@ test('la page « Images » vérifie l’ensemble au lieu d’éditer (§196)', a
   await expect(page.getByText(/0 sur cet appareil seulement/)).toBeVisible();
   // Et elle ne propose plus de saisir un chemin.
   await expect(page.getByLabel('Image de la créature')).toHaveCount(0);
+});
+
+test('une créature se numérote et prend une image du dépôt (§198)', async ({ page }) => {
+  await page.goto('./#/admin/creatures');
+  await page.getByLabel('Code d’accès').fill('parent');
+  await page.getByRole('button', { name: 'Entrer' }).click();
+  await expect(page.getByRole('button', { name: 'Nouvelle créature' })).toBeVisible({
+    timeout: 20_000,
+  });
+
+  // Chaque créature porte un numéro, éditable, et visible dans la liste.
+  await expect(page.getByLabel(/^Numéro/)).toHaveValue('1');
+  await expect(page.locator('.ds-list-row').first()).toContainText('#001');
+
+  /*
+   * Les images déposées dans `public/media/creatures/` se CHOISISSENT en
+   * vignettes : un navigateur ne sait pas lister un dossier, c'est
+   * l'inventaire écrit au build qui les rend visibles ici.
+   */
+  const pikachu = page.getByRole('button', { name: /pikachu, numéro 25/i });
+  await expect(pikachu).toBeVisible();
+  await pikachu.click();
+
+  // Le nom du fichier porte le numéro : on le reprend, c'est sa raison d'être.
+  await expect(page.getByLabel(/^Numéro/)).toHaveValue('25');
+  // Le nom déjà écrit n'est jamais écrasé.
+  await expect(page.getByLabel('Nom', { exact: true })).toHaveValue('Piloupi');
+  await expect(page.getByRole('button', { name: /remplacer l’image/i })).toBeVisible();
+
+  // On ne dessine plus les créatures soi-même.
+  await expect(page.getByLabel('Silhouette')).toHaveCount(0);
+  await expect(page.getByLabel('Couleur principale — choisir librement')).toHaveCount(0);
+});
+
+test('les syllabes se saisissent une par case (§198)', async ({ page }) => {
+  await page.goto('./#/admin/creatures');
+  await page.getByLabel('Code d’accès').fill('parent');
+  await page.getByRole('button', { name: 'Entrer' }).click();
+  await expect(page.getByRole('button', { name: 'Nouvelle créature' })).toBeVisible({
+    timeout: 20_000,
+  });
+
+  // Régression : un seul champ « Pi-lou-pi », et un tiret oublié découpait le
+  // nom n'importe comment, sans rien dire.
+  await expect(page.getByLabel('Syllabe 1')).toHaveValue('Pi');
+  await expect(page.getByLabel('Syllabe 8')).toBeVisible();
+  await expect(page.getByLabel('Syllabe 8')).toHaveValue('');
+
+  await page.getByLabel('Syllabe 4').fill('nou');
+  // Le découpage se lit, tel que l'enfant l'entendra.
+  await expect(page.locator('.syllables__preview')).toContainText('Pi · lou · pi · nou');
 });

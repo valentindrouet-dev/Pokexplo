@@ -10,6 +10,7 @@ import { SCREEN_VOICES } from '../../content/voices';
 import { PlayScreen } from '../play/PlayScreen';
 import { CreatureSheet } from './CreatureSheet';
 import { TypeIcon } from './typeIcons';
+import { creatureNumber } from '../admin/creatureNumber';
 
 /**
  * POKÉDEX (CONCEPTION §18, §154-156 ; UI_DESIGN §191).
@@ -51,8 +52,13 @@ export function PokedexScreen() {
 
   const creatures = useMemo(() => {
     const list = bundle?.creatures ?? [];
-    if (filter === 'ALL') return list;
-    return list.filter((item) => item.type1 === filter || item.type2 === filter);
+    const shown = filter === 'ALL'
+      ? [...list]
+      : list.filter((item) => item.type1 === filter || item.type2 === filter);
+    // Un Pokédex se lit dans l'ordre des numéros, toujours le même.
+    return bundle
+      ? shown.sort((a, b) => creatureNumber(bundle, a) - creatureNumber(bundle, b))
+      : shown;
   }, [bundle, filter]);
 
   if (!bundle || !save) {
@@ -121,6 +127,7 @@ export function PokedexScreen() {
         <CreatureSheet
           creature={open}
           state={save.pokedex[open.id]?.state ?? 'UNKNOWN'}
+          number={creatureNumber(bundle, open)}
           onClose={() => setOpenId(null)}
         />
       ) : null}

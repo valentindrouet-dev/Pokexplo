@@ -95,6 +95,13 @@ export interface CreatureVisual {
 /** CONCEPTION §18-21. */
 export interface Creature {
   id: CreatureId;
+  /**
+   * Numero de Pokedex, affiche a l'enfant et repris par le nom des images du
+   * depot (« 0025_pikachu.png »). Facultatif dans le type pour qu'un contenu
+   * ecrit avant son apparition reste lisible : `creatureNumber()` retombe
+   * alors sur le rang dans la liste.
+   */
+  number?: number;
   name: string;
   /** Nom anglais, utilise par les exercices ENGLISH_WORD. */
   nameEn?: string;

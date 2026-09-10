@@ -2,6 +2,7 @@ import type { ContentBundle, Creature, ExerciseTemplate } from '../../types';
 import { uid } from '../../utils/id';
 import { createVoiceMessage } from '../../utils/voice';
 import { templateTextBlocks } from './exerciseText';
+import { nextCreatureNumber } from './creatureNumber';
 
 /**
  * DUPLIQUER ET SUPPRIMER (UI_DESIGN §196).
@@ -29,6 +30,8 @@ export function duplicateCreature(bundle: ContentBundle, creatureId: string): Du
   const created: Creature = {
     ...structuredClone(source),
     id,
+    // Sans cela, la copie porterait le numero de l'original : deux « #025 ».
+    number: nextCreatureNumber(bundle),
     name,
     nameVoiceId,
   };

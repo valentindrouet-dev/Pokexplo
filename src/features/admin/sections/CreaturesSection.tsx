@@ -8,10 +8,11 @@ import { uid } from '../../../utils/id';
 import { useAdminDraft } from '../AdminDraftContext';
 import { EntityPane } from '../EntityPane';
 import { AdvancedPanel } from '../AdvancedPanel';
-import { ColorField } from '../ColorField';
-import { ImagePicker, useDeviceImages } from '../ImagePicker';
+import { ImagePicker, useCatalogImages, useDeviceImages } from '../ImagePicker';
+import { SyllableFields } from '../SyllableFields';
+import { creatureNumber, formatCreatureNumber, nextCreatureNumber } from '../creatureNumber';
 import { creatureBlocker, duplicateCreature, removeCreature } from '../entityActions';
-import { SelectField, TextAreaField, TextField } from '../fields';
+import { NumberField, SelectField, TextAreaField, TextField } from '../fields';
 import { VoiceTextEditor } from '../VoiceTextEditor';
 
 const TYPES = Object.keys(TYPE_LABELS) as CreatureType[];
@@ -20,6 +21,7 @@ const RARITIES = Object.keys(RARITY_LABELS) as Rarity[];
 /** CONCEPTION §115 — creation et edition des creatures, sans toucher au code (§91). */
 export function CreaturesSection() {
   const deviceImages = useDeviceImages();
+  const catalog = useCatalogImages();
   const { draft, update } = useAdminDraft();
   const [selectedId, setSelectedId] = useState<string | null>(draft?.creatures[0]?.id ?? null);
   if (!draft) return null;
@@ -45,6 +47,7 @@ export function CreaturesSection() {
         ...current.creatures,
         {
           id,
+          number: nextCreatureNumber(current),
           name: 'Nouvelle créature',
           type1: 'NORMAL',
           rarity: 'COMMON',
@@ -81,7 +84,9 @@ export function CreaturesSection() {
       onSelect={setSelectedId}
       idOf={(item) => item.id}
       labelOf={(item) => item.name}
-      hintOf={(item) => `${TYPE_LABELS[item.type1]} · ${RARITY_LABELS[item.rarity]}`}
+      hintOf={(item) =>
+        `${formatCreatureNumber(creatureNumber(draft, item))} · ${TYPE_LABELS[item.type1]} · ${RARITY_LABELS[item.rarity]}`
+      }
       onCreate={create}
       createLabel="Nouvelle créature"
       onDuplicate={(id) => {
@@ -108,9 +113,30 @@ export function CreaturesSection() {
             onChange={(imagePath) => patch({ imagePath })}
             folder="creatures"
             deviceImages={deviceImages}
+            catalog={catalog}
+            /*
+             * « 0025_pikachu.png » porte plus qu'un chemin : un numéro et un
+             * nom. On les reprend — c'est la raison d'être de la convention —
+             * mais jamais par-dessus un nom que l'adulte a déjà écrit.
+             */
+            onPickCatalog={(image) => {
+              patch({
+                ...(image.number === undefined ? {} : { number: image.number }),
+                ...(creature.name === 'Nouvelle créature' ? { name: image.name } : {}),
+              });
+            }}
           />
 
-          <TextField label="Nom" value={creature.name} onChange={(name) => patch({ name })} />
+          <div className="field__row">
+            <NumberField
+              label="Numéro"
+              value={creatureNumber(draft, creature)}
+              min={1}
+              onChange={(number) => patch({ number })}
+              hint="Celui qu’affiche le Pokédex, et celui du nom de fichier de l’image."
+            />
+            <TextField label="Nom" value={creature.name} onChange={(name) => patch({ name })} />
+          </div>
 
           <div className="field__row">
             <SelectField
@@ -143,13 +169,9 @@ export function CreaturesSection() {
             hint="Affiché dans le Pokédex : « Trouvée dans… »"
           />
 
-          <TextField
-            label="Syllabes"
-            value={creature.syllables.join('-')}
-            onChange={(value) =>
-              patch({ syllables: value.split('-').map((part) => part.trim()).filter(Boolean) })
-            }
-            hint="Séparées par un tiret (Pi-lou-pi). Utilisées par les exercices et les quêtes."
+          <SyllableFields
+            value={creature.syllables}
+            onChange={(syllables) => patch({ syllables })}
           />
 
           <TextAreaField
@@ -179,81 +201,15 @@ export function CreaturesSection() {
             </div>
           </div>
 
-          <div className="field__row">
-            <SelectField
-              label="Silhouette"
-              value={creature.visual.shape}
-              options={[
-                { value: 'round', label: 'Ronde' },
-                { value: 'blob', label: 'Goutte' },
-                { value: 'quad', label: 'À quatre pattes' },
-                { value: 'serpent', label: 'Allongée' },
-                { value: 'bird', label: 'Ailée' },
-                { value: 'rock', label: 'Rocheuse' },
-              ]}
-              onChange={(shape) => patch({ visual: { ...creature.visual, shape } })}
-            />
-            <SelectField
-              label="Yeux"
-              value={creature.visual.eyes}
-              options={[
-                { value: 'dot', label: 'Ronds' },
-                { value: 'happy', label: 'Souriants' },
-                { value: 'big', label: 'Grands' },
-                { value: 'sleepy', label: 'Endormis' },
-              ]}
-              onChange={(eyes) => patch({ visual: { ...creature.visual, eyes } })}
-            />
-            <SelectField
-              label="Oreilles"
-              value={creature.visual.ears}
-              options={[
-                { value: 'none', label: 'Aucune' },
-                { value: 'pointy', label: 'Pointues' },
-                { value: 'round', label: 'Rondes' },
-                { value: 'long', label: 'Longues' },
-                { value: 'fin', label: 'Nageoire' },
-              ]}
-              onChange={(ears) => patch({ visual: { ...creature.visual, ears } })}
-            />
-            <SelectField
-              label="Détail"
-              value={creature.visual.feature}
-              options={[
-                { value: 'none', label: 'Aucun' },
-                { value: 'spark', label: 'Éclair' },
-                { value: 'leaf', label: 'Feuille' },
-                { value: 'flame', label: 'Flamme' },
-                { value: 'fin', label: 'Nageoire' },
-                { value: 'rock', label: 'Pierres' },
-                { value: 'snow', label: 'Flocon' },
-                { value: 'wing', label: 'Aile' },
-              ]}
-              onChange={(feature) => patch({ visual: { ...creature.visual, feature } })}
-            />
-          </div>
+          {/*
+            LE DESSIN NE SE FAIT PLUS À LA MAIN (§198).
 
-          <div className="field__row">
-            <ColorField
-              label="Couleur principale"
-              value={creature.visual.palette[0]}
-              onChange={(value) =>
-                patch({ visual: { ...creature.visual, palette: [value, creature.visual.palette[1]] } })
-              }
-            />
-            <ColorField
-              label="Couleur du ventre"
-              value={creature.visual.palette[1]}
-              onChange={(value) =>
-                patch({ visual: { ...creature.visual, palette: [creature.visual.palette[0], value] } })
-              }
-            />
-            <ColorField
-              label="Couleur d’accent"
-              value={creature.visual.accent}
-              onChange={(accent) => patch({ visual: { ...creature.visual, accent } })}
-            />
-          </div>
+            Silhouette, yeux, oreilles, détail et trois couleurs : c'était
+            demander à un parent de dessiner ses créatures. On dépose une
+            image dans le dépôt et on la choisit ci-dessus. Le descripteur
+            reste dans la donnée — il fait le dessin de secours d'une créature
+            sans image, et on ne supprime jamais ce qui existe déjà.
+          */}
 
           {nameVoice ? (
             <VoiceTextEditor

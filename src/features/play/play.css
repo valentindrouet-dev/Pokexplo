@@ -913,3 +913,9 @@
   font-size: var(--hero-title);
   font-weight: var(--weight-heavy);
 }
+
+/* Le numero de la creature, devant son nom : on le lit comme sur une carte. */
+.sheet__number {
+  margin-right: var(--space-3);
+  color: var(--color-text-soft);
+}

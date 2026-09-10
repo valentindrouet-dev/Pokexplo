@@ -4,6 +4,34 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/).
 Trois versions sont suivies séparément (§112) : `APP_VERSION`, `CONTENT_VERSION`,
 `SAVE_SCHEMA_VERSION`.
 
+## [1.14.0] — Les créatures ont un numéro, et leurs images se choisissent
+
+`APP_VERSION 1.14.0` · `CONTENT_VERSION bundled-6` · `SAVE_SCHEMA_VERSION 3`
+
+### Ajouté
+
+- **Un numéro par créature** (`#025`), affiché dans le Pokédex et dans l'Admin,
+  et modifiable. Le Pokédex se lit désormais dans l'ordre des numéros. Une
+  copie en reçoit un libre, et deux créatures au même numéro sont signalées.
+- **Les images déposées dans `public/media/creatures/` se choisissent en
+  vignettes.** Un navigateur ne sait pas lister un dossier : un inventaire est
+  écrit au démarrage de `npm run dev` et avant chaque `npm run build`. Déposez,
+  relancez, l'image apparaît.
+- La convention **`0000_nom.png`** fait le reste : choisir une image reprend
+  son **numéro**, et son **nom** si la créature n'en a pas encore. On ne saisit
+  jamais un chemin (§196).
+- **Les syllabes se saisissent une par case**, jusqu'à huit, avec le découpage
+  relu dessous tel que l'enfant l'entendra. Un champ unique « Pi-lou-pi »
+  laissait un tiret oublié découper le nom n'importe comment, sans rien dire.
+
+### Retiré
+
+- **On ne dessine plus les créatures dans l'Admin** : silhouette, yeux,
+  oreilles, détail et trois couleurs demandaient à un parent d'être
+  illustrateur. Le descripteur `visual` reste dans la donnée — il fait le
+  dessin de secours d'une créature sans image, et une créature n'est jamais
+  vide (§174).
+
 ## [1.13.0] — Le Centre se réduit au départ et aux six raccourcis
 
 `APP_VERSION 1.13.0` · `CONTENT_VERSION bundled-5` · `SAVE_SCHEMA_VERSION 3`

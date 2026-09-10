@@ -17,7 +17,7 @@ import { creatureNameVoiceId, creatureNameVoices, exerciseVoices, narrativeVoice
  * installe : sans cela, un appareil qui a deja joue garderait indefiniment
  * l'ancienne version, meme apres une mise a jour de l'application.
  */
-export const BUNDLED_CONTENT_VERSION = 'bundled-5';
+export const BUNDLED_CONTENT_VERSION = 'bundled-6';
 
 /**
  * CONTENU LIVRE AVEC L'APPLICATION (release_0001).
@@ -30,8 +30,11 @@ export const BUNDLED_CONTENT_VERSION = 'bundled-5';
  * mute par l'Admin.
  */
 export function defaultContentBundle(): ContentBundle {
-  const creatures = defaultCreatures.map((creature) => ({
+  // Chaque creature porte un numero, comme dans un vrai Pokedex : c'est lui
+  // que l'enfant lit, et lui que reprennent les images du depot (§198).
+  const creatures = defaultCreatures.map((creature, index) => ({
     ...creature,
+    number: creature.number ?? index + 1,
     nameVoiceId: creatureNameVoiceId(creature.id),
   }));
 

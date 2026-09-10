@@ -457,3 +457,91 @@
   overflow: auto;
   -webkit-overflow-scrolling: touch;
 }
+
+/* --------------------- Images déposées dans le dépôt --------------------- */
+
+/*
+ * On CHOISIT une image en vignette (§198), jamais en retapant son chemin.
+ * Le numero et le nom viennent du fichier lui-meme : « 0025_pikachu.png ».
+ */
+.catalog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.catalog__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  gap: var(--space-3);
+  max-height: 320px;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--space-1);
+}
+
+.catalog__item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border: var(--border-hairline-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  cursor: pointer;
+}
+
+.catalog__item[aria-pressed='true'] {
+  border-color: var(--color-lavender);
+  background: var(--color-lavender-soft);
+  box-shadow: 0 0 0 var(--space-0) var(--color-lavender);
+}
+
+.catalog__image {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+}
+
+.catalog__name {
+  font-size: var(--text-small);
+  font-weight: var(--weight-bold);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.catalog__number {
+  font-size: var(--text-small);
+  color: var(--color-text-soft);
+}
+
+/* ----------------------------- Syllabes ----------------------------- */
+
+/*
+ * Une case par syllabe (§198) : le decoupage devient visible, et il n'y a
+ * plus de separateur a ne pas oublier.
+ */
+.syllables {
+  display: grid;
+  /* Quatre par ligne, deux lignes : sept cases puis une seule se lisait mal. */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.syllables__cell {
+  text-align: center;
+  padding-inline: var(--space-2);
+}
+
+.syllables__preview {
+  margin-top: var(--space-2);
+  font-size: var(--text-normal);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.04em;
+}
