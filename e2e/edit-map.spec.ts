@@ -19,7 +19,7 @@ async function openMapInEditMode(page: Page): Promise<void> {
   await page.getByPlaceholder('Ton prénom').waitFor({ timeout: 20_000 });
   await page.getByPlaceholder('Ton prénom').fill('Lucie');
   await page.getByRole('button', { name: /commencer l’aventure/i }).click();
-  await expect(page.getByRole('button', { name: 'Partir !' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Partir à l’aventure !' })).toBeVisible();
 
   await page.goto('./#/admin');
   await page.getByLabel('Code d’accès').fill('parent');
@@ -180,7 +180,7 @@ test('l’enfant ne peut jamais déplacer un lieu', async ({ page }) => {
   await page.getByPlaceholder('Ton prénom').fill('Lucie');
   await page.getByRole('button', { name: /commencer l’aventure/i }).click();
   // Le profil doit exister avant d'ouvrir la carte : sans lui, elle est vide.
-  await expect(page.getByRole('button', { name: 'Partir !' })).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByRole('button', { name: 'Partir à l’aventure !' })).toBeVisible({ timeout: 20_000 });
   await page.goto('./#/play/map');
   await expect(page.locator('.map__node').first()).toBeVisible({ timeout: 20_000 });
 

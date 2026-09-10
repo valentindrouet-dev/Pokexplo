@@ -46,6 +46,8 @@ export type Route =
   | { name: 'pokedex' }
   | { name: 'team' }
   | { name: 'badges' }
+  | { name: 'items' }
+  | { name: 'practice' }
   | { name: 'quests' }
   | { name: 'encounter'; nodeId: string }
   | { name: 'gym'; gymId: string }
@@ -83,6 +85,10 @@ export function parseHash(hash: string): Route {
         return { name: 'pokedex' };
       case 'team':
         return { name: 'team' };
+      case 'items':
+        return { name: 'items' };
+      case 'practice':
+        return { name: 'practice' };
       case 'badges':
         return { name: 'badges' };
       case 'quests':
@@ -121,6 +127,10 @@ export function routeToHash(route: Route): string {
       return '#/play/pokedex';
     case 'team':
       return '#/play/team';
+    case 'items':
+      return '#/play/items';
+    case 'practice':
+      return '#/play/practice';
     case 'badges':
       return '#/play/badges';
     case 'quests':
@@ -142,7 +152,7 @@ export function routeToHash(route: Route): string {
 
 /** Vrai pour les ecrans enfant : ils suivent integralement docs/UI_DESIGN.md. */
 export function isPlayRoute(route: Route): boolean {
-  return ['start', 'center', 'map', 'pokedex', 'team', 'badges', 'quests', 'encounter', 'gym'].includes(
+  return ['start', 'center', 'map', 'pokedex', 'team', 'items', 'practice', 'badges', 'quests', 'encounter', 'gym'].includes(
     route.name,
   );
 }

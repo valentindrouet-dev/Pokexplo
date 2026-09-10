@@ -11,6 +11,8 @@ import { MapScreen } from '../features/world-map/MapScreen';
 import { EncounterScreen } from '../features/encounters/EncounterScreen';
 import { PokedexScreen } from '../features/pokedex/PokedexScreen';
 import { TeamScreen } from '../features/team/TeamScreen';
+import { PracticeScreen } from '../features/learning/PracticeScreen';
+import { ItemsScreen } from '../features/play/ItemsScreen';
 import { BadgesScreen } from '../features/play/BadgesScreen';
 import { QuestsScreen } from '../features/quests/QuestsScreen';
 import { GymScreen } from '../features/gyms/GymScreen';
@@ -47,7 +49,7 @@ function Routes() {
 
   // §111 — pas de mise a jour pendant un exercice, un combat ou une capture.
   useEffect(() => {
-    const busy = route.name === 'encounter' || route.name === 'gym';
+    const busy = route.name === 'encounter' || route.name === 'gym' || route.name === 'practice';
     UpdateController.setBusy(busy);
   }, [route.name]);
 
@@ -65,6 +67,10 @@ function Routes() {
         return <PokedexScreen />;
       case 'team':
         return <TeamScreen />;
+      case 'items':
+        return <ItemsScreen />;
+      case 'practice':
+        return <PracticeScreen />;
       case 'badges':
         return <BadgesScreen />;
       case 'quests':

@@ -24,7 +24,7 @@ async function startAdventure(page: Page): Promise<void> {
   await page.getByPlaceholder('Ton prénom').waitFor({ timeout: 20_000 });
   await page.getByPlaceholder('Ton prénom').fill('Test');
   await page.getByRole('button', { name: /commencer l’aventure/i }).click();
-  await expect(page.getByRole('button', { name: 'Partir !' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Partir à l’aventure !' })).toBeVisible();
 }
 
 /**
@@ -50,10 +50,8 @@ test('l’enfant peut lancer l’aventure sans savoir lire', async ({ page }) =>
 test('le Centre propose des destinations très grandes et peu nombreuses', async ({ page }) => {
   await startAdventure(page);
 
-  // Trois destinations, et une seule action principale (§190). « Aventure »,
-  // « Quêtes » et « Professeur » ont disparu : la première doublait « Partir ! »,
-  // les deux autres sont ce que dit le Professeur, en haut de l'écran.
-  for (const label of ['Équipe', 'Pokédex', 'Badges']) {
+  // Accueil demandé : six raccourcis et un départ pleine largeur.
+  for (const label of ['Équipe', 'Pokédex', 'Objets', 'Exercices', 'Carte', 'Espace parents']) {
     const tile = page.getByRole('button', { name: label, exact: true });
     await expect(tile).toBeVisible();
     const box = await tile.boundingBox();
@@ -69,7 +67,7 @@ test('le Centre propose des destinations très grandes et peu nombreuses', async
 
 test('la carte affiche les nœuds avec leur état et permet de voyager', async ({ page }) => {
   await startAdventure(page);
-  await page.getByRole('button', { name: 'Partir !' }).click();
+  await page.getByRole('button', { name: 'Partir à l’aventure !' }).click();
 
   await expect(page.getByRole('button', { name: /Centre — tu es ici/i })).toBeVisible();
   await expect(page.getByRole('button', { name: /Prairie — à explorer/i })).toBeVisible();
@@ -89,7 +87,7 @@ test('la carte affiche les nœuds avec leur état et permet de voyager', async (
 test('rencontre → exercice → capture → Pokédex', async ({ page }) => {
   test.setTimeout(90_000);
   await startAdventure(page);
-  await page.getByRole('button', { name: 'Partir !' }).click();
+  await page.getByRole('button', { name: 'Partir à l’aventure !' }).click();
   await travelTo(page, /Prairie — à explorer/i);
   await page.getByRole('button', { name: 'Relever le défi !' }).click({ timeout: 15_000 });
 
@@ -159,7 +157,7 @@ test('l’espace parents affiche la progression une fois le profil créé', asyn
   await expect(page.getByRole('button', { name: 'Retour au jeu' })).toBeVisible();
 
   await page.getByRole('button', { name: 'Retour au jeu' }).click();
-  await expect(page.getByRole('button', { name: 'Partir !' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Partir à l’aventure !' })).toBeVisible();
 });
 
 test('l’espace parents affiche la version installée', async ({ page }) => {

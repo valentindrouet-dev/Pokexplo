@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { App } from '../../src/app/App';
 import {
@@ -42,7 +42,19 @@ describe('Démarrage de l’aventure (CONCEPTION §64, §130)', () => {
     await user.click(screen.getByRole('button', { name: /commencer l’aventure/iu }));
 
     // Le Centre s'ouvre : la navigation n'attend pas la réponse du navigateur.
-    expect(await screen.findByRole('button', { name: 'Partir !' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Partir à l’aventure !' })).toBeInTheDocument();
+    const menu = screen.getByRole('navigation', { name: 'Menu principal' });
+    expect(within(menu).getAllByRole('button').map((button) => button.textContent)).toEqual([
+      'Équipe', 'Pokédex', 'Objets', 'Exercices', 'Carte', 'Parents',
+    ]);
+    await user.click(within(menu).getByRole('button', { name: 'Objets' }));
+    await user.click(await screen.findByRole('button', { name: 'Mes badges' }));
+    expect(await screen.findByText('Tes badges')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Retour' }));
+    await user.click(await screen.findByRole('button', { name: 'Exercices' }));
+    await user.click(await screen.findByRole('button', { name: 'Commencer' }));
+    expect(await screen.findByRole('button', { name: 'Écouter la consigne' })).toBeInTheDocument();
+
   });
 
   it('tente quand même de débloquer l’audio dans le geste de l’enfant', async () => {
@@ -93,7 +105,7 @@ describe('Espace parents (CONCEPTION §77, §175)', () => {
     const nickname = await screen.findByPlaceholderText('Ton prénom', undefined, { timeout: 5000 });
     await user.type(nickname, 'Lucie');
     await user.click(screen.getByRole('button', { name: /commencer l’aventure/iu }));
-    await screen.findByRole('button', { name: 'Partir !' });
+    await screen.findByRole('button', { name: 'Partir à l’aventure !' });
 
     act(() => {
       window.location.hash = '#/parents';
@@ -155,7 +167,7 @@ describe('Retour à l’accueil et version installée', () => {
     const nickname = await screen.findByPlaceholderText('Ton prénom', undefined, { timeout: 5000 });
     await user.type(nickname, 'Lucie');
     await user.click(screen.getByRole('button', { name: /commencer l’aventure/iu }));
-    await screen.findByRole('button', { name: 'Partir !' });
+    await screen.findByRole('button', { name: 'Partir à l’aventure !' });
 
     act(() => {
       window.location.hash = '#/parents';

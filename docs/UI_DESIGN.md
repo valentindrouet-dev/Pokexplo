@@ -397,3 +397,17 @@ Les pages globales « Images » et « Voix » ne servent plus à éditer une ent
 5. Est-ce que cela ressemble davantage à un jeu Nintendo qu'à une application Web ?
 
 Si la réponse à la cinquième question est **non**, l'interface doit être retravaillée.
+
+
+## Accueil — ajustement demandé le 10 septembre 2026
+
+Le Centre présente « Partir à l’aventure ! » sur toute la largeur du menu,
+puis six boutons carrés à coins arrondis en deux lignes de trois :
+Équipe / Pokédex / Objets, puis Exercices / Carte / Parents.
+Cette disposition demandée remplace pour cet accueil la limite de quatre
+choix du §190. Partir accepte la mission proposée ; Carte ouvre seulement la carte.
+Les six pictogrammes sont des illustrations PNG originales générées, à fond
+transparent, aplats pastel et contours sombres épais inspirés de la référence.
+La confirmation Parents est conservée. Objets donne accès aux badges existants.
+Exercices propose un entraînement libre issu des matrices et du pack du profil,
+sans capture ni modification de la progression de l’aventure ou des statistiques.
