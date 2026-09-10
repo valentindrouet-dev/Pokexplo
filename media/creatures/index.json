@@ -1,0 +1,13 @@
+[
+  {
+    "file": "0025_pikachu.png",
+    "path": "media/creatures/0025_pikachu.png",
+    "number": 25,
+    "name": "Pikachu"
+  },
+  {
+    "file": "exemple.svg",
+    "path": "media/creatures/exemple.svg",
+    "name": "Exemple"
+  }
+]
